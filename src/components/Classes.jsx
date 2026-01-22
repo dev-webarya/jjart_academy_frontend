@@ -141,12 +141,6 @@ const Classes = () => {
                     {classItem.description}
                   </p>
                   <div className="border-t border-gray-200 dark:border-gray-700 pt-2.5 sm:pt-3 md:pt-4 space-y-2.5 sm:space-y-3">
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      Instructor:{" "}
-                      <span className="font-semibold text-gray-700 dark:text-gray-300">
-                        {classItem.instructor}
-                      </span>
-                    </p>
                     <button 
                       onClick={() => handleEnrollNow(classItem)}
                       className="w-full bg-linear-to-r from-purple-600 to-pink-600 text-white py-2 sm:py-2.5 md:py-3 rounded-lg sm:rounded-xl font-semibold text-sm sm:text-base shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
