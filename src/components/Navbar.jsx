@@ -286,7 +286,7 @@ const Navbar = () => {
               </Link>
               <button 
                 onClick={() => { setShowEnrollForm(true); setIsOpen(false); }}
-                className="w-full mt-1 px-4 sm:px-6 py-2 sm:py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-bold text-sm shadow-lg hover:shadow-xl transition-all"
+                className="w-full mt-1 px-4 sm:px-6 py-2 sm:py-2.5 bg-linear-to-r from-purple-600 to-pink-600 text-white rounded-xl font-bold text-sm shadow-lg hover:shadow-xl transition-all"
               >
                 Enroll Now
               </button>
@@ -294,7 +294,7 @@ const Navbar = () => {
               <div className="space-y-1 mt-1">
                 <button
                   onClick={() => setShowMobileLoginDropdown(!showMobileLoginDropdown)}
-                  className="w-full px-4 sm:px-6 py-2 sm:py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-bold text-sm shadow-lg hover:shadow-xl transition-all flex items-center justify-center space-x-2"
+                  className="w-full px-4 sm:px-6 py-2 sm:py-2.5 bg-linear-to-r from-purple-600 to-pink-600 text-white rounded-xl font-bold text-sm shadow-lg hover:shadow-xl transition-all flex items-center justify-center space-x-2"
                 >
                   <span>Login</span>
                   <FaChevronDown className={`text-xs transition-transform ${showMobileLoginDropdown ? 'rotate-180' : ''}`} />

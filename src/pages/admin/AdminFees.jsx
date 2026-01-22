@@ -410,7 +410,7 @@ const AdminFees = () => {
       {showPaymentModal && selectedStudent && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full">
-            <div className="bg-gradient-to-r from-green-600 to-teal-600 text-white p-6 rounded-t-2xl">
+            <div className="bg-linear-to-r from-green-600 to-teal-600 text-white p-6 rounded-t-2xl">
               <h2 className="text-2xl font-bold">Record Payment</h2>
               <p className="text-sm mt-1">{selectedStudent.name} - {selectedStudent.rollNumber}</p>
             </div>
@@ -524,7 +524,7 @@ const AdminFees = () => {
       {selectedStudent && !showPaymentModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setSelectedStudent(null)}>
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-6 rounded-t-2xl">
+            <div className="bg-linear-to-r from-purple-600 to-pink-600 text-white p-6 rounded-t-2xl">
               <h2 className="text-2xl font-bold">{selectedStudent.name}</h2>
               <p className="text-sm mt-1">Roll No: {selectedStudent.rollNumber} | Class: {selectedStudent.enrolledClass}</p>
             </div>

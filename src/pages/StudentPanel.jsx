@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { 
   FaHome, FaCalendar, FaCertificate, 
   FaSignOutAlt, FaPalette, FaBell, FaUser, FaBars, FaTimes,
-  FaClipboardList, FaCog, FaChalkboardTeacher, FaVideo
+  FaClipboardList, FaCog, FaChalkboardTeacher, FaVideo, FaMoneyBillWave
 } from 'react-icons/fa';
 
 const StudentPanel = () => {
@@ -56,6 +56,7 @@ const StudentPanel = () => {
     { name: 'Regular Classes', path: '/student/classes', icon: FaChalkboardTeacher },
     { name: 'Online Classes', path: '/student/online-classes', icon: FaVideo },
     { name: 'Attendance', path: '/student/attendance', icon: FaCalendar },
+    { name: 'Fee Payment', path: '/student/fees', icon: FaMoneyBillWave },
     { name: 'Certificates', path: '/student/certificates', icon: FaCertificate },
     { name: 'My Orders', path: '/student/orders', icon: FaClipboardList },
     { name: 'Events', path: '/student/events', icon: FaCalendar },

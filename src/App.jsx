@@ -57,6 +57,7 @@ import Settings from './pages/student/Settings';
 import OnlineClasses from './pages/student/OnlineClasses';
 import StudentCertificates from './pages/student/StudentCertificates';
 import RegularClasses from './pages/student/RegularClasses';
+import StudentFeePayment from './pages/student/StudentFeePayment';
 
 // Admin Components - Additional
 import AdminOnlineClasses from './pages/admin/AdminOnlineClasses';
@@ -133,6 +134,7 @@ const AppLayout = () => {
           <Route path="classes" element={<RegularClasses />} />
           <Route path="attendance" element={<StudentAttendance />} />
           <Route path="online-classes" element={<OnlineClasses />} />
+          <Route path="fees" element={<StudentFeePayment />} />
           <Route path="certificates" element={<StudentCertificates />} />
           <Route path="profile" element={<EnhancedStudentProfile />} />
           <Route path="notifications" element={<StudentNotifications />} />

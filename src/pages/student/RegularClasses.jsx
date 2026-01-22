@@ -34,6 +34,7 @@ const RegularClasses = () => {
           { id: 6, name: 'Craft Making', instructor: 'Priya Sharma', students: 28, duration: '8 weeks', level: 'Beginner', status: 'Active', price: 4000, schedule: 'Mon, Fri 3-5 PM', description: 'Learn various craft techniques and create beautiful handmade items.' },
           { id: 7, name: 'Comic Creation', instructor: 'Raj Kumar', students: 16, duration: '12 weeks', level: 'Advanced', status: 'Active', price: 7500, schedule: 'Tue, Thu 5-7 PM', description: 'Develop storytelling and illustration skills for comic art.' },
           { id: 8, name: 'Portrait Drawing', instructor: 'Ananya Desai', students: 14, duration: '10 weeks', level: 'Intermediate', status: 'Active', price: 6500, schedule: 'Sat 2-4 PM', description: 'Master portrait techniques, proportions, and facial features.' },
+          { id: 9, name: 'Oil Painting Masterclass', instructor: 'Vikram Singh', students: 12, duration: '14 weeks', level: 'Advanced', status: 'Active', price: 9500, schedule: 'Thu, Sun 3-6 PM', description: 'Master the art of oil painting with advanced techniques, color mixing, glazing, and creating stunning realistic artworks.' },
         ];
         localStorage.setItem('regularClasses', JSON.stringify(allClasses));
       }
@@ -41,7 +42,7 @@ const RegularClasses = () => {
       // Get student's enrolled classes from enrollment data
       // Using mock data - in production this would come from API
       const studentEnrollments = [
-        { id: 1, name: 'Alice Johnson', email: 'alice@example.com', enrolledClasses: [1], status: 'active' },
+        { id: 1, name: 'Alice Johnson', email: 'alice@example.com', enrolledClasses: [1, 9], status: 'active' },
         { id: 2, name: 'Bob Smith', email: 'bob@example.com', enrolledClasses: [1, 3], status: 'active' },
         { id: 3, name: 'Charlie Brown', email: 'charlie@example.com', enrolledClasses: [1, 4], status: 'active' },
         { id: 4, name: 'Diana Prince', email: 'diana@example.com', enrolledClasses: [2, 3], status: 'active' },
