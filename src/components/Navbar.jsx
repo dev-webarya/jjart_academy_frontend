@@ -15,6 +15,8 @@ const Navbar = () => {
   const [showStudentLogin, setShowStudentLogin] = useState(false);
   const [showLoginDropdown, setShowLoginDropdown] = useState(false);
   const [showShopDropdown, setShowShopDropdown] = useState(false);
+  const [showMobileShopDropdown, setShowMobileShopDropdown] = useState(false);
+  const [showMobileLoginDropdown, setShowMobileLoginDropdown] = useState(false);
   const location = useLocation();
   const dropdownRef = useRef(null);
   const shopDropdownRef = useRef(null);
@@ -66,15 +68,15 @@ const Navbar = () => {
           : "bg-transparent  "
       }`}
     >
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 lg:max-w-7xl">
-        <div className="flex items-center justify-between">
+      <div className="container mx-auto px-3 sm:px-6 lg:px-8 lg:max-w-7xl">
+        <div className="flex items-center justify-between h-16 sm:h-20">
           {/* Logo */}
-          <Link to="/" onClick={handleNavClick} className="mr-12 lg:mr-8">
+          <Link to="/" onClick={handleNavClick} className="mr-auto lg:mr-8">
             <div className="flex items-center space-x-2 sm:space-x-3 cursor-pointer group">
               <img 
                 src="/logo.png" 
                 alt=" Logo" 
-                className="h-16 sm:h-20 md:h-25 w-auto object-contain transition-all group-hover:scale-110"
+                className="h-12 sm:h-16 md:h-20 w-auto object-contain transition-all group-hover:scale-110"
               />
               <div className="flex flex-col">
                 <span
@@ -131,22 +133,22 @@ const Navbar = () => {
                 <FaChevronDown className={`text-xs transition-transform ${showShopDropdown ? 'rotate-180' : ''}`} />
               </button>
               {showShopDropdown && (
-                <div className="absolute left-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-2xl overflow-hidden z-50">
-                  <Link
-                    to="/shop/materials"
-                    onClick={() => { setShowShopDropdown(false); handleNavItemClick("/shop/materials"); }}
-                    className="block px-4 py-3 hover:bg-purple-50 dark:hover:bg-gray-700 transition-all"
-                  >
-                    <p className="font-semibold text-gray-800 dark:text-white text-sm">Art Materials</p>
-                    <p className="text-xs text-gray-600 dark:text-gray-400">Supplies & tools</p>
-                  </Link>
+                <div className="absolute left-0 mt-2 w-52 bg-white dark:bg-gray-800 rounded-xl shadow-2xl overflow-hidden z-50">
                   <Link
                     to="/shop/artworks"
                     onClick={() => { setShowShopDropdown(false); handleNavItemClick("/shop/artworks"); }}
+                    className="block px-4 py-3 hover:bg-purple-50 dark:hover:bg-gray-700 transition-all"
+                  >
+                    <p className="font-semibold text-gray-800 dark:text-white text-sm">Student Artworks</p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400">Student creations</p>
+                  </Link>
+                  <Link
+                    to="/shop/materials"
+                    onClick={() => { setShowShopDropdown(false); handleNavItemClick("/shop/materials"); }}
                     className="block px-4 py-3 hover:bg-purple-50 dark:hover:bg-gray-700 transition-all border-t border-gray-200 dark:border-gray-700"
                   >
-                    <p className="font-semibold text-gray-800 dark:text-white text-sm">Artworks</p>
-                    <p className="text-xs text-gray-600 dark:text-gray-400">Student creations</p>
+                    <p className="font-semibold text-gray-800 dark:text-white text-sm">Art Materials</p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400">Supplies & tools</p>
                   </Link>
                 </div>
               )}
@@ -232,12 +234,12 @@ const Navbar = () => {
         </div>
         {/* Mobile Menu */}
         {isOpen && (
-          <div className="lg:hidden mt-4 bg-white/95 dark:bg-gray-800/95 backdrop-blur-lg rounded-2xl shadow-2xl overflow-hidden animate-fade-in">
-            <div className="flex flex-col p-3 sm:p-4 space-y-2 sm:space-y-3">
+          <div className="lg:hidden mt-2 bg-white/95 dark:bg-gray-800/95 backdrop-blur-lg rounded-2xl shadow-2xl overflow-hidden animate-fade-in max-h-[calc(100vh-5rem)] overflow-y-auto">
+            <div className="flex flex-col p-2 sm:p-3 space-y-1 sm:space-y-2">
               {navItems.map((item) => (
                 <Link key={item.path} to={item.path} onClick={() => handleNavItemClick(item.path)}>
                   <div
-                    className={`px-3 sm:px-4 py-2.5 sm:py-3 text-left text-base sm:text-lg font-medium rounded-lg transition-all ${
+                    className={`px-3 sm:px-4 py-2 sm:py-2.5 text-left text-sm sm:text-base font-medium rounded-lg transition-all ${
                       location.pathname === item.path
                         ? "text-purple-600 font-bold bg-purple-50 dark:bg-purple-900/20"
                         : "text-gray-700 dark:text-gray-300 hover:text-purple-600 hover:bg-gray-50 dark:hover:bg-gray-700"
@@ -247,25 +249,33 @@ const Navbar = () => {
                   </div>
                 </Link>
               ))}
-              {/* Shop Submenu in Mobile */}
-              <div className="space-y-2">
-                <div className="px-3 sm:px-4 py-2 text-left text-base sm:text-lg font-semibold text-gray-700 dark:text-gray-300">
-                  Shop
-                </div>
-                <Link to="/shop/artworks" onClick={() => handleNavItemClick("/shop/artworks")}>
-                  <div className="px-5 sm:px-6 py-2 text-left text-sm sm:text-base text-gray-600 dark:text-gray-400 hover:text-purple-600 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-all">
-                    Student Artworks
+              {/* Shop Dropdown in Mobile */}
+              <div className="space-y-1">
+                <button
+                  onClick={() => setShowMobileShopDropdown(!showMobileShopDropdown)}
+                  className="w-full px-3 sm:px-4 py-2 sm:py-2.5 text-left text-sm sm:text-base font-medium rounded-lg transition-all text-gray-700 dark:text-gray-300 hover:text-purple-600 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center justify-between"
+                >
+                  <span>Shop</span>
+                  <FaChevronDown className={`text-xs transition-transform ${showMobileShopDropdown ? 'rotate-180' : ''}`} />
+                </button>
+                {showMobileShopDropdown && (
+                  <div className="space-y-1 pl-2">
+                    <Link to="/shop/artworks" onClick={() => handleNavItemClick("/shop/artworks")}>
+                      <div className="px-5 sm:px-6 py-1.5 text-left text-xs sm:text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-all">
+                        Student Artworks
+                      </div>
+                    </Link>
+                    <Link to="/shop/materials" onClick={() => handleNavItemClick("/shop/materials")}>
+                      <div className="px-5 sm:px-6 py-1.5 text-left text-xs sm:text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-all">
+                        Art Materials
+                      </div>
+                    </Link>
                   </div>
-                </Link>
-                <Link to="/shop/materials" onClick={() => handleNavItemClick("/shop/materials")}>
-                  <div className="px-5 sm:px-6 py-2 text-left text-sm sm:text-base text-gray-600 dark:text-gray-400 hover:text-purple-600 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-all">
-                    Art Materials
-                  </div>
-                </Link>
+                )}
               </div>
               {/* Cart in Mobile */}
               <Link to="/cart" onClick={handleNavClick}>
-                <div className="px-3 sm:px-4 py-2.5 sm:py-3 text-left text-base sm:text-lg font-medium rounded-lg transition-all text-gray-700 dark:text-gray-300 hover:text-purple-600 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center justify-between">
+                <div className="px-3 sm:px-4 py-2 sm:py-2.5 text-left text-sm sm:text-base font-medium rounded-lg transition-all text-gray-700 dark:text-gray-300 hover:text-purple-600 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center justify-between">
                   <span>Shopping Cart</span>
                   {cartCount > 0 && (
                     <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
@@ -276,26 +286,38 @@ const Navbar = () => {
               </Link>
               <button 
                 onClick={() => { setShowEnrollForm(true); setIsOpen(false); }}
-                className="w-full mt-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-linear-to-r from-purple-600 to-pink-600 text-white rounded-xl font-bold text-sm sm:text-base shadow-lg hover:shadow-xl transition-all"
+                className="w-full mt-1 px-4 sm:px-6 py-2 sm:py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-bold text-sm shadow-lg hover:shadow-xl transition-all"
               >
                 Enroll Now
               </button>
-              <div className="w-full mt-2 space-y-2">
-                <button 
-                  onClick={() => { setShowAdminLogin(true); setIsOpen(false); }}
-                  className="w-full px-4 sm:px-6 py-2.5 sm:py-3 bg-purple-600 text-white rounded-xl font-bold text-sm sm:text-base shadow-lg hover:shadow-xl transition-all flex items-center justify-center space-x-2"
+              {/* Login Dropdown for mobile */}
+              <div className="space-y-1 mt-1">
+                <button
+                  onClick={() => setShowMobileLoginDropdown(!showMobileLoginDropdown)}
+                  className="w-full px-4 sm:px-6 py-2 sm:py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-bold text-sm shadow-lg hover:shadow-xl transition-all flex items-center justify-center space-x-2"
                 >
-                  <FaUserShield />
-                  <span>Admin Login</span>
+                  <span>Login</span>
+                  <FaChevronDown className={`text-xs transition-transform ${showMobileLoginDropdown ? 'rotate-180' : ''}`} />
                 </button>
-                
-                <button 
-                  onClick={() => { setShowStudentLogin(true); setIsOpen(false); }}
-                  className="w-full px-4 sm:px-6 py-2.5 sm:py-3 bg-blue-600 text-white rounded-xl font-bold text-sm sm:text-base shadow-lg hover:shadow-xl transition-all flex items-center justify-center space-x-2"
-                >
-                  <FaUser />
-                  <span>Student Login</span>
-                </button>
+                {showMobileLoginDropdown && (
+                  <div className="space-y-2">
+                    <button 
+                      onClick={() => { setShowAdminLogin(true); setIsOpen(false); setShowMobileLoginDropdown(false); }}
+                      className="w-full px-4 py-2.5 bg-purple-600 text-white rounded-xl font-bold text-xs shadow-lg hover:shadow-xl transition-all flex items-center justify-center space-x-2"
+                    >
+                      <FaUserShield size={14} />
+                      <span>Admin Login</span>
+                    </button>
+                    
+                    <button 
+                      onClick={() => { setShowStudentLogin(true); setIsOpen(false); setShowMobileLoginDropdown(false); }}
+                      className="w-full px-4 py-2.5 bg-blue-600 text-white rounded-xl font-bold text-xs shadow-lg hover:shadow-xl transition-all flex items-center justify-center space-x-2"
+                    >
+                      <FaUser size={14} />
+                      <span>Student Login</span>
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
