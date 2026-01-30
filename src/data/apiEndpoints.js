@@ -53,6 +53,7 @@ export const API_ENDPOINTS = {
     INCREMENT_VIEWS: (id) => `${API_PREFIX}/art-works/${id}/views`,
     INCREMENT_LIKES: (id) => `${API_PREFIX}/art-works/${id}/likes`,
   },
+    GET_ALL: `${API_PREFIX}/art-exhibitions-categories`,
 
   // Art Works Categories
   ART_WORKS_CATEGORIES: {
@@ -113,7 +114,6 @@ export const API_ENDPOINTS = {
 
   // Art Exhibitions Categories
   ART_EXHIBITIONS_CATEGORIES: {
-    GET_ALL: `${API_PREFIX}/art-exhibitions-categories`,
     CREATE: `${API_PREFIX}/art-exhibitions-categories`,
     GET_ROOT: `${API_PREFIX}/art-exhibitions-categories/root`,
     GET_BY_ID: (id) => `${API_PREFIX}/art-exhibitions-categories/${id}`,

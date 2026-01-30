@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Real API - Exhibitions</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: white;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 2.5em;
+        }
+        
+        .button-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        
+        button {
+            padding: 15px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        button:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button.success {
+            background: #10b981;
+        }
+        
+        button.error {
+            background: #ef4444;
+        }
+        
+        button.warning {
+            background: #f59e0b;
+        }
+        
+        .output-section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .output-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 15px;
+        }
+        
+        .output-header h2 {
+            color: #667eea;
+            font-size: 1.3em;
+        }
+        
+        .status-badge {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+        
+        .status-loading {
+            background: #dbeafe;
+            color: #0284c7;
+        }
+        
+        .status-success {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        .status-error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        pre {
+            background: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 15px;
+            overflow-x: auto;
+            font-size: 0.9em;
+            line-height: 1.5;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .info-card {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        
+        .info-label {
+            color: #667eea;
+            font-weight: 600;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+        
+        .info-value {
+            color: #111827;
+            font-size: 1.1em;
+            word-break: break-all;
+        }
+        
+        .error-box {
+            background: #fee2e2;
+            border: 2px solid #fca5a5;
+            border-radius: 8px;
+            padding: 15px;
+            color: #991b1b;
+            margin-top: 10px;
+        }
+        
+        .success-box {
+            background: #dcfce7;
+            border: 2px solid #86efac;
+            border-radius: 8px;
+            padding: 15px;
+            color: #166534;
+            margin-top: 10px;
+        }
+        
+        .warning-box {
+            background: #fef3c7;
+            border: 2px solid #fde68a;
+            border-radius: 8px;
+            padding: 15px;
+            color: #92400e;
+            margin-top: 10px;
+        }
+        
+        .data-list {
+            list-style: none;
+        }
+        
+        .data-list li {
+            padding: 10px;
+            border-bottom: 1px solid #e5e7eb;
+            background: white;
+        }
+        
+        .data-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .data-list strong {
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 Test Real API - Exhibitions</h1>
+        
+        <div class="button-group">
+            <button onclick="testGetAllExhibitions()">Test GET All Exhibitions</button>
+            <button onclick="testWithoutAuth()">Test WITHOUT Auth Token</button>
+            <button onclick="testWithToken()">Test WITH Auth Token</button>
+            <button onclick="testDifferentEndpoint()">Test Response Format</button>
+            <button onclick="clearOutput()" class="warning">Clear Output</button>
+        </div>
+        
+        <!-- Main Response Output -->
+        <div class="output-section">
+            <div class="output-header">
+                <h2>📊 API Response</h2>
+                <span class="status-badge status-loading" id="mainStatus">Ready</span>
+            </div>
+            <div id="mainOutput">
+                <p style="color: #999; text-align: center;">Click a button above to test the API...</p>
+            </div>
+        </div>
+        
+        <!-- Response Details -->
+        <div class="output-section">
+            <div class="output-header">
+                <h2>🔍 Response Details</h2>
+            </div>
+            <div class="info-grid">
+                <div class="info-card">
+                    <div class="info-label">Status Code</div>
+                    <div class="info-value" id="statusCode">-</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Response Type</div>
+                    <div class="info-value" id="responseType">-</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Data Count</div>
+                    <div class="info-value" id="dataCount">-</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Response Time</div>
+                    <div class="info-value" id="responseTime">-</div>
+                </div>
+            </div>
+            <div id="detailsOutput"></div>
+        </div>
+        
+        <!-- Data Preview -->
+        <div class="output-section">
+            <div class="output-header">
+                <h2>📋 Data Preview</h2>
+            </div>
+            <div id="dataPreview">
+                <p style="color: #999; text-align: center;">No data to display yet...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://93.127.194.118:8095';
+        const API_PREFIX = '/api/v1';
+        
+        function updateUI(mainOutput, statusCode, responseType, dataCount, responseTime, detailsOutput = '') {
+            document.getElementById('mainOutput').innerHTML = mainOutput;
+            document.getElementById('statusCode').textContent = statusCode || '-';
+            document.getElementById('responseType').textContent = responseType || '-';
+            document.getElementById('dataCount').textContent = dataCount || '-';
+            document.getElementById('responseTime').textContent = responseTime || '-';
+            if (detailsOutput) {
+                document.getElementById('detailsOutput').innerHTML = detailsOutput;
+            }
+        }
+        
+        function setStatus(status, type = 'loading') {
+            const badge = document.getElementById('mainStatus');
+            badge.textContent = status;
+            badge.className = `status-badge status-${type}`;
+        }
+        
+        async function testGetAllExhibitions() {
+            setStatus('Testing...', 'loading');
+            const startTime = performance.now();
+            
+            try {
+                const url = `${API_BASE_URL}${API_PREFIX}/art-exhibitions`;
+                
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const endTime = performance.now();
+                const responseTime = (endTime - startTime).toFixed(2);
+                
+                const data = await response.json();
+                
+                console.log('🎨 Raw API Response:', data);
+                
+                let responseType = typeof data;
+                let dataCount = 0;
+                let extractedData = null;
+                
+                // Try to extract data
+                if (Array.isArray(data)) {
+                    extractedData = data;
+                    dataCount = data.length;
+                    responseType = 'Array';
+                } else if (data.data && Array.isArray(data.data)) {
+                    extractedData = data.data;
+                    dataCount = data.data.length;
+                    responseType = 'Object with .data array';
+                } else if (data.exhibitions && Array.isArray(data.exhibitions)) {
+                    extractedData = data.exhibitions;
+                    dataCount = data.exhibitions.length;
+                    responseType = 'Object with .exhibitions array';
+                } else if (data.result && Array.isArray(data.result)) {
+                    extractedData = data.result;
+                    dataCount = data.result.length;
+                    responseType = 'Object with .result array';
+                } else if (data.content && Array.isArray(data.content)) {
+                    extractedData = data.content;
+                    dataCount = data.content.length;
+                    responseType = 'Object with .content array';
+                }
+                
+                const mainOutput = `
+                    <div class="success-box">
+                        <strong>✅ API RESPONSE SUCCESSFUL!</strong><br>
+                        Status: ${response.status} ${response.statusText}<br>
+                        Response Time: ${responseTime}ms<br>
+                        <br>
+                        <strong>Data Found:</strong> ${dataCount} items<br>
+                        <strong>Response Format:</strong> ${responseType}<br>
+                        ${extractedData ? `<strong>First Item ID:</strong> ${extractedData[0]?.id || 'N/A'}` : ''}
+                    </div>
+                    <br>
+                    <strong>Full Response:</strong>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+                
+                const detailsOutput = extractedData ? `
+                    <div class="success-box">
+                        <strong>✅ Data Successfully Extracted!</strong><br>
+                        Found ${dataCount} exhibitions in the response
+                    </div>
+                ` : `
+                    <div class="warning-box">
+                        <strong>⚠️ Could not extract data array</strong><br>
+                        Response structure doesn't match expected formats
+                    </div>
+                `;
+                
+                updateUI(mainOutput, response.status, responseType, dataCount, responseTime + 'ms', detailsOutput);
+                setStatus('Success!', 'success');
+                
+                // Show data preview
+                if (extractedData && extractedData.length > 0) {
+                    showDataPreview(extractedData);
+                }
+                
+            } catch (error) {
+                console.error('❌ Error:', error);
+                const mainOutput = `
+                    <div class="error-box">
+                        <strong>❌ API REQUEST FAILED!</strong><br>
+                        Error: ${error.message}<br>
+                        <br>
+                        <strong>Debugging Tips:</strong>
+                        <ul style="margin-left: 20px; margin-top: 10px;">
+                            <li>Check if the API server is running at ${API_BASE_URL}</li>
+                            <li>Verify the endpoint: ${API_BASE_URL}${API_PREFIX}/art-exhibitions</li>
+                            <li>Check CORS settings on the backend</li>
+                            <li>Open browser console (F12) for detailed error logs</li>
+                        </ul>
+                    </div>
+                `;
+                updateUI(mainOutput, 'Error', 'Error', '0', '0ms');
+                setStatus('Failed!', 'error');
+            }
+        }
+        
+        async function testWithoutAuth() {
+            setStatus('Testing (no auth)...', 'loading');
+            const startTime = performance.now();
+            
+            try {
+                const url = `${API_BASE_URL}${API_PREFIX}/art-exhibitions`;
+                
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                        // NO Authorization header
+                    }
+                });
+                
+                const endTime = performance.now();
+                const responseTime = (endTime - startTime).toFixed(2);
+                const data = await response.json();
+                
+                const mainOutput = `
+                    <div class="success-box">
+                        <strong>✅ API Response (Without Auth)</strong><br>
+                        Status: ${response.status}<br>
+                        Time: ${responseTime}ms<br>
+                        <br>
+                        This shows the API ${response.ok ? 'DOES NOT REQUIRE' : 'REQUIRES'} authentication
+                    </div>
+                    <br>
+                    <strong>Response:</strong>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+                
+                updateUI(mainOutput, response.status, 'Test Result', '0', responseTime + 'ms');
+                setStatus('Success!', 'success');
+                
+            } catch (error) {
+                updateUI(`<div class="error-box"><strong>❌ Error:</strong> ${error.message}</div>`, 'Error', '-', '0', '-');
+                setStatus('Failed!', 'error');
+            }
+        }
+        
+        async function testWithToken() {
+            setStatus('Testing (with token)...', 'loading');
+            const token = localStorage.getItem('token') || 'NO_TOKEN_FOUND';
+            
+            const mainOutput = `
+                <div class="warning-box">
+                    <strong>⚠️ Token Status:</strong><br>
+                    ${localStorage.getItem('token') ? '✅ Token found in localStorage' : '❌ No token in localStorage'}<br>
+                    <br>
+                    <strong>Token Value:</strong>
+                    <pre>${token}</pre>
+                </div>
+            `;
+            
+            updateUI(mainOutput, '-', 'Info', '-', '-');
+            setStatus('Token Info', 'warning');
+        }
+        
+        async function testDifferentEndpoint() {
+            setStatus('Testing endpoint...', 'loading');
+            
+            const mainOutput = `
+                <div class="info-card" style="background: white; border-left: 4px solid #667eea;">
+                    <strong>Configured Endpoint:</strong><br>
+                    <code>${API_BASE_URL}${API_PREFIX}/art-exhibitions</code><br><br>
+                    
+                    <strong>Alternative endpoints to try:</strong><br>
+                    <ul style="margin-left: 20px; margin-top: 10px;">
+                        <li>${API_BASE_URL}${API_PREFIX}/exhibitions</li>
+                        <li>${API_BASE_URL}${API_PREFIX}/art-exhibition</li>
+                        <li>${API_BASE_URL}/api/v1/art-exhibitions</li>
+                    </ul><br>
+                    
+                    <strong>Root API response:</strong><br>
+                    Testing ${API_BASE_URL}/api/v1...
+                </div>
+            `;
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}${API_PREFIX}/`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                const data = await response.json();
+                
+                const detailsOutput = `
+                    <strong>Root API Response:</strong>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+                
+                updateUI(mainOutput, response.status, 'Endpoint Check', '0', '-', detailsOutput);
+                setStatus('Endpoint verified', 'success');
+            } catch (error) {
+                updateUI(mainOutput, 'Error', 'Endpoint Check', '0', '-', 
+                    `<div class="error-box">Root endpoint error: ${error.message}</div>`);
+                setStatus('Endpoint error', 'error');
+            }
+        }
+        
+        function showDataPreview(data) {
+            if (!data || data.length === 0) {
+                document.getElementById('dataPreview').innerHTML = '<p style="color: #999;">No data to display</p>';
+                return;
+            }
+            
+            let html = '<ol class="data-list">';
+            data.slice(0, 3).forEach((item, index) => {
+                html += `
+                    <li>
+                        <strong>#${index + 1}</strong> - ${item.title || item.name || item.id || 'Unknown'}<br>
+                        <small style="color: #666;">
+                            ${JSON.stringify(item).substring(0, 150)}...
+                        </small>
+                    </li>
+                `;
+            });
+            if (data.length > 3) {
+                html += `<li><strong>... and ${data.length - 3} more items</strong></li>`;
+            }
+            html += '</ol>';
+            
+            document.getElementById('dataPreview').innerHTML = html;
+        }
+        
+        function clearOutput() {
+            document.getElementById('mainOutput').innerHTML = '<p style="color: #999; text-align: center;">Output cleared</p>';
+            document.getElementById('detailsOutput').innerHTML = '';
+            document.getElementById('dataPreview').innerHTML = '<p style="color: #999; text-align: center;">No data to display yet...</p>';
+            document.getElementById('statusCode').textContent = '-';
+            document.getElementById('responseType').textContent = '-';
+            document.getElementById('dataCount').textContent = '-';
+            document.getElementById('responseTime').textContent = '-';
+            document.getElementById('mainStatus').textContent = 'Ready';
+            document.getElementById('mainStatus').className = 'status-badge status-loading';
+        }
+    </script>
+</body>
+</html>

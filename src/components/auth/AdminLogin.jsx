@@ -62,7 +62,6 @@ const AdminLogin = ({ isOpen, onClose }) => {
             </button>
           </div>
         </div>
-
         {/* Form */}
         <div className="p-4 sm:p-6 md:p-8">
           <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4 md:space-y-5" autoComplete="off">
@@ -72,7 +71,6 @@ const AdminLogin = ({ isOpen, onClose }) => {
                 ✕ {error}
               </div>
             )}
-
             {/* Email */}
             <div className="space-y-1.5 sm:space-y-2">
               <label className="block text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300">

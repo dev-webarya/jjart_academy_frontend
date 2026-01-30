@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { FaCalendar, FaMapMarkerAlt, FaClock, FaFilter, FaArrowRight, FaTimes } from "react-icons/fa";
 import EnrollmentForm from "../components/EnrollmentForm";
+import ExhibitionsService from "../services/exhibitionsService";
+import ExhibitionsCategoryService from "../services/exhibitionsCategoryService";
 
 const ExhibitionsPage = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -8,9 +10,20 @@ const ExhibitionsPage = () => {
   const [filteredExhibitions, setFilteredExhibitions] = useState([]);
   const [selectedExhibition, setSelectedExhibition] = useState(null);
   const [showEnrollForm, setShowEnrollForm] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [categories, setCategories] = useState([
+    { id: "all", name: "All Exhibitions", icon: "🎨" },
+    { id: "painting", name: "Painting", icon: "🖌️" },
+    { id: "drawing", name: "Drawing", icon: "✏️" },
+    { id: "watercolor", name: "Watercolor", icon: "💧" },
+    { id: "digital", name: "Digital Art", icon: "💻" },
+    { id: "sculpture", name: "Sculpture", icon: "🗿" },
+    { id: "mixed", name: "Mixed Media", icon: "✨" }
+  ]);
 
-  // Mock exhibition data
-  const exhibitionData = [
+  // Mock exhibition data as fallback
+  const exhibitionDataFallback = [
     {
       id: 1,
       title: "Spring Colors 2025",
@@ -96,30 +109,74 @@ const ExhibitionsPage = () => {
       status: "upcoming"
     }
   ];
-
+  // Fetch exhibitions from API
   useEffect(() => {
-    setExhibitions(exhibitionData);
+    const fetchExhibitions = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        console.log('🔄 Fetching exhibitions from API...');
+        const result = await ExhibitionsService.getAllExhibitions();
+        console.log('📋 Service result:', result);
+        console.log('📋 result.success:', result.success);
+        console.log('📋 result.data type:', typeof result.data);
+        console.log('📋 result.data is array:', Array.isArray(result.data));
+        console.log('📋 result.data length:', result.data?.length);
+        
+        // Check if we have valid data
+        if (result && result.success && Array.isArray(result.data) && result.data.length > 0) {
+          console.log('✅ SUCCESS - Real API data loaded!');
+          console.log(`✅ Total exhibitions from API: ${result.data.length}`);
+          console.log('✅ First exhibition:', result.data[0]);
+          setExhibitions(result.data);
+        } else if (result && Array.isArray(result.data) && result.data.length > 0) {
+          // Data is valid even if success flag might be false
+          console.log('✅ Real API data loaded (alternative format)');
+          console.log(`✅ Total exhibitions from API: ${result.data.length}`);
+          setExhibitions(result.data);
+        } else {
+          // Use fallback mock data if API returns no results
+          console.warn('⚠️ API returned no data');
+          console.warn('📊 Using fallback mock data instead');
+          console.log(`📊 Total fallback exhibitions: ${exhibitionDataFallback.length}`);
+          setExhibitions(exhibitionDataFallback);
+        }
+      } catch (err) {
+        console.error('❌ ERROR fetching exhibitions:', err);
+        console.error('Error details:', err.message, err.stack);
+        setError(err.message);
+        console.warn('⚠️ API failed - Using fallback mock data as backup');
+        console.log(`📊 Total fallback exhibitions: ${exhibitionDataFallback.length}`);
+        // Use fallback mock data on error
+        setExhibitions(exhibitionDataFallback);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchExhibitions();
   }, []);
 
+  // Transform API data to match the expected format
   useEffect(() => {
+    const transformedExhibitions = exhibitions.map(ex => ({
+      ...ex,
+      featured: ex.featured !== undefined ? ex.featured : false,
+      status: ex.status || 'upcoming',
+      artists: ex.artists || 0,
+      artworks: ex.artworks || 0,
+    }));
+    
     if (selectedCategory === "all") {
-      setFilteredExhibitions(exhibitions);
+      setFilteredExhibitions(transformedExhibitions);
     } else {
       setFilteredExhibitions(
-        exhibitions.filter((ex) => ex.category === selectedCategory)
+        transformedExhibitions.filter(
+          (ex) => ex.category === selectedCategory
+        )
       );
     }
   }, [selectedCategory, exhibitions]);
-
-  const categories = [
-    { id: "all", name: "All Exhibitions", icon: "🎨" },
-    { id: "painting", name: "Painting", icon: "🖌️" },
-    { id: "drawing", name: "Drawing", icon: "✏️" },
-    { id: "watercolor", name: "Watercolor", icon: "💧" },
-    { id: "digital", name: "Digital Art", icon: "💻" },
-    { id: "sculpture", name: "Sculpture", icon: "🗿" },
-    { id: "mixed", name: "Mixed Media", icon: "✨" }
-  ];
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -149,7 +206,31 @@ const ExhibitionsPage = () => {
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors duration-300">
+      {/* Loading State */}
+      {loading && (
+        <div className="flex items-center justify-center h-screen">
+          <div className="text-center space-y-4">
+            <div className="inline-block">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-600"></div>
+            </div>
+            <p className="text-gray-600 dark:text-gray-400">Loading exhibitions...</p>
+          </div>
+        </div>
+      )}
+
+      {/* Error State */}
+      {error && (
+        <div className="bg-red-100 dark:bg-red-900/30 border-l-4 border-red-500 p-4 m-4">
+          <p className="text-red-700 dark:text-red-300">
+            Error loading exhibitions: {error}
+          </p>
+          <p className="text-sm text-red-600 dark:text-red-400 mt-2">
+            Showing fallback data. Please try refreshing the page.
+          </p>
+        </div>
+      )}
       {/* Hero Section */}
+      {!loading && (
       <section className="relative h-[70vh] flex items-center justify-center overflow-hidden pt-20">
         <div className="absolute inset-0">
           <img
@@ -169,6 +250,7 @@ const ExhibitionsPage = () => {
           </p>
         </div>
       </section>
+      )}
 
       {/* Filter Section */}
       <section className="py-12 bg-linear-to-b from-white dark:from-gray-900 to-gray-50 dark:to-gray-800">

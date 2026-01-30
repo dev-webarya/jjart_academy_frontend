@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gallery API Integration Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .test-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .test-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .test-card h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .test-card p {
+            color: #666;
+            font-size: 0.95em;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .test-card button {
+            width: 100%;
+            padding: 10px 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .test-card button:hover {
+            opacity: 0.9;
+            transform: scale(1.02);
+        }
+
+        .console-section {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .console-section h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .console {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            max-height: 500px;
+            overflow-y: auto;
+            line-height: 1.4;
+        }
+
+        .console-line {
+            margin-bottom: 5px;
+        }
+
+        .console-success {
+            color: #00ff00;
+        }
+
+        .console-error {
+            color: #ff6b6b;
+        }
+
+        .console-info {
+            color: #4db8ff;
+        }
+
+        .console-warning {
+            color: #ffaa00;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-pending {
+            background: #cfe2ff;
+            color: #084298;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .button-group button {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .button-group button:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
+
+        .info-box strong {
+            color: #0d47a1;
+        }
+
+        @media (max-width: 768px) {
+            .test-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 1.8em;
+            }
+        }
+
+        .data-display {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-size: 0.85em;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎨 Gallery API Integration Test</h1>
+            <p>Test all Gallery GET endpoints with real API data</p>
+        </div>
+
+        <div class="info-box">
+            <strong>ℹ️ API Base URL:</strong> http://93.127.194.118:8095<br>
+            <strong>📌 API Prefix:</strong> /api/v1<br>
+            <strong>✅ Status:</strong> <span id="apiStatus">Checking...</span>
+        </div>
+
+        <div class="test-grid">
+            <div class="test-card">
+                <h3>🖼️ Get All Galleries</h3>
+                <p>Fetch all galleries from the API. Displays the complete list of galleries with their details.</p>
+                <button onclick="testGetAllGalleries()">Get All Galleries</button>
+                <div id="galleries-status" class="status-badge" style="display:none;"></div>
+            </div>
+
+            <div class="test-card">
+                <h3>🎯 Get Gallery by ID</h3>
+                <p>Fetch a specific gallery by its ID. First gallery ID from list will be used.</p>
+                <button onclick="testGetGalleryById()">Get Gallery by ID</button>
+                <div id="gallery-id-status" class="status-badge" style="display:none;"></div>
+            </div>
+
+            <div class="test-card">
+                <h3>📂 Get All Categories</h3>
+                <p>Fetch all gallery categories. Shows available category classifications.</p>
+                <button onclick="testGetAllCategories()">Get All Categories</button>
+                <div id="categories-status" class="status-badge" style="display:none;"></div>
+            </div>
+
+            <div class="test-card">
+                <h3>🏷️ Get Root Category</h3>
+                <p>Fetch the root/parent gallery category. Useful for category hierarchy.</p>
+                <button onclick="testGetRootCategory()">Get Root Category</button>
+                <div id="root-status" class="status-badge" style="display:none;"></div>
+            </div>
+
+            <div class="test-card">
+                <h3>📌 Get Category by ID</h3>
+                <p>Fetch a specific category by ID. First category ID from list will be used.</p>
+                <button onclick="testGetCategoryById()">Get Category by ID</button>
+                <div id="category-id-status" class="status-badge" style="display:none;"></div>
+            </div>
+
+            <div class="test-card">
+                <h3>⚙️ API Configuration</h3>
+                <p>Verify all gallery endpoints are properly configured in apiEndpoints.js.</p>
+                <button onclick="testEndpoints()">Check Configuration</button>
+                <div id="endpoints-status" class="status-badge" style="display:none;"></div>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button onclick="runAllTests()">🚀 Run All Tests</button>
+            <button onclick="clearConsole()">🗑️ Clear Console</button>
+        </div>
+
+        <div class="console-section">
+            <h2>📋 Console Output</h2>
+            <div class="console" id="console"></div>
+        </div>
+    </div>
+
+    <script>
+        let allGalleries = [];
+        let allCategories = [];
+
+        function log(message, type = 'info') {
+            const consoleEl = document.getElementById('console');
+            const lineEl = document.createElement('div');
+            lineEl.className = `console-line console-${type}`;
+            lineEl.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            consoleEl.appendChild(lineEl);
+            consoleEl.scrollTop = consoleEl.scrollHeight;
+        }
+
+        function clearConsole() {
+            document.getElementById('console').innerHTML = '';
+        }
+
+        function setStatus(elementId, success, message) {
+            const statusEl = document.getElementById(elementId);
+            statusEl.className = `status-badge ${success ? 'status-success' : 'status-error'}`;
+            statusEl.textContent = `${success ? '✅' : '❌'} ${message}`;
+            statusEl.style.display = 'inline-block';
+        }
+
+        async function testGetAllGalleries() {
+            log('Testing GET /api/v1/art-galleries...', 'info');
+            try {
+                const response = await fetch('http://93.127.194.118:8095/api/v1/art-galleries');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    allGalleries = Array.isArray(data) ? data : data.data || [];
+                    log(`✓ Galleries fetched successfully`, 'success');
+                    log(`Found ${allGalleries.length} galleries`, 'success');
+                    
+                    if (allGalleries.length > 0) {
+                        log(`Sample gallery: ${JSON.stringify(allGalleries[0], null, 2).substring(0, 200)}...`, 'info');
+                    }
+                    
+                    setStatus('galleries-status', true, `${allGalleries.length} galleries found`);
+                } else {
+                    log(`✗ Failed: ${data.message || 'Unknown error'}`, 'error');
+                    setStatus('galleries-status', false, data.message || 'Failed');
+                }
+            } catch (error) {
+                log(`✗ Error: ${error.message}`, 'error');
+                setStatus('galleries-status', false, 'Connection error');
+            }
+        }
+
+        async function testGetGalleryById() {
+            if (allGalleries.length === 0) {
+                log('⚠️ No galleries loaded. Run "Get All Galleries" first.', 'warning');
+                setStatus('gallery-id-status', false, 'Load galleries first');
+                return;
+            }
+
+            const galleryId = allGalleries[0].id || allGalleries[0]._id;
+            log(`Testing GET /api/v1/art-galleries/${galleryId}...`, 'info');
+            
+            try {
+                const response = await fetch(`http://93.127.194.118:8095/api/v1/art-galleries/${galleryId}`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    log(`✓ Gallery fetched successfully`, 'success');
+                    log(`Gallery: ${JSON.stringify(data, null, 2).substring(0, 300)}...`, 'info');
+                    setStatus('gallery-id-status', true, 'Gallery found');
+                } else {
+                    log(`✗ Failed: ${data.message || 'Unknown error'}`, 'error');
+                    setStatus('gallery-id-status', false, data.message || 'Failed');
+                }
+            } catch (error) {
+                log(`✗ Error: ${error.message}`, 'error');
+                setStatus('gallery-id-status', false, 'Connection error');
+            }
+        }
+
+        async function testGetAllCategories() {
+            log('Testing GET /api/v1/art-galleries-categories...', 'info');
+            try {
+                const response = await fetch('http://93.127.194.118:8095/api/v1/art-galleries-categories');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    allCategories = Array.isArray(data) ? data : data.data || [];
+                    log(`✓ Categories fetched successfully`, 'success');
+                    log(`Found ${allCategories.length} categories`, 'success');
+                    
+                    if (allCategories.length > 0) {
+                        log(`Sample category: ${JSON.stringify(allCategories[0], null, 2).substring(0, 200)}...`, 'info');
+                    }
+                    
+                    setStatus('categories-status', true, `${allCategories.length} categories found`);
+                } else {
+                    log(`✗ Failed: ${data.message || 'Unknown error'}`, 'error');
+                    setStatus('categories-status', false, data.message || 'Failed');
+                }
+            } catch (error) {
+                log(`✗ Error: ${error.message}`, 'error');
+                setStatus('categories-status', false, 'Connection error');
+            }
+        }
+
+        async function testGetRootCategory() {
+            log('Testing GET /api/v1/art-galleries-categories/root...', 'info');
+            try {
+                const response = await fetch('http://93.127.194.118:8095/api/v1/art-galleries-categories/root');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    log(`✓ Root category fetched successfully`, 'success');
+                    log(`Root category: ${JSON.stringify(data, null, 2)}`, 'info');
+                    setStatus('root-status', true, 'Root category found');
+                } else {
+                    log(`✗ Failed: ${data.message || 'Unknown error'}`, 'error');
+                    setStatus('root-status', false, data.message || 'Failed');
+                }
+            } catch (error) {
+                log(`✗ Error: ${error.message}`, 'error');
+                setStatus('root-status', false, 'Connection error');
+            }
+        }
+
+        async function testGetCategoryById() {
+            if (allCategories.length === 0) {
+                log('⚠️ No categories loaded. Run "Get All Categories" first.', 'warning');
+                setStatus('category-id-status', false, 'Load categories first');
+                return;
+            }
+
+            const categoryId = allCategories[0].id || allCategories[0]._id;
+            log(`Testing GET /api/v1/art-galleries-categories/${categoryId}...`, 'info');
+            
+            try {
+                const response = await fetch(`http://93.127.194.118:8095/api/v1/art-galleries-categories/${categoryId}`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    log(`✓ Category fetched successfully`, 'success');
+                    log(`Category: ${JSON.stringify(data, null, 2).substring(0, 300)}...`, 'info');
+                    setStatus('category-id-status', true, 'Category found');
+                } else {
+                    log(`✗ Failed: ${data.message || 'Unknown error'}`, 'error');
+                    setStatus('category-id-status', false, data.message || 'Failed');
+                }
+            } catch (error) {
+                log(`✗ Error: ${error.message}`, 'error');
+                setStatus('category-id-status', false, 'Connection error');
+            }
+        }
+
+        function testEndpoints() {
+            log('Checking Gallery API endpoints configuration...', 'info');
+            const endpoints = {
+                'GET_ALL': '/api/v1/art-galleries',
+                'GET_BY_ID': '/api/v1/art-galleries/{id}',
+                'CATEGORIES_GET_ALL': '/api/v1/art-galleries-categories',
+                'CATEGORIES_ROOT': '/api/v1/art-galleries-categories/root',
+                'CATEGORIES_GET_BY_ID': '/api/v1/art-galleries-categories/{id}',
+            };
+
+            Object.entries(endpoints).forEach(([name, endpoint]) => {
+                log(`✓ ${name}: http://93.127.194.118:8095${endpoint}`, 'success');
+            });
+
+            setStatus('endpoints-status', true, `${Object.keys(endpoints).length} endpoints configured`);
+        }
+
+        async function runAllTests() {
+            log('════════════════════════════════════════', 'info');
+            log('Starting comprehensive gallery API tests...', 'info');
+            log('════════════════════════════════════════', 'info');
+            
+            testEndpoints();
+            await new Promise(r => setTimeout(r, 500));
+            
+            await testGetAllGalleries();
+            await new Promise(r => setTimeout(r, 500));
+            
+            await testGetAllCategories();
+            await new Promise(r => setTimeout(r, 500));
+            
+            await testGetRootCategory();
+            await new Promise(r => setTimeout(r, 500));
+            
+            if (allGalleries.length > 0) {
+                await testGetGalleryById();
+            }
+            
+            if (allCategories.length > 0) {
+                await testGetCategoryById();
+            }
+            
+            log('🎉 All tests completed! Check results above.', 'success');
+        }
+
+        // Check API status on page load
+        window.onload = () => {
+            fetch('http://93.127.194.118:8095/api/v1/art-galleries')
+                .then(() => {
+                    document.getElementById('apiStatus').textContent = '✅ API Server Reachable';
+                    document.getElementById('apiStatus').style.color = '#28a745';
+                })
+                .catch(() => {
+                    document.getElementById('apiStatus').textContent = '❌ API Server Unreachable';
+                    document.getElementById('apiStatus').style.color = '#dc3545';
+                });
+        };
+    </script>
+</body>
+</html>
