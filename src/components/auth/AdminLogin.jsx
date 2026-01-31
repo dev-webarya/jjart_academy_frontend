@@ -19,11 +19,13 @@ const AdminLogin = ({ isOpen, onClose }) => {
     setError('');
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    setTimeout(() => {
-      const result = login(credentials);
+    setError('');
+
+    try {
+      const result = await login(credentials);
       setIsLoading(false);
       if (result.success) {
         onClose();
@@ -31,7 +33,10 @@ const AdminLogin = ({ isOpen, onClose }) => {
       } else {
         setError(result.message);
       }
-    }, 800);
+    } catch (err) {
+      setIsLoading(false);
+      setError('An unexpected error occurred. Please try again.');
+    }
   };
 
   if (!isOpen) return null;

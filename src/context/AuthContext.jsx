@@ -31,7 +31,7 @@ export const AuthProvider = ({ children }) => {
       return false;
     }
   });
-  
+
   const [user, setUser] = useState(() => {
     try {
       const storedAdmin = localStorage.getItem('adminUser');
@@ -49,7 +49,7 @@ export const AuthProvider = ({ children }) => {
     }
     return null;
   });
-  
+
   const [isStudent, setIsStudent] = useState(() => {
     try {
       return !!localStorage.getItem('studentAuth');
@@ -57,7 +57,7 @@ export const AuthProvider = ({ children }) => {
       return false;
     }
   });
-  
+
   // Set to false immediately since we initialize from localStorage
   const [isLoading, setIsLoading] = useState(false);
 
@@ -70,7 +70,7 @@ export const AuthProvider = ({ children }) => {
       try {
         const storedAdmin = localStorage.getItem('adminUser');
         const storedStudent = localStorage.getItem('studentAuth');
-        
+
         if (storedStudent) {
           const studentData = JSON.parse(storedStudent);
           if (validateAuthData(studentData)) {
@@ -82,7 +82,7 @@ export const AuthProvider = ({ children }) => {
             return;
           }
         }
-        
+
         if (storedAdmin) {
           const adminData = JSON.parse(storedAdmin);
           if (validateAuthData(adminData)) {
@@ -93,7 +93,7 @@ export const AuthProvider = ({ children }) => {
             return;
           }
         }
-        
+
         // Only clear state if no valid session exists
         console.log('ℹ️ No valid session found');
         setIsAuthenticated(false);
@@ -110,7 +110,7 @@ export const AuthProvider = ({ children }) => {
 
     // Small delay to ensure state is fully initialized
     const timer = setTimeout(restoreSession, 50);
-    
+
     // Listen for storage events from other tabs/windows
     const handleStorageChange = (e) => {
       if (e.key === 'studentAuth' || e.key === 'adminUser') {
@@ -118,37 +118,70 @@ export const AuthProvider = ({ children }) => {
         restoreSession();
       }
     };
-    
+
     window.addEventListener('storage', handleStorageChange);
-    
+
     return () => {
       clearTimeout(timer);
       window.removeEventListener('storage', handleStorageChange);
     };
   }, []);
 
-  const login = useCallback((credentials) => {
-    // Simple authentication (in production, this should be done with a backend)
+  const login = useCallback(async (credentials) => {
     const { email, password } = credentials;
-    
-    // Default admin credentials
-    if (email === 'admin@123gmail.com' && password === 'admin123') {
+
+    try {
+      // Call real backend API for authentication
+      const response = await fetch('http://93.127.194.118:8095/api/v1/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        // Handle API error responses
+        return {
+          success: false,
+          message: data.message || data.error || 'Invalid email or password'
+        };
+      }
+
+      // Store JWT token for API authorization
+      if (data.accessToken) {
+        localStorage.setItem('token', data.accessToken);
+        console.log('✅ JWT token stored successfully');
+      }
+
+      // Map user data from API response
       const userData = {
-        id: 1,
-        username: 'admin',
-        name: 'Admin User',
-        email: 'admin@123gmail.com',
-        role: 'administrator'
+        id: data.id || data.userId,
+        username: data.username || email.split('@')[0],
+        name: data.name || `${data.firstName || ''} ${data.lastName || ''}`.trim() || 'Admin User',
+        email: data.email || email,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        role: data.roles?.includes('ROLE_ADMIN') ? 'administrator' : 'user',
+        roles: data.roles || [],
+        accessToken: data.accessToken,
       };
-      
+
       setUser(userData);
       setIsAuthenticated(true);
       setIsStudent(false);
       localStorage.setItem('adminUser', JSON.stringify(userData));
+      console.log('✅ Admin logged in successfully:', userData.email);
       return { success: true };
+    } catch (error) {
+      console.error('❌ Login error:', error);
+      return {
+        success: false,
+        message: 'Network error. Please check your connection and try again.'
+      };
     }
-    
-    return { success: false, message: 'Invalid email or password' };
   }, []);
 
   const studentLogin = useCallback((studentData) => {
@@ -170,11 +203,11 @@ export const AuthProvider = ({ children }) => {
       };
 
       console.log('🔐 Logging in student:', validatedData.email);
-      
+
       // CRITICAL: Save to localStorage FIRST with multiple attempts
       try {
         localStorage.setItem('studentAuth', JSON.stringify(validatedData));
-        
+
         // Double-check it was saved
         const verification = localStorage.getItem('studentAuth');
         if (!verification) {
@@ -185,18 +218,18 @@ export const AuthProvider = ({ children }) => {
             throw new Error('Failed to save authentication data to localStorage');
           }
         }
-        
+
         console.log('✅ Student data saved to localStorage');
       } catch (storageError) {
         console.error('❌ localStorage save error:', storageError);
         throw new Error('Failed to save session. Please check browser storage settings.');
       }
-      
+
       // Then update state
       setUser(validatedData);
       setIsAuthenticated(true);
       setIsStudent(true);
-      
+
       console.log('✅ Student logged in successfully:', validatedData.email);
       return { success: true };
     } catch (error) {
@@ -217,6 +250,7 @@ export const AuthProvider = ({ children }) => {
     setIsStudent(false);
     localStorage.removeItem('adminUser');
     localStorage.removeItem('studentAuth');
+    localStorage.removeItem('token'); // Clear JWT token
     console.log('✅ User logged out successfully');
   }, []);
 

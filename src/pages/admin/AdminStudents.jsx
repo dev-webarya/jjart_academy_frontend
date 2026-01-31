@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
-import { 
+import {
   FaUserPlus, FaEdit, FaTrash, FaSearch, FaDownload, FaFilter,
   FaUserGraduate, FaPhone, FaEnvelope, FaCalendar, FaSortAmountDown,
-  FaEye, FaTimes, FaWhatsapp, FaPaperPlane, FaComments, FaSync
+  FaEye, FaTimes, FaWhatsapp, FaPaperPlane, FaComments, FaSync,
+  FaSpinner
 } from 'react-icons/fa';
 import StudentManagementDetail from './StudentManagementDetail';
+import { BASE_URL, API_ENDPOINTS } from '../../data/apiEndpoints';
 
 const AdminStudents = () => {
   const [students, setStudents] = useState([]);
@@ -12,6 +14,7 @@ const AdminStudents = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterClass, setFilterClass] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [filterRole, setFilterRole] = useState('all');
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingStudent, setEditingStudent] = useState(null);
   const [selectedStudent, setSelectedStudent] = useState(null);
@@ -21,18 +24,20 @@ const AdminStudents = () => {
   const [messages, setMessages] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [totalElements, setTotalElements] = useState(0);
   const [formData, setFormData] = useState({
-    rollNumber: '',
-    name: '',
+    firstName: '',
+    lastName: '',
     email: '',
-    phone: '',
-    age: '',
-    parentName: '',
-    enrolledClass: '',
-    status: 'active',
-    joinDate: new Date().toISOString().split('T')[0],
-    address: '',
-    emergencyContact: ''
+    phoneNumber: '',
+    password: '',
+    studentAge: '',
+    parentGuardianName: '',
+    preferredSchedule: 'WEEKEND_MORNING',
+    additionalMessage: '',
+    roles: ['ROLE_CUSTOMER']
   });
 
   useEffect(() => {
@@ -42,158 +47,65 @@ const AdminStudents = () => {
 
   useEffect(() => {
     filterStudents();
-  }, [students, searchTerm, filterClass, filterStatus]);
+  }, [students, searchTerm, filterClass, filterStatus, filterRole]);
 
-  const loadStudents = () => {
-    const existingData = localStorage.getItem('students');
-    
-    // Check if existing data has students without roll numbers and add them
-    if (existingData && JSON.parse(existingData).length > 0) {
-      const data = JSON.parse(existingData);
-      const updatedData = data.map((student, index) => {
-        if (!student.rollNumber) {
-          // Auto-generate roll number if missing
-          return {
-            ...student,
-            rollNumber: student.enrolledClass === 'UKG' 
-              ? `25ukg${40 - index}` 
-              : `${100 + index}`
-          };
+  const loadStudents = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${BASE_URL}${API_ENDPOINTS.USERS.GET_ALL}?page=0&size=100`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token || ''}`
         }
-        return student;
       });
-      localStorage.setItem('students', JSON.stringify(updatedData));
-      setStudents(updatedData);
-      return;
-    }
-    
-    // Add dummy data if no data exists
-    if (!existingData || JSON.parse(existingData).length === 0) {
-      const dummyStudents = [
-        {
-          id: 1701234567890,
-          rollNumber: '101',
-          name: 'Student Demo',
-          email: 'student.demo@email.com',
-          phone: '9876543222',
-          age: '10',
-          parentName: 'Parent Demo',
-          enrolledClass: '8',
-          status: 'active',
-          joinDate: '2024-01-15',
-          address: '123 MG Road, Delhi',
-          emergencyContact: '+91 98765 43211'
-        },
-        {
-          id: 1701234567891,
-          rollNumber: '25ukg34',
-          name: 'Parrbhat',
-          email: 'parrbhat@email.com',
-          phone: '1234567890',
-          age: '5',
-          parentName: 'Parrbhat Parent',
-          enrolledClass: 'UKG',
-          status: 'active',
-          joinDate: '2024-02-20',
-          address: '456 Park Street, Mumbai',
-          emergencyContact: '+91 98765 43221'
-        },
-        {
-          id: 1701234567892,
-          rollNumber: '25ukg33',
-          name: 'Priyanshi',
-          email: 'priyanshi@email.com',
-          phone: '1234567890',
-          age: '5',
-          parentName: 'Priyanshi Parent',
-          enrolledClass: 'UKG',
-          status: 'active',
-          joinDate: '2024-03-10',
-          address: '789 Lake Road, Bangalore',
-          emergencyContact: '+91 98765 43231'
-        },
-        {
-          id: 1701234567893,
-          rollNumber: '25ukg32',
-          name: 'Manshi',
-          email: 'manshi@email.com',
-          phone: '1234567890',
-          age: '5',
-          parentName: 'Manshi Parent',
-          enrolledClass: 'UKG',
-          status: 'active',
-          joinDate: '2024-04-05',
-          address: '321 Gandhi Nagar, Pune',
-          emergencyContact: '+91 98765 43241'
-        },
-        {
-          id: 1701234567894,
-          rollNumber: '25ukg31',
-          name: 'Rishav',
-          email: 'rishav@email.com',
-          phone: '1234567890',
-          age: '5',
-          parentName: 'Rishav Parent',
-          enrolledClass: 'UKG',
-          status: 'active',
-          joinDate: '2024-05-12',
-          address: '555 Sector 12, Gurgaon',
-          emergencyContact: '+91 98765 43251'
-        },
-        {
-          id: 1701234567895,
-          rollNumber: '25ukg30',
-          name: 'Kunj Tripathi',
-          email: 'kunj@email.com',
-          phone: '1234567890',
-          age: '5',
-          parentName: 'Tripathi Parent',
-          enrolledClass: 'UKG',
-          status: 'active',
-          joinDate: '2024-06-18',
-          address: '888 Banjara Hills, Hyderabad',
-          emergencyContact: '+91 98765 43261'
-        },
-        {
-          id: 1701234567896,
-          rollNumber: '25ukg29',
-          name: 'Saloni',
-          email: 'saloni@email.com',
-          phone: '1234567890',
-          age: '5',
-          parentName: 'Saloni Parent',
-          enrolledClass: 'UKG',
-          status: 'active',
-          joinDate: '2024-07-22',
-          address: '999 Karol Bagh, Delhi',
-          emergencyContact: '+91 98765 43271'
-        },
-        {
-          id: 1701234567897,
-          rollNumber: '25ukg28',
-          name: 'Aarav Sharma',
-          email: 'aarav@email.com',
-          phone: '1234567890',
-          age: '5',
-          parentName: 'Sharma Parent',
-          enrolledClass: 'UKG',
-          status: 'active',
-          joinDate: '2024-08-30',
-          address: '111 Anna Nagar, Chennai',
-          emergencyContact: '+91 98765 43281'
-        }
-      ];
-      localStorage.setItem('students', JSON.stringify(dummyStudents));
-      setStudents(dummyStudents);
-    } else {
-      const data = JSON.parse(existingData);
-      setStudents(data);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      // Map API response to component's expected format
+      // Using actual fields from backend UserResponse
+      const mappedStudents = data.content
+        .map((user) => ({
+          id: user.id,
+          rollNumber: user.rollNo || 'N/A',
+          name: `${user.firstName} ${user.lastName}`,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+          phone: user.phoneNumber || 'N/A',
+          age: user.studentAge || 'N/A',
+          parentName: user.parentGuardianName || 'N/A',
+          preferredSchedule: user.preferredSchedule || 'N/A',
+          additionalMessage: user.additionalMessage || '',
+          status: user.enabled ? 'active' : 'inactive',
+          deleted: user.deleted,
+          joinDate: user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A',
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt,
+          roles: user.roles || []
+        }));
+
+      setStudents(mappedStudents);
+      setTotalElements(data.totalElements || mappedStudents.length);
+    } catch (err) {
+      console.error('Error fetching students:', err);
+      setError(err.message);
+      setStudents([]);
+    } finally {
+      setLoading(false);
     }
   };
 
   const loadMessages = () => {
     const existingMessages = localStorage.getItem('studentMessages');
-    
+
     if (!existingMessages || JSON.parse(existingMessages).length === 0) {
       const dummyMessages = [
         {
@@ -228,7 +140,7 @@ const AdminStudents = () => {
     let filtered = students;
 
     if (searchTerm) {
-      filtered = filtered.filter(s => 
+      filtered = filtered.filter(s =>
         s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         s.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
         s.phone.includes(searchTerm) ||
@@ -245,44 +157,83 @@ const AdminStudents = () => {
       filtered = filtered.filter(s => s.status === filterStatus);
     }
 
+    // Filter by role
+    if (filterRole !== 'all') {
+      filtered = filtered.filter(s => s.roles && s.roles.includes(filterRole));
+    }
+
     setFilteredStudents(filtered);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (editingStudent) {
-      const updated = students.map(s => 
-        s.id === editingStudent.id ? { ...formData, id: s.id } : s
-      );
-      setStudents(updated);
-      localStorage.setItem('students', JSON.stringify(updated));
-    } else {
-      const newStudent = {
-        id: Date.now(),
-        ...formData
-      };
-      const updated = [...students, newStudent];
-      setStudents(updated);
-      localStorage.setItem('students', JSON.stringify(updated));
-    }
+    setLoading(true);
+    const token = localStorage.getItem('token');
 
-    resetForm();
+    try {
+      // Create payload - remove read-only fields and handle password
+      const payload = { ...formData };
+
+      // Remove fields not needed for request
+      delete payload.id;
+      delete payload.rollNo;
+      delete payload.createdAt;
+      delete payload.updatedAt;
+
+      // Handle password - remove if empty (for updates)
+      if (!payload.password) {
+        delete payload.password;
+      }
+
+      if (editingStudent) {
+        // Update existing student
+        const response = await fetch(`${BASE_URL}${API_ENDPOINTS.USERS.GET_BY_ID(editingStudent.id)}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) throw new Error('Failed to update student');
+      } else {
+        // Create new student
+        const response = await fetch(`${BASE_URL}${API_ENDPOINTS.USERS.CREATE}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) throw new Error('Failed to create student');
+      }
+
+      // Reload students and close modal
+      await loadStudents();
+      resetForm();
+    } catch (err) {
+      console.error('Error saving student:', err);
+      alert(`Error saving student: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const resetForm = () => {
     setFormData({
-      rollNumber: '',
-      name: '',
+      firstName: '',
+      lastName: '',
       email: '',
-      phone: '',
-      age: '',
-      parentName: '',
-      enrolledClass: '',
-      status: 'active',
-      joinDate: new Date().toISOString().split('T')[0],
-      address: '',
-      emergencyContact: ''
+      phoneNumber: '',
+      password: '',
+      studentAge: '',
+      parentGuardianName: '',
+      preferredSchedule: 'WEEKEND_MORNING',
+      additionalMessage: '',
+      roles: ['ROLE_CUSTOMER']
     });
     setEditingStudent(null);
     setShowAddModal(false);
@@ -290,15 +241,40 @@ const AdminStudents = () => {
 
   const handleEdit = (student) => {
     setEditingStudent(student);
-    setFormData(student);
+    setFormData({
+      firstName: student.firstName,
+      lastName: student.lastName,
+      email: student.email,
+      phoneNumber: student.phone,
+      password: '', // Password not shown for edit
+      studentAge: student.age || '',
+      parentGuardianName: student.parentName || '',
+      preferredSchedule: student.preferredSchedule || 'WEEKEND_MORNING',
+      additionalMessage: student.additionalMessage || '',
+      roles: student.roles || ['ROLE_CUSTOMER']
+    });
     setShowAddModal(true);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (confirm('Are you sure you want to delete this student?')) {
-      const updated = students.filter(s => s.id !== id);
-      setStudents(updated);
-      localStorage.setItem('students', JSON.stringify(updated));
+      const token = localStorage.getItem('token');
+      try {
+        const response = await fetch(`${BASE_URL}${API_ENDPOINTS.USERS.DELETE(id)}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) throw new Error('Failed to delete student');
+
+        // Reload students
+        await loadStudents();
+      } catch (err) {
+        console.error('Error deleting student:', err);
+        alert(`Error deleting student: ${err.message}`);
+      }
     }
   };
 
@@ -309,10 +285,10 @@ const AdminStudents = () => {
 
   const sendViaWhatsApp = (student, customMessage = '') => {
     const message = customMessage || `Hello ${student.parentName},\n\nStudent Details:\n👤 Name: ${student.name}\n📧 Email: ${student.email}\n📱 Phone: ${student.phone}\n🎂 Age: ${student.age} years\n👨‍👩‍👦 Parent: ${student.parentName}\n📚 Class: ${student.enrolledClass}\n✅ Status: ${student.status}\n📅 Join Date: ${new Date(student.joinDate).toLocaleDateString('en-IN')}\n🏠 Address: ${student.address}\n🚨 Emergency: ${student.emergencyContact}\n\nBest regards,\nSchool Administration`;
-    
+
     const phoneNumber = student.phone.replace(/[^0-9]/g, '');
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
-    
+
     // Save message to history
     const newMessage = {
       id: Date.now(),
@@ -324,21 +300,21 @@ const AdminStudents = () => {
       sentAt: new Date().toISOString(),
       status: 'sent'
     };
-    
+
     const updatedMessages = [...messages, newMessage];
     setMessages(updatedMessages);
     localStorage.setItem('studentMessages', JSON.stringify(updatedMessages));
-    
+
     window.open(whatsappUrl, '_blank');
     setShowMessageModal(false);
   };
 
   const sendViaEmail = (student, customMessage = '') => {
-    const subject = `Student Details - ₹{student.name}`;
-    const body = customMessage || `Dear ₹{student.parentName},\n\nHere are the details for ₹{student.name}:\n\nStudent Name: ₹{student.name}\nEmail: ₹{student.email}\nPhone: ₹{student.phone}\nAge: ₹{student.age} years\nParent Name: ₹{student.parentName}\nEnrolled Class: ₹{student.enrolledClass}\nStatus: ₹{student.status}\nJoin Date: ₹{new Date(student.joinDate).toLocaleDateString('en-IN')}\nAddress: ₹{student.address}\nEmergency Contact: ₹{student.emergencyContact}\n\nBest regards,\nSchool Administration`;
-    
-    const mailtoUrl = `mailto:₹{student.email}?subject=₹{encodeURIComponent(subject)}&body=₹{encodeURIComponent(body)}`;
-    
+    const subject = `Student Details - ${student.name}`;
+    const body = customMessage || `Dear ${student.parentName},\n\nHere are the details for ${student.name}:\n\nStudent Name: ${student.name}\nEmail: ${student.email}\nPhone: ${student.phone}\nAge: ${student.age} years\nParent Name: ${student.parentName}\nEnrolled Class: ${student.enrolledClass}\nStatus: ${student.status}\nJoin Date: ${new Date(student.joinDate).toLocaleDateString('en-IN')}\nAddress: ${student.address}\nEmergency Contact: ${student.emergencyContact}\n\nBest regards,\nSchool Administration`;
+
+    const mailtoUrl = `mailto:${student.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
     // Save message to history
     const newMessage = {
       id: Date.now(),
@@ -350,11 +326,11 @@ const AdminStudents = () => {
       sentAt: new Date().toISOString(),
       status: 'sent'
     };
-    
+
     const updatedMessages = [...messages, newMessage];
     setMessages(updatedMessages);
     localStorage.setItem('studentMessages', JSON.stringify(updatedMessages));
-    
+
     window.location.href = mailtoUrl;
     setShowMessageModal(false);
   };
@@ -404,19 +380,32 @@ const AdminStudents = () => {
 
       {/* Filters and Search */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           {/* Search */}
           <div className="md:col-span-2">
             <div className="relative">
               <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg" />
               <input
                 type="text"
-                placeholder="Search students by name, roll number, or class..."
+                placeholder="Search by name, email, or phone..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-12 pr-4 py-3 rounded-xl border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
               />
             </div>
+          </div>
+
+          {/* Filter by Role */}
+          <div>
+            <select
+              value={filterRole}
+              onChange={(e) => setFilterRole(e.target.value)}
+              className="w-full px-4 py-3 rounded-xl border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+            >
+              <option value="all">All Roles</option>
+              <option value="ROLE_CUSTOMER">Customer</option>
+              <option value="ROLE_ADMIN">Admin</option>
+            </select>
           </div>
 
           {/* Filter by Class */}
@@ -455,141 +444,173 @@ const AdminStudents = () => {
         </div>
       </div>
 
+      {/* Error Message */}
+      {error && (
+        <div className="bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-400 px-6 py-4 rounded-xl mb-6 flex items-center gap-3">
+          <span className="font-medium">Error loading users:</span> {error}
+          <button
+            onClick={() => loadStudents()}
+            className="ml-auto px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-all"
+          >
+            Retry
+          </button>
+        </div>
+      )}
+
+      {/* Loading State */}
+      {loading && (
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-12 mb-6 flex flex-col items-center justify-center">
+          <FaSpinner className="text-purple-600 text-5xl animate-spin mb-4" />
+          <p className="text-gray-600 dark:text-gray-400 text-lg">Loading users...</p>
+        </div>
+      )}
+
       {/* Students Table */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50 dark:bg-gray-700">
-              <tr>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
-                  Roll Number
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
-                  Name
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
-                  Class
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
-                  Phone
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {currentStudents.length > 0 ? (
-                currentStudents.map((student) => (
-                  <tr
-                    key={student.id}
-                    className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                  >
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white font-medium">
-                      {student.rollNumber}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                      {student.name}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                      {student.enrolledClass}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                      {student.phone}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-3 py-1 text-xs font-bold rounded uppercase ${
-                        student.status === 'active'
-                          ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                          : student.status === 'inactive'
-                          ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
-                          : 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'
-                      }`}>
-                        {student.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => setSelectedStudent(student)}
-                          className="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded transition-colors flex items-center gap-1"
-                          title="View Details"
-                        >
-                          <FaEye />
-                        </button>
-                        <button
-                          onClick={() => handleEdit(student)}
-                          className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded transition-colors flex items-center gap-1"
-                          title="Edit Student"
-                        >
-                          <FaEdit />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(student.id)}
-                          className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded transition-colors flex items-center gap-1"
-                          title="Delete Student"
-                        >
-                          <FaTrash />
-                        </button>
-                      </div>
+      {!loading && (
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                    Roll No
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                    Name
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                    Age
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                    Parent/Guardian
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                    Phone
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                    Role
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                {currentStudents.length > 0 ? (
+                  currentStudents.map((student) => (
+                    <tr
+                      key={student.id}
+                      className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white font-medium" title={student.id}>
+                        {student.rollNumber}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                        <div>
+                          <div className="font-medium">{student.name}</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">{student.email}</div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                        {student.age !== 'N/A' ? `${student.age} yrs` : 'N/A'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                        {student.parentName}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                        {student.phone}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex flex-wrap gap-1">
+                          {student.roles && student.roles.map((role, idx) => (
+                            <span key={idx} className={`px-2 py-1 text-xs font-bold rounded ${role === 'ROLE_ADMIN'
+                              ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400'
+                              : 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                              }`}>
+                              {role.replace('ROLE_', '')}
+                            </span>
+                          ))}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => setSelectedStudent(student)}
+                            className="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded transition-colors flex items-center gap-1"
+                            title="View Details"
+                          >
+                            <FaEye />
+                          </button>
+                          <button
+                            onClick={() => handleEdit(student)}
+                            className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded transition-colors flex items-center gap-1"
+                            title="Edit Student"
+                          >
+                            <FaEdit />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(student.id)}
+                            className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded transition-colors flex items-center gap-1"
+                            title="Delete Student"
+                          >
+                            <FaTrash />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="7" className="px-6 py-12 text-center">
+                      <FaUserGraduate className="text-gray-400 text-6xl mx-auto mb-4" />
+                      <p className="text-gray-500 dark:text-gray-400 text-xl">
+                        No students found
+                      </p>
                     </td>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="6" className="px-6 py-12 text-center">
-                    <FaUserGraduate className="text-gray-400 text-6xl mx-auto mb-4" />
-                    <p className="text-gray-500 dark:text-gray-400 text-xl">
-                      No students found
-                    </p>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+                )}
+              </tbody>
+            </table>
+          </div>
 
-        {/* Pagination */}
-        {filteredStudents.length > 0 && (
-          <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 px-4">
-            <div className="text-sm text-gray-600 dark:text-gray-400">
-              Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredStudents.length)} of {filteredStudents.length} students
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => paginate(currentPage - 1)}
-                disabled={currentPage === 1}
-                className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-              >
-                Previous
-              </button>
-              {[...Array(totalPages)].map((_, index) => (
+          {/* Pagination */}
+          {filteredStudents.length > 0 && (
+            <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 px-4">
+              <div className="text-sm text-gray-600 dark:text-gray-400">
+                Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredStudents.length)} of {filteredStudents.length} students
+              </div>
+              <div className="flex items-center gap-2">
                 <button
-                  key={index + 1}
-                  onClick={() => paginate(index + 1)}
-                  className={`px-4 py-2 rounded-lg transition-all ${
-                    currentPage === index + 1
+                  onClick={() => paginate(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                >
+                  Previous
+                </button>
+                {[...Array(totalPages)].map((_, index) => (
+                  <button
+                    key={index + 1}
+                    onClick={() => paginate(index + 1)}
+                    className={`px-4 py-2 rounded-lg transition-all ${currentPage === index + 1
                       ? 'bg-purple-600 text-white'
                       : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-                  }`}
+                      }`}
+                  >
+                    {index + 1}
+                  </button>
+                ))}
+                <button
+                  onClick={() => paginate(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                 >
-                  {index + 1}
+                  Next
                 </button>
-              ))}
-              <button
-                onClick={() => paginate(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-              >
-                Next
-              </button>
+              </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
 
       {/* Add/Edit Modal */}
       {showAddModal && (
@@ -611,45 +632,29 @@ const AdminStudents = () => {
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                    Roll Number *
+                    First Name *
                   </label>
                   <input
                     type="text"
                     required
-                    value={formData.rollNumber}
-                    onChange={(e) => setFormData({...formData, rollNumber: e.target.value})}
+                    value={formData.firstName}
+                    onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                     className="w-full px-4 py-3 rounded-xl border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    placeholder="Enter roll number (e.g., 101, 25ukg34)"
+                    placeholder="First name"
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                    Student Name *
+                    Last Name *
                   </label>
                   <input
                     type="text"
                     required
-                    value={formData.name}
-                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    value={formData.lastName}
+                    onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
                     className="w-full px-4 py-3 rounded-xl border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    placeholder="Enter student's full name"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                    Age *
-                  </label>
-                  <input
-                    type="number"
-                    required
-                    min="4"
-                    max="18"
-                    value={formData.age}
-                    onChange={(e) => setFormData({...formData, age: e.target.value})}
-                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    placeholder="4-18 years"
+                    placeholder="Last name"
                   />
                 </div>
 
@@ -661,7 +666,7 @@ const AdminStudents = () => {
                     type="email"
                     required
                     value={formData.email}
-                    onChange={(e) => setFormData({...formData, email: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     className="w-full px-4 py-3 rounded-xl border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     placeholder="student@example.com"
                   />
@@ -669,89 +674,86 @@ const AdminStudents = () => {
 
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                    Phone *
+                    Phone
                   </label>
                   <input
                     type="tel"
-                    required
-                    value={formData.phone}
-                    onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                    value={formData.phoneNumber}
+                    onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
                     className="w-full px-4 py-3 rounded-xl border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     placeholder="+91 1234567890"
                   />
                 </div>
 
+                {!editingStudent && (
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                      Password *
+                    </label>
+                    <input
+                      type="password"
+                      required
+                      value={formData.password}
+                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                      className="w-full px-4 py-3 rounded-xl border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      placeholder="Enter password"
+                    />
+                  </div>
+                )}
+
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                    Parent/Guardian Name *
+                    Age
+                  </label>
+                  <input
+                    type="number"
+                    min="4"
+                    max="100"
+                    value={formData.studentAge}
+                    onChange={(e) => setFormData({ ...formData, studentAge: e.target.value })}
+                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    placeholder="Age"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                    Parent/Guardian Name
                   </label>
                   <input
                     type="text"
-                    required
-                    value={formData.parentName}
-                    onChange={(e) => setFormData({...formData, parentName: e.target.value})}
+                    value={formData.parentGuardianName}
+                    onChange={(e) => setFormData({ ...formData, parentGuardianName: e.target.value })}
                     className="w-full px-4 py-3 rounded-xl border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    placeholder="Parent's full name"
+                    placeholder="Parent's name"
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                    Emergency Contact *
-                  </label>
-                  <input
-                    type="tel"
-                    required
-                    value={formData.emergencyContact}
-                    onChange={(e) => setFormData({...formData, emergencyContact: e.target.value})}
-                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    placeholder="+91 1234567890"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                    Enrolled Class *
+                    Preferred Schedule
                   </label>
                   <select
-                    required
-                    value={formData.enrolledClass}
-                    onChange={(e) => setFormData({...formData, enrolledClass: e.target.value})}
+                    value={formData.preferredSchedule}
+                    onChange={(e) => setFormData({ ...formData, preferredSchedule: e.target.value })}
                     className="w-full px-4 py-3 rounded-xl border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   >
-                    <option value="">Select a class</option>
-                    {classes.map(cls => (
-                      <option key={cls} value={cls}>{cls}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                    Status *
-                  </label>
-                  <select
-                    required
-                    value={formData.status}
-                    onChange={(e) => setFormData({...formData, status: e.target.value})}
-                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  >
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                    <option value="graduated">Graduated</option>
+                    <option value="WEEKEND_MORNING">Weekend Morning</option>
+                    <option value="WEEKEND_AFTERNOON">Weekend Afternoon</option>
+                    <option value="WEEKDAY_EVENING">Weekday Evening</option>
                   </select>
                 </div>
 
                 <div className="md:col-span-2">
                   <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                    Address
+                    Additional Message
                   </label>
                   <textarea
-                    value={formData.address}
-                    onChange={(e) => setFormData({...formData, address: e.target.value})}
+                    value={formData.additionalMessage}
+                    onChange={(e) => setFormData({ ...formData, additionalMessage: e.target.value })}
                     rows="2"
                     className="w-full px-4 py-3 rounded-xl border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    placeholder="Enter full address"
+                    placeholder="Any notes or medical conditions..."
                   />
                 </div>
               </div>
