@@ -1,94 +1,284 @@
 import { useState, useEffect } from 'react';
-import { FaCalendarAlt, FaPlus, FaEdit, FaTrash, FaUsers, FaClock, FaMapMarkerAlt, FaTimes, FaCheck } from 'react-icons/fa';
-import { eventsData } from '../../data/eventsData';
+import { FaCalendarAlt, FaPlus, FaEdit, FaTrash, FaUsers, FaClock, FaMapMarkerAlt, FaTimes, FaCheck, FaSpinner, FaSync, FaExclamationTriangle, FaTicketAlt } from 'react-icons/fa';
+import { API_ENDPOINTS, BASE_URL } from '../../data/apiEndpoints';
 
 const AdminEvents = () => {
-  const [events, setEvents] = useState(eventsData);
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(6);
+  const [totalElements, setTotalElements] = useState(0);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    type: 'workshop',
-    date: '',
+    eventType: 'WORKSHOP',
+    eventDate: '',
     startTime: '',
     endTime: '',
-    instructor: '',
-    capacity: 20,
-    price: 0,
     location: '',
-    image: '',
+    capacity: 20,
+    registrationFee: 0,
+    imageUrl: '',
+    isPublic: true,
   });
+
+  // Fetch events from API
+  const loadEvents = async () => {
+    setLoading(true);
+    setError(null);
+    const token = localStorage.getItem('token');
+
+    try {
+      const response = await fetch(
+        `${BASE_URL}${API_ENDPOINTS.LMS_EVENTS.GET_ALL}?page=${currentPage - 1}&size=${itemsPerPage}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch events: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setEvents(data.content || []);
+      setTotalElements(data.totalElements || 0);
+    } catch (err) {
+      console.error('Error loading events:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadEvents();
+  }, [currentPage]);
 
   const handleOpenCreate = () => {
     setFormData({
       title: '',
       description: '',
-      type: 'workshop',
-      date: '',
+      eventType: 'WORKSHOP',
+      eventDate: '',
       startTime: '',
       endTime: '',
-      instructor: '',
-      capacity: 20,
-      price: 0,
       location: '',
-      image: '',
+      capacity: 20,
+      registrationFee: 0,
+      imageUrl: '',
+      isPublic: true,
     });
     setEditingEvent(null);
     setShowCreateModal(true);
   };
 
   const handleOpenEdit = (event) => {
-    setFormData(event);
-    setEditingEvent(event.id);
+    setFormData({
+      title: event.title || '',
+      description: event.description || '',
+      eventType: event.eventType || 'WORKSHOP',
+      eventDate: event.eventDate || '',
+      startTime: event.startTime ? formatTimeForInput(event.startTime) : '',
+      endTime: event.endTime ? formatTimeForInput(event.endTime) : '',
+      location: event.location || '',
+      capacity: event.capacity || 20,
+      registrationFee: event.registrationFee || 0,
+      imageUrl: event.imageUrl || '',
+      isPublic: event.isPublic !== undefined ? event.isPublic : true,
+    });
+    setEditingEvent(event);
     setShowCreateModal(true);
   };
 
+  // Helper function to format time from API response (LocalTime object) to input string
+  const formatTimeForInput = (time) => {
+    if (typeof time === 'string') return time;
+    if (time && typeof time === 'object') {
+      const hour = String(time.hour || 0).padStart(2, '0');
+      const minute = String(time.minute || 0).padStart(2, '0');
+      return `${hour}:${minute}`;
+    }
+    return '';
+  };
+
+  // Helper function to format time string to LocalTime object for API
+  const formatTimeForApi = (timeString) => {
+    if (!timeString) return null;
+    const [hour, minute] = timeString.split(':').map(Number);
+    return { hour, minute, second: 0, nano: 0 };
+  };
+
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: name === 'capacity' || name === 'price' ? parseInt(value) : value
+      [name]: type === 'checkbox' ? checked :
+        (name === 'capacity' || name === 'registrationFee') ? parseFloat(value) : value
     }));
+  };
+
+  // Create Event
+  const handleCreate = async () => {
+    const token = localStorage.getItem('token');
+
+    const payload = {
+      title: formData.title,
+      description: formData.description,
+      eventType: formData.eventType,
+      eventDate: formData.eventDate,
+      startTime: formatTimeForApi(formData.startTime),
+      endTime: formatTimeForApi(formData.endTime),
+      location: formData.location,
+      capacity: parseInt(formData.capacity) || 20,
+      registrationFee: parseFloat(formData.registrationFee) || 0,
+      imageUrl: formData.imageUrl,
+      isPublic: formData.isPublic
+    };
+
+    console.log('Creating event with payload:', payload);
+
+    try {
+      const response = await fetch(`${BASE_URL}${API_ENDPOINTS.LMS_EVENTS.CREATE}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.text();
+        console.error('Create failed:', response.status, errorData);
+        throw new Error(`Failed to create event: ${response.status} - ${errorData}`);
+      }
+
+      await loadEvents();
+      setShowCreateModal(false);
+      alert('Event created successfully!');
+    } catch (err) {
+      console.error('Error creating event:', err);
+      alert(`Error: ${err.message}`);
+    }
+  };
+
+  // Update Event
+  const handleUpdate = async () => {
+    const token = localStorage.getItem('token');
+
+    const payload = {
+      title: formData.title,
+      description: formData.description,
+      eventType: formData.eventType,
+      eventDate: formData.eventDate,
+      startTime: formatTimeForApi(formData.startTime),
+      endTime: formatTimeForApi(formData.endTime),
+      location: formData.location,
+      capacity: parseInt(formData.capacity) || 20,
+      registrationFee: parseFloat(formData.registrationFee) || 0,
+      imageUrl: formData.imageUrl,
+      isPublic: formData.isPublic
+    };
+
+    console.log('Updating event with payload:', payload);
+    console.log('Event ID:', editingEvent.id);
+
+    try {
+      const response = await fetch(`${BASE_URL}${API_ENDPOINTS.LMS_EVENTS.UPDATE(editingEvent.id)}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.text();
+        console.error('Update failed:', response.status, errorData);
+        throw new Error(`Failed to update event: ${response.status} - ${errorData}`);
+      }
+
+      await loadEvents();
+      setShowCreateModal(false);
+      alert('Event updated successfully!');
+    } catch (err) {
+      console.error('Error updating event:', err);
+      alert(`Error: ${err.message}`);
+    }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (editingEvent) {
-      // Edit existing event
-      setEvents(events.map(evt => 
-        evt.id === editingEvent 
-          ? { ...evt, ...formData }
-          : evt
-      ));
+      handleUpdate();
     } else {
-      // Create new event
-      const newEvent = {
-        ...formData,
-        id: `event-${Date.now()}`,
-        bookedSlots: 0,
-        isRecurring: false
-      };
-      setEvents([...events, newEvent]);
+      handleCreate();
     }
-    setShowCreateModal(false);
   };
 
-  const handleDelete = (id) => {
-    if (confirm('Are you sure you want to delete this event?')) {
-      setEvents(events.filter(evt => evt.id !== id));
+  // Delete Event
+  const handleDelete = async (id) => {
+    if (!confirm('Are you sure you want to delete this event?')) return;
+
+    const token = localStorage.getItem('token');
+    try {
+      const response = await fetch(`${BASE_URL}${API_ENDPOINTS.LMS_EVENTS.DELETE(id)}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to delete event: ${response.status}`);
+      }
+
+      await loadEvents();
+      alert('Event deleted successfully!');
+    } catch (err) {
+      console.error('Error deleting event:', err);
+      alert(`Error: ${err.message}`);
     }
   };
 
   // Pagination
+  const totalPages = Math.ceil(totalElements / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentEvents = events.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(events.length / itemsPerPage);
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+  // Get event type badge color
+  const getEventTypeBadgeColor = (type) => {
+    const colors = {
+      WORKSHOP: 'bg-purple-600',
+      EXHIBITION: 'bg-blue-600',
+      COMPETITION: 'bg-orange-600',
+      SEMINAR: 'bg-green-600'
+    };
+    return colors[type] || 'bg-gray-600';
+  };
+
+  // Format display time
+  const formatDisplayTime = (time) => {
+    if (!time) return '';
+    if (typeof time === 'string') return time;
+    if (typeof time === 'object') {
+      const hour = String(time.hour || 0).padStart(2, '0');
+      const minute = String(time.minute || 0).padStart(2, '0');
+      return `${hour}:${minute}`;
+    }
+    return '';
+  };
 
   return (
     <div className="p-4 sm:p-6 space-y-6">
@@ -96,94 +286,147 @@ const AdminEvents = () => {
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white">Events Management</h1>
-          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">Create and manage events</p>
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
+            Create and manage events ({totalElements} total)
+          </p>
         </div>
-        <button
-          onClick={handleOpenCreate}
-          className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-all flex items-center gap-2 whitespace-nowrap text-sm sm:text-base"
-        >
-          <FaPlus />
-          <span>Create Event</span>
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={loadEvents}
+            disabled={loading}
+            className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-all flex items-center gap-2 disabled:opacity-50"
+          >
+            <FaSync className={loading ? 'animate-spin' : ''} />
+            <span>Refresh</span>
+          </button>
+          <button
+            onClick={handleOpenCreate}
+            className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-all flex items-center gap-2 whitespace-nowrap text-sm sm:text-base"
+          >
+            <FaPlus />
+            <span>Create Event</span>
+          </button>
+        </div>
       </div>
+
+      {/* Loading & Error States */}
+      {loading && (
+        <div className="flex justify-center items-center py-12">
+          <FaSpinner className="animate-spin text-4xl text-purple-600" />
+        </div>
+      )}
+
+      {error && (
+        <div className="bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700 text-red-700 dark:text-red-300 p-4 rounded-xl flex items-center gap-3">
+          <FaExclamationTriangle className="text-xl" />
+          <span>Error: {error}</span>
+        </div>
+      )}
 
       {/* Events List */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-        {currentEvents.map((event) => (
-          <div key={event.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-all">
-            {/* Image */}
-            <div className="relative h-40 sm:h-48 overflow-hidden">
-              <img
-                src={event.image}
-                alt={event.title}
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute top-2 right-2 px-2 sm:px-3 py-1 bg-purple-600 text-white text-xs sm:text-sm font-semibold rounded-full">
-                {event.type}
-              </div>
+      {!loading && !error && (
+        <>
+          {events.length === 0 ? (
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-12 text-center">
+              <FaCalendarAlt className="text-6xl text-gray-400 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-2">No Events Found</h3>
+              <p className="text-gray-500 dark:text-gray-500">Create your first event to get started.</p>
             </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+              {events.map((event) => (
+                <div key={event.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-all">
+                  {/* Image */}
+                  <div className="relative h-40 sm:h-48 overflow-hidden bg-gradient-to-br from-purple-500 to-blue-500">
+                    {event.imageUrl ? (
+                      <img
+                        src={event.imageUrl}
+                        alt={event.title}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <FaCalendarAlt className="text-white text-5xl" />
+                      </div>
+                    )}
+                    <div className={`absolute top-2 right-2 px-2 sm:px-3 py-1 ${getEventTypeBadgeColor(event.eventType)} text-white text-xs sm:text-sm font-semibold rounded-full`}>
+                      {event.eventType}
+                    </div>
+                    {event.isPublic && (
+                      <div className="absolute top-2 left-2 px-2 py-1 bg-green-500 text-white text-xs font-semibold rounded-full">
+                        Public
+                      </div>
+                    )}
+                  </div>
 
-            {/* Content */}
-            <div className="p-4 sm:p-6">
-              <h3 className="text-lg sm:text-xl font-bold text-gray-800 dark:text-white mb-2 line-clamp-2">
-                {event.title}
-              </h3>
+                  {/* Content */}
+                  <div className="p-4 sm:p-6">
+                    <h3 className="text-lg sm:text-xl font-bold text-gray-800 dark:text-white mb-2 line-clamp-2">
+                      {event.title}
+                    </h3>
 
-              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">
-                {event.description}
-              </p>
+                    <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">
+                      {event.description}
+                    </p>
 
-              {/* Details */}
-              <div className="space-y-2 mb-4 text-xs sm:text-sm">
-                <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                  <FaCalendarAlt className="text-purple-600 shrink-0" />
-                  <span>{new Date(event.date).toLocaleDateString()}</span>
+                    {/* Details */}
+                    <div className="space-y-2 mb-4 text-xs sm:text-sm">
+                      <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                        <FaCalendarAlt className="text-purple-600 shrink-0" />
+                        <span>{event.eventDate ? new Date(event.eventDate).toLocaleDateString() : 'N/A'}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                        <FaClock className="text-purple-600 shrink-0" />
+                        <span>{formatDisplayTime(event.startTime)} - {formatDisplayTime(event.endTime)}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                        <FaMapMarkerAlt className="text-purple-600 shrink-0" />
+                        <span className="truncate">{event.location || 'N/A'}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                        <FaUsers className="text-purple-600 shrink-0" />
+                        <span>Capacity: {event.capacity}</span>
+                      </div>
+                    </div>
+
+                    {/* Price */}
+                    <div className="py-3 border-t border-gray-200 dark:border-gray-700 mb-4 text-xs sm:text-sm">
+                      <div className="flex items-center gap-2">
+                        <FaTicketAlt className="text-purple-600" />
+                        <span className="font-semibold text-purple-600">
+                          {event.registrationFee > 0 ? `₹${event.registrationFee}` : 'Free'}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleOpenEdit(event)}
+                        className="flex-1 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all flex items-center justify-center gap-2 text-sm font-medium"
+                      >
+                        <FaEdit className="text-sm" /> Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(event.id)}
+                        className="flex-1 px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all flex items-center justify-center gap-2 text-sm font-medium"
+                      >
+                        <FaTrash className="text-sm" /> Delete
+                      </button>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                  <FaClock className="text-purple-600 shrink-0" />
-                  <span>{event.startTime} - {event.endTime}</span>
-                </div>
-                <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                  <FaMapMarkerAlt className="text-purple-600 shrink-0" />
-                  <span className="truncate">{event.location}</span>
-                </div>
-                <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                  <FaUsers className="text-purple-600 shrink-0" />
-                  <span>{event.bookedSlots}/{event.capacity} booked</span>
-                </div>
-              </div>
-
-              {/* Price & Instructor */}
-              <div className="py-3 border-t border-gray-200 dark:border-gray-700 mb-4 text-xs sm:text-sm">
-                <p className="text-gray-600 dark:text-gray-400">Instructor: <span className="font-semibold text-gray-800 dark:text-white">{event.instructor}</span></p>
-                <p className="text-gray-600 dark:text-gray-400">Price: <span className="font-semibold text-purple-600">₹{event.price}</span></p>
-              </div>
-
-              {/* Actions */}
-              <div className="flex gap-2">
-                <button
-                  onClick={() => handleOpenEdit(event)}
-                  className="flex-1 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all flex items-center justify-center gap-2 text-sm font-medium"
-                >
-                  <FaEdit className="text-sm" /> Edit
-                </button>
-                <button
-                  onClick={() => handleDelete(event.id)}
-                  className="flex-1 px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all flex items-center justify-center gap-2 text-sm font-medium"
-                >
-                  <FaTrash className="text-sm" /> Delete
-                </button>
-              </div>
+              ))}
             </div>
-          </div>
-        ))}
-      </div>
+          )}
+        </>
+      )}
 
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-between bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4">
           <div className="text-sm text-gray-600 dark:text-gray-400">
-            Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, events.length)} of {events.length} events
+            Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, totalElements)} of {totalElements} events
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -197,11 +440,10 @@ const AdminEvents = () => {
               <button
                 key={index + 1}
                 onClick={() => paginate(index + 1)}
-                className={`px-4 py-2 rounded-lg transition-all ${
-                  currentPage === index + 1
+                className={`px-4 py-2 rounded-lg transition-all ${currentPage === index + 1
                     ? 'bg-purple-600 text-white'
                     : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-                }`}
+                  }`}
               >
                 {index + 1}
               </button>
@@ -236,7 +478,7 @@ const EventModal = ({ formData, onFormChange, onSubmit, onClose, isEditing }) =>
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4">
       <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="sticky top-0 bg-linear-to-r from-purple-600 to-blue-600 text-white p-4 sm:p-6 rounded-t-xl sm:rounded-t-2xl flex justify-between items-center">
+        <div className="sticky top-0 bg-gradient-to-r from-purple-600 to-blue-600 text-white p-4 sm:p-6 rounded-t-xl sm:rounded-t-2xl flex justify-between items-center">
           <h2 className="text-lg sm:text-2xl font-bold">
             {isEditing ? 'Edit Event' : 'Create New Event'}
           </h2>
@@ -269,13 +511,12 @@ const EventModal = ({ formData, onFormChange, onSubmit, onClose, isEditing }) =>
           {/* Description */}
           <div>
             <label className="block text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-              Description *
+              Description
             </label>
             <textarea
               name="description"
               value={formData.description}
               onChange={onFormChange}
-              required
               rows="3"
               className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-800 dark:text-white focus:border-purple-500 focus:outline-none"
               placeholder="Enter event description"
@@ -287,18 +528,19 @@ const EventModal = ({ formData, onFormChange, onSubmit, onClose, isEditing }) =>
             {/* Type */}
             <div>
               <label className="block text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                Event Type
+                Event Type *
               </label>
               <select
-                name="type"
-                value={formData.type}
+                name="eventType"
+                value={formData.eventType}
                 onChange={onFormChange}
+                required
                 className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-800 dark:text-white focus:border-purple-500 focus:outline-none"
               >
-                <option value="workshop">Workshop</option>
-                <option value="exhibition">Exhibition</option>
-                <option value="seminar">Seminar</option>
-                <option value="competition">Competition</option>
+                <option value="WORKSHOP">Workshop</option>
+                <option value="EXHIBITION">Exhibition</option>
+                <option value="SEMINAR">Seminar</option>
+                <option value="COMPETITION">Competition</option>
               </select>
             </div>
 
@@ -309,8 +551,8 @@ const EventModal = ({ formData, onFormChange, onSubmit, onClose, isEditing }) =>
               </label>
               <input
                 type="date"
-                name="date"
-                value={formData.date}
+                name="eventDate"
+                value={formData.eventDate}
                 onChange={onFormChange}
                 required
                 className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-800 dark:text-white focus:border-purple-500 focus:outline-none"
@@ -322,69 +564,50 @@ const EventModal = ({ formData, onFormChange, onSubmit, onClose, isEditing }) =>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                Start Time *
+                Start Time
               </label>
               <input
                 type="time"
                 name="startTime"
                 value={formData.startTime}
                 onChange={onFormChange}
-                required
                 className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-800 dark:text-white focus:border-purple-500 focus:outline-none"
               />
             </div>
             <div>
               <label className="block text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                End Time *
+                End Time
               </label>
               <input
                 type="time"
                 name="endTime"
                 value={formData.endTime}
                 onChange={onFormChange}
-                required
                 className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-800 dark:text-white focus:border-purple-500 focus:outline-none"
               />
             </div>
           </div>
 
-          {/* Instructor & Location */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                Instructor *
-              </label>
-              <input
-                type="text"
-                name="instructor"
-                value={formData.instructor}
-                onChange={onFormChange}
-                required
-                className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-800 dark:text-white focus:border-purple-500 focus:outline-none"
-                placeholder="Instructor name"
-              />
-            </div>
-            <div>
-              <label className="block text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                Location *
-              </label>
-              <input
-                type="text"
-                name="location"
-                value={formData.location}
-                onChange={onFormChange}
-                required
-                className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-800 dark:text-white focus:border-purple-500 focus:outline-none"
-                placeholder="Event location"
-              />
-            </div>
+          {/* Location */}
+          <div>
+            <label className="block text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+              Location
+            </label>
+            <input
+              type="text"
+              name="location"
+              value={formData.location}
+              onChange={onFormChange}
+              className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-800 dark:text-white focus:border-purple-500 focus:outline-none"
+              placeholder="Event location"
+            />
           </div>
 
           {/* Capacity & Price */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                Capacity *
+                Capacity
               </label>
               <input
                 type="number"
@@ -392,21 +615,21 @@ const EventModal = ({ formData, onFormChange, onSubmit, onClose, isEditing }) =>
                 value={formData.capacity}
                 onChange={onFormChange}
                 min="1"
-                required
                 className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-800 dark:text-white focus:border-purple-500 focus:outline-none"
                 placeholder="Participant capacity"
               />
             </div>
             <div>
               <label className="block text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                Price (₹)
+                Registration Fee (₹)
               </label>
               <input
                 type="number"
-                name="price"
-                value={formData.price}
+                name="registrationFee"
+                value={formData.registrationFee}
                 onChange={onFormChange}
                 min="0"
+                step="0.01"
                 className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-800 dark:text-white focus:border-purple-500 focus:outline-none"
                 placeholder="0 for free event"
               />
@@ -420,12 +643,37 @@ const EventModal = ({ formData, onFormChange, onSubmit, onClose, isEditing }) =>
             </label>
             <input
               type="url"
-              name="image"
-              value={formData.image}
+              name="imageUrl"
+              value={formData.imageUrl}
               onChange={onFormChange}
               className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-800 dark:text-white focus:border-purple-500 focus:outline-none"
               placeholder="https://example.com/image.jpg"
             />
+            {formData.imageUrl && (
+              <div className="mt-3">
+                <img
+                  src={formData.imageUrl}
+                  alt="Preview"
+                  className="w-full h-32 object-cover rounded-lg border-2 border-gray-300"
+                  onError={(e) => e.target.style.display = 'none'}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Is Public */}
+          <div className="flex items-center gap-3">
+            <input
+              type="checkbox"
+              name="isPublic"
+              id="isPublic"
+              checked={formData.isPublic}
+              onChange={onFormChange}
+              className="w-5 h-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+            />
+            <label htmlFor="isPublic" className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+              Make this event public
+            </label>
           </div>
 
           {/* Buttons */}

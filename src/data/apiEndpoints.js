@@ -1,5 +1,5 @@
 // Base Configuration
-export const BASE_URL = "http://93.127.194.118:8095";
+export const BASE_URL = "http://localhost:8095";
 export const API_PREFIX = "/api/v1";
 
 /**
@@ -38,6 +38,7 @@ export const API_ENDPOINTS = {
     ENROLL: `${API_PREFIX}/enrollments`,
     MY_ENROLLMENTS: `${API_PREFIX}/enrollments/my-enrollments`,
     GET_BY_ID: (enrollmentId) => `${API_PREFIX}/enrollments/${enrollmentId}`,
+    UPDATE: (enrollmentId) => `${API_PREFIX}/enrollments/${enrollmentId}`,
     DELETE: (enrollmentId) => `${API_PREFIX}/enrollments/${enrollmentId}`,
     UPDATE_STATUS: (enrollmentId) => `${API_PREFIX}/enrollments/${enrollmentId}/status`,
     CANCEL: (enrollmentId) => `${API_PREFIX}/enrollments/${enrollmentId}/cancel`,
@@ -53,7 +54,6 @@ export const API_ENDPOINTS = {
     INCREMENT_VIEWS: (id) => `${API_PREFIX}/art-works/${id}/views`,
     INCREMENT_LIKES: (id) => `${API_PREFIX}/art-works/${id}/likes`,
   },
-    GET_ALL: `${API_PREFIX}/art-exhibitions-categories`,
 
   // Art Works Categories
   ART_WORKS_CATEGORIES: {
@@ -114,6 +114,7 @@ export const API_ENDPOINTS = {
 
   // Art Exhibitions Categories
   ART_EXHIBITIONS_CATEGORIES: {
+    GET_ALL: `${API_PREFIX}/art-exhibitions-categories`,
     CREATE: `${API_PREFIX}/art-exhibitions-categories`,
     GET_ROOT: `${API_PREFIX}/art-exhibitions-categories/root`,
     GET_BY_ID: (id) => `${API_PREFIX}/art-exhibitions-categories/${id}`,
@@ -165,6 +166,19 @@ export const API_ENDPOINTS = {
     VERIFY: `${API_PREFIX}/art-payments/verify`,
     GET_BY_ORDER_ID: (orderId) => `${API_PREFIX}/art-payments/order/${orderId}`,
   },
+
+  // LMS Events
+  LMS_EVENTS: {
+    GET_ALL: `${API_PREFIX}/lms/events`,
+    CREATE: `${API_PREFIX}/lms/events`,
+    GET_BY_ID: (id) => `${API_PREFIX}/lms/events/${id}`,
+    UPDATE: (id) => `${API_PREFIX}/lms/events/${id}`,
+    DELETE: (id) => `${API_PREFIX}/lms/events/${id}`,
+    GET_UPCOMING: `${API_PREFIX}/lms/events/upcoming`,
+    GET_PUBLIC: `${API_PREFIX}/lms/events/public`,
+    GET_BY_TYPE: (eventType) => `${API_PREFIX}/lms/events/type/${eventType}`,
+  },
 };
+
 
 export default API_ENDPOINTS;
