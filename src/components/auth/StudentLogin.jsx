@@ -173,7 +173,7 @@ const StudentLogin = ({ isOpen, onClose }) => {
           </button>
 
           {/* Forgot Password Link */}
-          <div className="text-center pt-1.5 sm:pt-2">
+          {/* <div className="text-center pt-1.5 sm:pt-2">
             <button
               type="button"
               onClick={() => setShowForgotPassword(true)}
@@ -181,7 +181,7 @@ const StudentLogin = ({ isOpen, onClose }) => {
             >
               Forgot Password?
             </button>
-          </div>
+          </div> */}
         </form>
 
         {/* ForgotPassword Modal */}

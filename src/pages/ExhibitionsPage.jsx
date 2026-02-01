@@ -10,6 +10,7 @@ const ExhibitionsPage = () => {
   const [filteredExhibitions, setFilteredExhibitions] = useState([]);
   const [selectedExhibition, setSelectedExhibition] = useState(null);
   const [showEnrollForm, setShowEnrollForm] = useState(false);
+  const [prefilledClassId, setPrefilledClassId] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [categories, setCategories] = useState([
@@ -122,7 +123,7 @@ const ExhibitionsPage = () => {
         console.log('📋 result.data type:', typeof result.data);
         console.log('📋 result.data is array:', Array.isArray(result.data));
         console.log('📋 result.data length:', result.data?.length);
-        
+
         // Check if we have valid data
         if (result && result.success && Array.isArray(result.data) && result.data.length > 0) {
           console.log('✅ SUCCESS - Real API data loaded!');
@@ -166,7 +167,7 @@ const ExhibitionsPage = () => {
       artists: ex.artists || 0,
       artworks: ex.artworks || 0,
     }));
-    
+
     if (selectedCategory === "all") {
       setFilteredExhibitions(transformedExhibitions);
     } else {
@@ -231,25 +232,25 @@ const ExhibitionsPage = () => {
       )}
       {/* Hero Section */}
       {!loading && (
-      <section className="relative h-[70vh] flex items-center justify-center overflow-hidden pt-20">
-        <div className="absolute inset-0">
-          <img
-            src="https://images.unsplash.com/photo-1561070791-2526d30994b5?w=1920&q=80"
-            alt="Art Exhibition Background"
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-linear-to-br from-purple-900/80 via-pink-900/70 to-red-900/60"></div>
-        </div>
+        <section className="relative h-[70vh] flex items-center justify-center overflow-hidden pt-20">
+          <div className="absolute inset-0">
+            <img
+              src="https://images.unsplash.com/photo-1561070791-2526d30994b5?w=1920&q=80"
+              alt="Art Exhibition Background"
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-linear-to-br from-purple-900/80 via-pink-900/70 to-red-900/60"></div>
+          </div>
 
-        <div className="container mx-auto px-6 sm:px-8 lg:max-w-7xl relative z-10 text-center space-y-6">
-          <h1 className="text-5xl md:text-7xl font-bold text-white mb-4 leading-tight">
-            Art <span className="text-yellow-300">Exhibitions</span>
-          </h1>
-          <p className="text-xl md:text-2xl text-white/90 max-w-3xl mx-auto leading-relaxed">
-            Celebrate the creativity and talent of our young artists across diverse art forms and styles
-          </p>
-        </div>
-      </section>
+          <div className="container mx-auto px-6 sm:px-8 lg:max-w-7xl relative z-10 text-center space-y-6">
+            <h1 className="text-5xl md:text-7xl font-bold text-white mb-4 leading-tight">
+              Art <span className="text-yellow-300">Exhibitions</span>
+            </h1>
+            <p className="text-xl md:text-2xl text-white/90 max-w-3xl mx-auto leading-relaxed">
+              Celebrate the creativity and talent of our young artists across diverse art forms and styles
+            </p>
+          </div>
+        </section>
       )}
 
       {/* Filter Section */}
@@ -267,11 +268,10 @@ const ExhibitionsPage = () => {
               <button
                 key={category.id}
                 onClick={() => setSelectedCategory(category.id)}
-                className={`px-4 py-2 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 ${
-                  selectedCategory === category.id
-                    ? "bg-linear-to-r from-purple-600 to-pink-600 text-white shadow-lg scale-105"
-                    : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 shadow-md hover:shadow-lg border-2 border-gray-200 dark:border-gray-700"
-                }`}
+                className={`px-4 py-2 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 ${selectedCategory === category.id
+                  ? "bg-linear-to-r from-purple-600 to-pink-600 text-white shadow-lg scale-105"
+                  : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 shadow-md hover:shadow-lg border-2 border-gray-200 dark:border-gray-700"
+                  }`}
               >
                 <span className="mr-2">{category.icon}</span>
                 {category.name}
@@ -332,7 +332,7 @@ const ExhibitionsPage = () => {
                       </div>
 
                       {/* CTA Button */}
-                      <button 
+                      <button
                         onClick={() => setSelectedExhibition(exhibition)}
                         className="w-full mt-3 bg-linear-to-r from-purple-600 to-pink-600 text-white py-2 rounded-lg font-bold hover:shadow-lg hover:scale-105 transition-all duration-300 flex items-center justify-center space-x-2 group/btn text-sm"
                       >
@@ -349,14 +349,14 @@ const ExhibitionsPage = () => {
 
       {/* All Exhibitions */}
       {filteredExhibitions.filter((ex) => !ex.featured).length > 0 && selectedCategory !== "all" && (
-      <section className="py-12 bg-gray-50 dark:bg-gray-800">
-        <div className="container mx-auto px-6 sm:px-8 lg:max-w-7xl">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-800 dark:text-white mb-10">
-            Other Exhibitions
-          </h2>
+        <section className="py-12 bg-gray-50 dark:bg-gray-800">
+          <div className="container mx-auto px-6 sm:px-8 lg:max-w-7xl">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-800 dark:text-white mb-10">
+              Other Exhibitions
+            </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredExhibitions.filter((ex) => !ex.featured).map((exhibition) => (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {filteredExhibitions.filter((ex) => !ex.featured).map((exhibition) => (
                 <div
                   key={exhibition.id}
                   className="bg-white dark:bg-gray-900 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
@@ -394,16 +394,31 @@ const ExhibitionsPage = () => {
                       </div>
                     </div>
 
-                    {/* CTA Button */}
-                    <button className="w-full mt-3 bg-purple-600 hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-600 text-white py-2 rounded-lg font-semibold transition-all duration-300 text-sm">
-                      View Exhibition
-                    </button>
+                    {/* CTA Buttons */}
+                    <div className="flex gap-2 mt-3">
+                      <button
+                        onClick={() => setSelectedExhibition(exhibition)}
+                        className="flex-1 bg-white border-2 border-purple-600 text-purple-600 hover:bg-purple-50 dark:bg-gray-800 dark:border-purple-400 dark:text-purple-400 dark:hover:bg-gray-700 py-2 rounded-lg font-semibold transition-all duration-300 text-sm"
+                      >
+                        View Details
+                      </button>
+                      <button
+                        onClick={() => {
+                          const classId = exhibition.id || exhibition._id || exhibition.exhibitionId;
+                          setPrefilledClassId(classId);
+                          setShowEnrollForm(true);
+                        }}
+                        className="flex-1 bg-purple-600 hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-600 text-white py-2 rounded-lg font-semibold transition-all duration-300 text-sm"
+                      >
+                        Enroll Now
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
             </div>
-        </div>
-      </section>
+          </div>
+        </section>
       )}
 
       {filteredExhibitions.filter((ex) => !ex.featured).length === 0 && filteredExhibitions.filter((ex) => ex.featured).length === 0 && (
@@ -459,13 +474,25 @@ const ExhibitionsPage = () => {
                       </div>
                     </div>
 
-                    {/* CTA Button */}
-                    <button 
-                      onClick={() => setSelectedExhibition(exhibition)}
-                      className="w-full mt-3 bg-purple-600 hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-600 text-white py-2 rounded-lg font-semibold transition-all duration-300 text-sm"
-                    >
-                      View Exhibition
-                    </button>
+                    {/* CTA Buttons */}
+                    <div className="flex gap-2 mt-3">
+                      <button
+                        onClick={() => setSelectedExhibition(exhibition)}
+                        className="flex-1 bg-white border-2 border-purple-600 text-purple-600 hover:bg-purple-50 dark:bg-gray-800 dark:border-purple-400 dark:text-purple-400 dark:hover:bg-gray-700 py-2 rounded-lg font-semibold transition-all duration-300 text-sm"
+                      >
+                        View Details
+                      </button>
+                      <button
+                        onClick={() => {
+                          const classId = exhibition.id || exhibition._id || exhibition.exhibitionId;
+                          setPrefilledClassId(classId);
+                          setShowEnrollForm(true);
+                        }}
+                        className="flex-1 bg-purple-600 hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-600 text-white py-2 rounded-lg font-semibold transition-all duration-300 text-sm"
+                      >
+                        Enroll Now
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -517,11 +544,14 @@ const ExhibitionsPage = () => {
             <h3 className="text-3xl font-bold text-white mb-6">
               Want to Participate in Our Next Exhibition?
             </h3>
-            <button 
-              onClick={() => setShowEnrollForm(true)}
+            <button
+              onClick={() => {
+                setPrefilledClassId('');
+                setShowEnrollForm(true);
+              }}
               className="px-8 py-4 bg-white text-purple-600 font-bold rounded-full hover:shadow-xl hover:scale-105 transition-all duration-300 text-lg"
             >
-              Enroll Your Child Today
+              Enroll Now
             </button>
           </div>
         </div>
@@ -544,32 +574,36 @@ const ExhibitionsPage = () => {
                 <FaTimes size={20} />
               </button>
             </div>
-            
+
             <div className="p-6 space-y-4">
               <h2 className="text-3xl font-bold text-gray-800 dark:text-white">{selectedExhibition.title}</h2>
-              
+
               <p className="text-gray-600 dark:text-gray-300 text-lg">{selectedExhibition.description}</p>
-              
+
               <div className="space-y-3 pt-4 border-t border-gray-200 dark:border-gray-700">
                 <div className="flex items-center space-x-3 text-gray-700 dark:text-gray-300">
                   <FaCalendar className="text-purple-600 dark:text-purple-400" size={20} />
                   <span className="font-semibold">{selectedExhibition.date}</span>
                 </div>
-                
+
                 <div className="flex items-center space-x-3 text-gray-700 dark:text-gray-300">
                   <FaClock className="text-pink-600 dark:text-pink-400" size={20} />
                   <span className="font-semibold">{selectedExhibition.time}</span>
                 </div>
-                
+
                 <div className="flex items-center space-x-3 text-gray-700 dark:text-gray-300">
                   <FaMapMarkerAlt className="text-red-600 dark:text-red-400" size={20} />
                   <span className="font-semibold">{selectedExhibition.location}</span>
                 </div>
               </div>
-              
+
               <div className="pt-4">
                 <button
                   onClick={() => {
+                    // Try to find the ID from various possible fields
+                    const classId = selectedExhibition.id || selectedExhibition._id || selectedExhibition.exhibitionId;
+                    console.log('📌 Selecting Class ID:', classId, 'from exhibition:', selectedExhibition);
+                    setPrefilledClassId(classId);
                     setSelectedExhibition(null);
                     setShowEnrollForm(true);
                   }}
@@ -584,7 +618,11 @@ const ExhibitionsPage = () => {
       )}
 
       {/* Enrollment Form Modal */}
-      <EnrollmentForm isOpen={showEnrollForm} onClose={() => setShowEnrollForm(false)} />
+      <EnrollmentForm
+        isOpen={showEnrollForm}
+        onClose={() => setShowEnrollForm(false)}
+        selectedClassId={prefilledClassId}
+      />
     </div>
   );
 };

@@ -1,5 +1,7 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { FaTimes, FaEnvelope, FaLock, FaEye, FaEyeSlash, FaCheckCircle, FaArrowRight } from 'react-icons/fa';
+import { useAuth } from '../../context/AuthContext';
 
 const ForgotPassword = ({ isOpen, onClose, onBackToLogin }) => {
   const [step, setStep] = useState('email'); // email, verification, reset, success
@@ -316,16 +318,7 @@ const ForgotPassword = ({ isOpen, onClose, onBackToLogin }) => {
                 </button>
               </div>
 
-              <div className="flex justify-end">
-                <button
-                  type="button"
-                  onClick={handleResendOTP}
-                  disabled={isLoading}
-                  className="text-xs sm:text-sm text-purple-600 font-bold hover:underline disabled:opacity-50"
-                >
-                  Resend OTP
-                </button>
-              </div>
+
 
               <div className="space-y-3">
                 <button
