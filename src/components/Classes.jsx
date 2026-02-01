@@ -14,6 +14,7 @@ import EnrollmentForm from "./EnrollmentForm";
 import ImagePreviewModal from "./ui/ImagePreviewModal";
 import { useAuth } from "../context/AuthContext";
 import StudentLogin from "./auth/StudentLogin";
+import Pagination from "./common/Pagination";
 
 const Classes = () => {
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -27,6 +28,10 @@ const Classes = () => {
   const [error, setError] = useState(null);
   const { isStudent } = useAuth();
   const [showLoginModal, setShowLoginModal] = useState(false);
+
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(9); // 9 items per page (3x3 grid)
 
   // Image Preview State
   const [previewImage, setPreviewImage] = useState(null);
@@ -99,6 +104,11 @@ const Classes = () => {
 
   const levels = ["All", "Beginner", "Intermediate", "Advanced", "All Levels"];
 
+  // Reset pagination when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedCategory, selectedLevel, searchQuery]);
+
   // Filter classes based on selected criteria
   const filteredClasses = classes.filter((classItem) => {
     const matchesCategory =
@@ -116,6 +126,21 @@ const Classes = () => {
 
     return matchesCategory && matchesLevel && matchesSearch;
   });
+
+  // Calculate Pagination Logic
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredClasses.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredClasses.length / itemsPerPage);
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+    // Scroll to top of grid
+    const gridElement = document.getElementById('classes-grid');
+    if (gridElement) {
+      gridElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
 
   return (
     <section id="classes" className="bg-gray-50 dark:bg-gray-900 py-6 sm:py-8 md:py-8 min-h-screen">
@@ -200,8 +225,8 @@ const Classes = () => {
 
           {/* Classes Grid - Ported from Admin Design */}
           {!loading && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredClasses.map((item) => (
+            <div id="classes-grid" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {currentItems.map((item) => (
                 <div key={item.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group border border-gray-100 dark:border-gray-700">
                   {/* Image Header */}
                   <div className="relative h-48 overflow-hidden">
@@ -276,6 +301,17 @@ const Classes = () => {
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* Pagination */}
+          {!loading && filteredClasses.length > itemsPerPage && (
+            <div className="mt-8">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+              />
             </div>
           )}
 

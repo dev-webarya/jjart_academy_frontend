@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { FaSpinner } from "react-icons/fa";
 import galleryService from "../services/galleryService";
 import ImagePreviewModal from "./ui/ImagePreviewModal";
+import Pagination from "./common/Pagination";
 
 const Gallery = () => {
   const [selectedImage, setSelectedImage] = useState(null);
@@ -10,6 +11,10 @@ const Gallery = () => {
   const [categories, setCategories] = useState(["All"]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(9);
 
   // Fetch galleries and categories on component mount
   useEffect(() => {
@@ -81,6 +86,21 @@ const Gallery = () => {
       ? galleries
       : galleries.filter((img) => (img.categoryName || img.category) === selectedCategory);
 
+  // Pagination Logic
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentImages = filteredImages.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredImages.length / itemsPerPage);
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedCategory]);
+
   // Loading state
   if (loading) {
     return (
@@ -131,48 +151,60 @@ const Gallery = () => {
 
           {/* Gallery Grid - Admin Style Cards */}
           {filteredImages.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredImages.map((image) => (
-                <div
-                  key={image.id}
-                  className="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-shadow overflow-hidden group h-full flex flex-col"
-                  onClick={() => setSelectedImage(image)}
-                >
-                  {/* Image Header */}
-                  <div className="relative h-64 overflow-hidden cursor-pointer">
-                    <img
-                      src={image.src || image.imageUrl || image.image}
-                      alt={image.name || image.title}
-                      className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
-                      onError={(e) => {
-                        e.target.src = 'https://via.placeholder.com/400?text=Gallery+Image';
-                      }}
-                    />
-                    <div className="absolute top-2 right-2 bg-white/90 dark:bg-gray-900/90 px-3 py-1 rounded-full text-xs font-semibold shadow-sm text-gray-800 dark:text-gray-200 backdrop-blur-sm">
-                      {image.categoryName || image.category || 'Gallery'}
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {currentImages.map((image) => (
+                  <div
+                    key={image.id}
+                    className="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-shadow overflow-hidden group h-full flex flex-col"
+                    onClick={() => setSelectedImage(image)}
+                  >
+                    {/* Image Header */}
+                    <div className="relative h-64 overflow-hidden cursor-pointer">
+                      <img
+                        src={image.src || image.imageUrl || image.image}
+                        alt={image.name || image.title}
+                        className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                        onError={(e) => {
+                          e.target.src = 'https://via.placeholder.com/400?text=Gallery+Image';
+                        }}
+                      />
+                      <div className="absolute top-2 right-2 bg-white/90 dark:bg-gray-900/90 px-3 py-1 rounded-full text-xs font-semibold shadow-sm text-gray-800 dark:text-gray-200 backdrop-blur-sm">
+                        {image.categoryName || image.category || 'Gallery'}
+                      </div>
+                    </div>
+
+                    {/* Content Body */}
+                    <div className="p-5 flex-1 flex flex-col space-y-3">
+                      <div className="flex justify-between items-start">
+                        <h3 className="text-xl font-bold text-gray-800 dark:text-white line-clamp-1" title={image.name || image.title}>
+                          {image.name || image.title}
+                        </h3>
+                      </div>
+
+                      <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-3">
+                        {image.description || 'No description provided.'}
+                      </p>
+
+                      <div className="mt-auto pt-4 flex items-center justify-between text-xs text-gray-500 dark:text-gray-500 border-t border-gray-100 dark:border-gray-700">
+                        <span>📅 {new Date(image.createdAt).toLocaleDateString()}</span>
+                        <span className="text-purple-500 dark:text-purple-400 font-medium">View Details</span>
+                      </div>
                     </div>
                   </div>
-
-                  {/* Content Body */}
-                  <div className="p-5 flex-1 flex flex-col space-y-3">
-                    <div className="flex justify-between items-start">
-                      <h3 className="text-xl font-bold text-gray-800 dark:text-white line-clamp-1" title={image.name || image.title}>
-                        {image.name || image.title}
-                      </h3>
-                    </div>
-
-                    <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-3">
-                      {image.description || 'No description provided.'}
-                    </p>
-
-                    <div className="mt-auto pt-4 flex items-center justify-between text-xs text-gray-500 dark:text-gray-500 border-t border-gray-100 dark:border-gray-700">
-                      <span>📅 {new Date(image.createdAt).toLocaleDateString()}</span>
-                      <span className="text-purple-500 dark:text-purple-400 font-medium">View Details</span>
-                    </div>
-                  </div>
+                ))}
+              </div>
+              {/* Pagination */}
+              {filteredImages.length > itemsPerPage && (
+                <div className="mt-8">
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={handlePageChange}
+                  />
                 </div>
-              ))}
-            </div>
+              )}
+            </>
           ) : (
             <div className="text-center py-16 bg-gray-50 dark:bg-gray-800 rounded-2xl border-2 border-dashed border-gray-300 dark:border-gray-700">
               <p className="text-xl text-gray-600 dark:text-gray-300">No masterpieces found in this category.</p>
