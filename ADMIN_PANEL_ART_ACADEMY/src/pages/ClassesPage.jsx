@@ -1,11 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
-import { FaPlus, FaEdit, FaTrash, FaEye } from 'react-icons/fa';
-import DataTable from '../components/ui/DataTable';
+import { FaPlus, FaEdit, FaTrash, FaClock, FaUserGraduate } from 'react-icons/fa';
 import Modal from '../components/ui/Modal';
 import { Button, Input, Select, Textarea } from '../components/ui/FormComponents';
 import { useToast } from '../components/ui/Toast';
 import api, { getPaginated } from '../api/apiService';
-import { API_ENDPOINTS, SCHEDULE_OPTIONS } from '../api/endpoints';
+import { API_ENDPOINTS } from '../api/endpoints';
 
 const ClassesPage = () => {
     const toast = useToast();
@@ -14,23 +13,33 @@ const ClassesPage = () => {
     const [loading, setLoading] = useState(true);
     const [pagination, setPagination] = useState(null);
     const [page, setPage] = useState(0);
+
+    // Class Modal State
     const [modalOpen, setModalOpen] = useState(false);
     const [modalMode, setModalMode] = useState('create');
     const [selectedItem, setSelectedItem] = useState(null);
     const [formData, setFormData] = useState({
-        title: '',
+        name: '',
         description: '',
+        basePrice: '',
+        discountPrice: '',
+        durationWeeks: '',
+        proficiency: '',
         categoryId: '',
-        instructorName: '',
-        level: '',
-        duration: '',
-        maxStudents: '',
-        price: '',
-        schedule: '',
         imageUrl: '',
+        active: true,
     });
     const [formLoading, setFormLoading] = useState(false);
 
+    // Category Modal State
+    const [categoryModalOpen, setCategoryModalOpen] = useState(false);
+    const [categoryFormData, setCategoryFormData] = useState({
+        name: '',
+        parentId: ''
+    });
+    const [categoryFormLoading, setCategoryFormLoading] = useState(false);
+
+    // Fetch Categories
     const loadCategories = useCallback(async () => {
         try {
             const response = await getPaginated(API_ENDPOINTS.ART_CLASSES_CATEGORIES.GET_ALL, { size: 100 });
@@ -40,6 +49,7 @@ const ClassesPage = () => {
         }
     }, []);
 
+    // Fetch Classes
     const loadItems = useCallback(async () => {
         setLoading(true);
         try {
@@ -68,19 +78,28 @@ const ClassesPage = () => {
         setSelectedItem(item);
         if (mode === 'edit' && item) {
             setFormData({
-                title: item.title || item.name || '',
+                name: item.name || '',
                 description: item.description || '',
+                basePrice: item.basePrice || '',
+                discountPrice: item.discountPrice || '',
+                durationWeeks: item.durationWeeks || '',
+                proficiency: item.proficiency || '',
                 categoryId: item.categoryId || '',
-                instructorName: item.instructorName || '',
-                level: item.level || '',
-                duration: item.duration || '',
-                maxStudents: item.maxStudents || '',
-                price: item.price || '',
-                schedule: item.schedule || '',
                 imageUrl: item.imageUrl || '',
+                active: item.active ?? true,
             });
         } else if (mode === 'create') {
-            setFormData({ title: '', description: '', categoryId: '', instructorName: '', level: '', duration: '', maxStudents: '', price: '', schedule: '', imageUrl: '' });
+            setFormData({
+                name: '',
+                description: '',
+                basePrice: '',
+                discountPrice: '',
+                durationWeeks: '',
+                proficiency: 'Beginner',
+                categoryId: '',
+                imageUrl: '',
+                active: true,
+            });
         }
         setModalOpen(true);
     };
@@ -90,23 +109,23 @@ const ClassesPage = () => {
         setFormLoading(true);
         try {
             const requestData = {
-                title: formData.title,
+                name: formData.name,
                 description: formData.description,
+                basePrice: parseFloat(formData.basePrice),
+                discountPrice: formData.discountPrice ? parseFloat(formData.discountPrice) : null,
+                durationWeeks: parseInt(formData.durationWeeks),
+                proficiency: formData.proficiency,
                 categoryId: formData.categoryId,
-                instructorName: formData.instructorName,
-                level: formData.level,
-                duration: formData.duration,
-                maxStudents: formData.maxStudents ? parseInt(formData.maxStudents) : null,
-                price: formData.price ? parseFloat(formData.price) : null,
-                schedule: formData.schedule,
                 imageUrl: formData.imageUrl,
+                active: formData.active,
             };
+
             if (modalMode === 'create') {
                 await api.post(API_ENDPOINTS.ART_CLASSES.CREATE, requestData);
-                toast.success('Class created');
+                toast.success('Class created successfully');
             } else {
                 await api.put(API_ENDPOINTS.ART_CLASSES.UPDATE(selectedItem.id), requestData);
-                toast.success('Class updated');
+                toast.success('Class updated successfully');
             }
             setModalOpen(false);
             loadItems();
@@ -117,88 +136,263 @@ const ClassesPage = () => {
         }
     };
 
+    const handleCategorySubmit = async (e) => {
+        e.preventDefault();
+        setCategoryFormLoading(true);
+        try {
+            await api.post(API_ENDPOINTS.ART_CLASSES_CATEGORIES.CREATE, categoryFormData);
+            toast.success('Category created successfully');
+            setCategoryModalOpen(false);
+            setCategoryFormData({ name: '', parentId: '' });
+            loadCategories(); // Refresh categories list
+        } catch (error) {
+            toast.error(error.message || 'Failed to create category');
+        } finally {
+            setCategoryFormLoading(false);
+        }
+    };
+
     const handleDelete = async (id) => {
-        if (!confirm('Delete this class?')) return;
+        if (!confirm('Are you sure you want to delete this class?')) return;
         try {
             await api.delete(API_ENDPOINTS.ART_CLASSES.DELETE(id));
             toast.success('Class deleted');
             loadItems();
         } catch (error) {
-            toast.error('Failed to delete');
+            toast.error('Failed to delete class');
         }
     };
 
-    const columns = [
-        { key: 'imageUrl', label: 'Image', render: (val) => val ? <img src={val} alt="" className="w-12 h-12 object-cover rounded-lg" /> : <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-lg" /> },
-        { key: 'title', label: 'Title', sortable: true, render: (val, row) => val || row.name || '-' },
-        { key: 'categoryName', label: 'Category', render: (val) => val || '-' },
-        { key: 'instructorName', label: 'Instructor', render: (val) => val || '-' },
-        { key: 'level', label: 'Level', render: (val) => val || '-' },
-        { key: 'price', label: 'Price', render: (val) => val ? `$${parseFloat(val).toFixed(2)}` : '-' },
-        { key: 'maxStudents', label: 'Capacity', render: (val) => val || '-' },
-        {
-            key: 'actions',
-            label: 'Actions',
-            render: (_, row) => (
-                <div className="flex gap-2">
-                    <button onClick={() => openModal('view', row)} className="p-2 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg"><FaEye /></button>
-                    <button onClick={() => openModal('edit', row)} className="p-2 text-green-500 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg"><FaEdit /></button>
-                    <button onClick={() => handleDelete(row.id)} className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg"><FaTrash /></button>
-                </div>
-            ),
-        },
-    ];
-
     const categoryOptions = categories.map(c => ({ value: c.id, label: c.name }));
-    const levelOptions = [
-        { value: 'BEGINNER', label: 'Beginner' },
-        { value: 'INTERMEDIATE', label: 'Intermediate' },
-        { value: 'ADVANCED', label: 'Advanced' },
-        { value: 'ALL_LEVELS', label: 'All Levels' },
+    const proficiencyOptions = [
+        { value: 'Beginner', label: 'Beginner' },
+        { value: 'Intermediate', label: 'Intermediate' },
+        { value: 'Advanced', label: 'Advanced' },
+        { value: 'All Levels', label: 'All Levels' },
     ];
-    const scheduleOptions = SCHEDULE_OPTIONS.map(s => ({ value: s, label: s.replace(/_/g, ' ') }));
 
     return (
-        <div className="animate-fadeIn">
-            <div className="mb-6">
-                <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">Art Classes</h1>
-                <p className="text-gray-600 dark:text-gray-400">Manage art classes available for enrollment</p>
+        <div className="animate-fadeIn p-6">
+            <div className="flex justify-between items-center mb-6">
+                <div>
+                    <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Art Classes</h1>
+                    <p className="text-gray-600 dark:text-gray-400">Manage your art classes and workshops</p>
+                </div>
+                <div className="flex gap-3">
+                    <Button variant="secondary" onClick={() => setCategoryModalOpen(true)}>
+                        <FaPlus /> Add Category
+                    </Button>
+                    <Button onClick={() => openModal('create')}>
+                        <FaPlus /> Add Class
+                    </Button>
+                </div>
             </div>
 
-            <DataTable columns={columns} data={items} loading={loading} pagination={pagination} onPageChange={setPage} actions={<Button onClick={() => openModal('create')}><FaPlus /> Add Class</Button>} />
+            {loading ? (
+                <div className="flex justify-center py-20">
+                    <div className="spinner"></div>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {items.map((item) => (
+                        <div key={item.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-shadow overflow-hidden group">
+                            {/* Image Header */}
+                            <div className="relative h-48 overflow-hidden">
+                                <img
+                                    src={item.imageUrl || 'https://via.placeholder.com/300?text=No+Image'}
+                                    alt={item.name}
+                                    className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
+                                />
+                                <div className="absolute top-2 right-2 bg-white/90 dark:bg-gray-900/90 px-2 py-1 rounded-full text-xs font-semibold shadow-sm text-gray-800 dark:text-gray-200">
+                                    {item.categoryName || 'Uncategorized'}
+                                </div>
+                                {item.discountPrice < item.basePrice && (
+                                    <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-bold shadow-sm">
+                                        Save ${(item.basePrice - item.discountPrice).toFixed(0)}
+                                    </div>
+                                )}
+                            </div>
 
-            <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title={modalMode === 'create' ? 'Add Class' : modalMode === 'edit' ? 'Edit Class' : 'Class Details'} size="lg" footer={modalMode !== 'view' && (<><Button variant="secondary" onClick={() => setModalOpen(false)}>Cancel</Button><Button onClick={handleSubmit} loading={formLoading}>{modalMode === 'create' ? 'Create' : 'Update'}</Button></>)}>
-                {modalMode === 'view' ? (
-                    <div className="space-y-3">
-                        {selectedItem?.imageUrl && <img src={selectedItem.imageUrl} alt="" className="w-full h-48 object-cover rounded-xl mb-4" />}
-                        <div><strong>Title:</strong> {selectedItem?.title || selectedItem?.name}</div>
-                        <div><strong>Category:</strong> {selectedItem?.categoryName || '-'}</div>
-                        <div><strong>Instructor:</strong> {selectedItem?.instructorName || '-'}</div>
-                        <div><strong>Level:</strong> {selectedItem?.level || '-'}</div>
-                        <div><strong>Duration:</strong> {selectedItem?.duration || '-'}</div>
-                        <div><strong>Schedule:</strong> {selectedItem?.schedule?.replace(/_/g, ' ') || '-'}</div>
-                        <div><strong>Max Students:</strong> {selectedItem?.maxStudents || '-'}</div>
-                        <div><strong>Price:</strong> {selectedItem?.price ? `$${selectedItem.price}` : '-'}</div>
-                        <div><strong>Description:</strong> {selectedItem?.description || '-'}</div>
+                            {/* Content Body */}
+                            <div className="p-5 space-y-3">
+                                <div className="flex justify-between items-start">
+                                    <h3 className="text-xl font-bold text-gray-800 dark:text-white line-clamp-1" title={item.name}>
+                                        {item.name}
+                                    </h3>
+                                    <span className={`px-2 py-0.5 text-xs rounded-full ${item.active ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'}`}>
+                                        {item.active ? 'Active' : 'Inactive'}
+                                    </span>
+                                </div>
+
+                                <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 h-10">
+                                    {item.description}
+                                </p>
+
+                                <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+                                    <span className="flex items-center gap-1">
+                                        <FaClock className="text-purple-500" /> {item.durationWeeks} Weeks
+                                    </span>
+                                    <span className="flex items-center gap-1">
+                                        <FaUserGraduate className="text-blue-500" /> {item.proficiency}
+                                    </span>
+                                </div>
+
+                                <div className="flex items-end justify-between pt-2 border-t border-gray-100 dark:border-gray-700">
+                                    <div>
+                                        <span className="text-xs text-gray-500 underline">Price</span>
+                                        <div className="flex items-baseline gap-2">
+                                            <span className="text-lg font-bold text-gray-900 dark:text-white">
+                                                ${item.discountPrice || item.basePrice}
+                                            </span>
+                                            {item.discountPrice && (
+                                                <span className="text-sm text-gray-400 line-through">
+                                                    ${item.basePrice}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={() => openModal('edit', item)}
+                                            className="p-2 text-gray-600 hover:text-purple-600 hover:bg-purple-50 dark:text-gray-400 dark:hover:bg-purple-900/30 rounded-lg transition-colors"
+                                            title="Edit"
+                                        >
+                                            <FaEdit />
+                                        </button>
+                                        <button
+                                            onClick={() => handleDelete(item.id)}
+                                            className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 dark:text-gray-400 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+                                            title="Delete"
+                                        >
+                                            <FaTrash />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            {/* Class Modal */}
+            <Modal
+                isOpen={modalOpen}
+                onClose={() => setModalOpen(false)}
+                title={modalMode === 'create' ? 'Create New Class' : 'Edit Class'}
+                size="lg"
+                footer={
+                    <>
+                        <Button variant="secondary" onClick={() => setModalOpen(false)}>Cancel</Button>
+                        <Button onClick={handleSubmit} loading={formLoading}>{modalMode === 'create' ? 'Create Class' : 'Save Changes'}</Button>
+                    </>
+                }
+            >
+                <form className="space-y-4">
+                    <Input
+                        label="Class Name"
+                        value={formData.name}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        required
+                    />
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <Select
+                            label="Category"
+                            value={formData.categoryId}
+                            onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
+                            options={categoryOptions}
+                            placeholder="Select Category"
+                            required
+                        />
+                        <Select
+                            label="Proficiency Level"
+                            value={formData.proficiency}
+                            onChange={(e) => setFormData({ ...formData, proficiency: e.target.value })}
+                            options={proficiencyOptions}
+                            required
+                        />
                     </div>
-                ) : (
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        <Input label="Title" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} required />
-                        <Select label="Category" value={formData.categoryId} onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })} options={categoryOptions} placeholder="Select category..." required />
-                        <div className="grid grid-cols-2 gap-4">
-                            <Input label="Instructor Name" value={formData.instructorName} onChange={(e) => setFormData({ ...formData, instructorName: e.target.value })} />
-                            <Select label="Level" value={formData.level} onChange={(e) => setFormData({ ...formData, level: e.target.value })} options={levelOptions} />
-                        </div>
-                        <div className="grid grid-cols-3 gap-4">
-                            <Input label="Duration" value={formData.duration} onChange={(e) => setFormData({ ...formData, duration: e.target.value })} placeholder="e.g., 2 hours" />
-                            <Input label="Max Students" type="number" value={formData.maxStudents} onChange={(e) => setFormData({ ...formData, maxStudents: e.target.value })} />
-                            <Input label="Price ($)" type="number" step="0.01" value={formData.price} onChange={(e) => setFormData({ ...formData, price: e.target.value })} />
-                        </div>
-                        <Select label="Schedule" value={formData.schedule} onChange={(e) => setFormData({ ...formData, schedule: e.target.value })} options={scheduleOptions} />
-                        <Input label="Image URL" value={formData.imageUrl} onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })} />
-                        <Textarea label="Description" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} />
-                    </form>
-                )}
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <Input
+                            label="Base Price ($)"
+                            type="number"
+                            value={formData.basePrice}
+                            onChange={(e) => setFormData({ ...formData, basePrice: e.target.value })}
+                            required
+                        />
+                        <Input
+                            label="Discount Price ($)"
+                            type="number"
+                            value={formData.discountPrice}
+                            onChange={(e) => setFormData({ ...formData, discountPrice: e.target.value })}
+                        />
+                        <Input
+                            label="Duration (Weeks)"
+                            type="number"
+                            value={formData.durationWeeks}
+                            onChange={(e) => setFormData({ ...formData, durationWeeks: e.target.value })}
+                            required
+                        />
+                    </div>
+
+                    <Input
+                        label="Image URL"
+                        value={formData.imageUrl}
+                        onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+                        placeholder="https://..."
+                    />
+
+                    <Textarea
+                        label="Description"
+                        value={formData.description}
+                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                        rows={4}
+                        required
+                    />
+
+                    <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                            type="checkbox"
+                            checked={formData.active}
+                            onChange={(e) => setFormData({ ...formData, active: e.target.checked })}
+                            className="rounded text-purple-600 focus:ring-purple-500"
+                        />
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Active</span>
+                    </label>
+                </form>
+            </Modal>
+
+            {/* Create Category Modal */}
+            <Modal
+                isOpen={categoryModalOpen}
+                onClose={() => setCategoryModalOpen(false)}
+                title="Create New Category"
+                size="md"
+                footer={
+                    <>
+                        <Button variant="secondary" onClick={() => setCategoryModalOpen(false)}>Cancel</Button>
+                        <Button onClick={handleCategorySubmit} loading={categoryFormLoading}>Create Category</Button>
+                    </>
+                }
+            >
+                <form className="space-y-4">
+                    <Input
+                        label="Category Name"
+                        value={categoryFormData.name}
+                        onChange={(e) => setCategoryFormData({ ...categoryFormData, name: e.target.value })}
+                        required
+                        placeholder="Enter category name"
+                    />
+
+                    <Input
+                        label="Parent Category ID (Optional)"
+                        value={categoryFormData.parentId}
+                        onChange={(e) => setCategoryFormData({ ...categoryFormData, parentId: e.target.value })}
+                        placeholder="Enter parent ID if applicable"
+                    />
+                </form>
             </Modal>
         </div>
     );

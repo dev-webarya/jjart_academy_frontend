@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { FaPlus, FaEdit, FaTrash, FaEye } from 'react-icons/fa';
-import DataTable from '../components/ui/DataTable';
+import { FaPlus, FaEdit, FaTrash, FaEye, FaHeart, FaEye as FaViewIcon, FaTag, FaPalette } from 'react-icons/fa';
 import Modal from '../components/ui/Modal';
 import { Button, Input, Select, Textarea } from '../components/ui/FormComponents';
 import { useToast } from '../components/ui/Toast';
@@ -18,21 +17,20 @@ const ArtWorksPage = () => {
     const [modalMode, setModalMode] = useState('create');
     const [selectedItem, setSelectedItem] = useState(null);
     const [formData, setFormData] = useState({
-        title: '',
+        name: '',
         description: '',
         categoryId: '',
         artistName: '',
-        medium: '',
-        dimensions: '',
-        yearCreated: '',
-        price: '',
+        artMedium: '',
+        size: '',
+        basePrice: '',
+        discountPrice: '',
         imageUrl: '',
-        isForSale: true,
-        isFeatured: false,
+        active: true,
     });
     const [formLoading, setFormLoading] = useState(false);
 
-    // Load categories for dropdown
+    // Fetch Categories
     const loadCategories = useCallback(async () => {
         try {
             const response = await getPaginated(API_ENDPOINTS.ART_WORKS_CATEGORIES.GET_ALL, { size: 100 });
@@ -42,6 +40,7 @@ const ArtWorksPage = () => {
         }
     }, []);
 
+    // Fetch Items
     const loadItems = useCallback(async () => {
         setLoading(true);
         try {
@@ -70,31 +69,29 @@ const ArtWorksPage = () => {
         setSelectedItem(item);
         if (mode === 'edit' && item) {
             setFormData({
-                title: item.title || '',
+                name: item.name || '',
                 description: item.description || '',
                 categoryId: item.categoryId || '',
                 artistName: item.artistName || '',
-                medium: item.medium || '',
-                dimensions: item.dimensions || '',
-                yearCreated: item.yearCreated || '',
-                price: item.price || '',
+                artMedium: item.artMedium || '',
+                size: item.size || '',
+                basePrice: item.basePrice || '',
+                discountPrice: item.discountPrice || '',
                 imageUrl: item.imageUrl || '',
-                isForSale: item.isForSale ?? true,
-                isFeatured: item.isFeatured ?? false,
+                active: item.active ?? true,
             });
         } else if (mode === 'create') {
             setFormData({
-                title: '',
+                name: '',
                 description: '',
                 categoryId: '',
                 artistName: '',
-                medium: '',
-                dimensions: '',
-                yearCreated: '',
-                price: '',
+                artMedium: '',
+                size: '',
+                basePrice: '',
+                discountPrice: '',
                 imageUrl: '',
-                isForSale: true,
-                isFeatured: false,
+                active: true,
             });
         }
         setModalOpen(true);
@@ -104,19 +101,17 @@ const ArtWorksPage = () => {
         e.preventDefault();
         setFormLoading(true);
         try {
-            // Build request following API schema
             const requestData = {
-                title: formData.title,
+                name: formData.name,
                 description: formData.description,
                 categoryId: formData.categoryId,
                 artistName: formData.artistName,
-                medium: formData.medium,
-                dimensions: formData.dimensions,
-                yearCreated: formData.yearCreated ? parseInt(formData.yearCreated) : null,
-                price: formData.price ? parseFloat(formData.price) : null,
+                artMedium: formData.artMedium,
+                size: formData.size,
+                basePrice: parseFloat(formData.basePrice),
+                discountPrice: formData.discountPrice ? parseFloat(formData.discountPrice) : null,
                 imageUrl: formData.imageUrl,
-                isForSale: formData.isForSale,
-                isFeatured: formData.isFeatured,
+                active: formData.active,
             };
 
             if (modalMode === 'create') {
@@ -146,134 +141,180 @@ const ArtWorksPage = () => {
         }
     };
 
-    const columns = [
-        {
-            key: 'imageUrl',
-            label: 'Image',
-            render: (val) => val ? (
-                <img src={val} alt="" className="w-12 h-12 object-cover rounded-lg" />
-            ) : (
-                <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-lg" />
-            )
-        },
-        { key: 'title', label: 'Title', sortable: true },
-        { key: 'categoryName', label: 'Category', render: (val) => val || '-' },
-        { key: 'artistName', label: 'Artist', render: (val) => val || '-' },
-        {
-            key: 'price',
-            label: 'Price',
-            render: (val) => val ? `$${parseFloat(val).toFixed(2)}` : '-'
-        },
-        {
-            key: 'isForSale',
-            label: 'For Sale',
-            render: (val) => val ? <span className="text-green-500">Yes</span> : <span className="text-gray-500">No</span>
-        },
-        {
-            key: 'actions',
-            label: 'Actions',
-            render: (_, row) => (
-                <div className="flex gap-2">
-                    <button onClick={() => openModal('view', row)} className="p-2 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg">
-                        <FaEye />
-                    </button>
-                    <button onClick={() => openModal('edit', row)} className="p-2 text-green-500 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg">
-                        <FaEdit />
-                    </button>
-                    <button onClick={() => handleDelete(row.id)} className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg">
-                        <FaTrash />
-                    </button>
-                </div>
-            ),
-        },
-    ];
-
     const categoryOptions = categories.map(c => ({ value: c.id, label: c.name }));
 
     return (
-        <div className="animate-fadeIn">
-            <div className="mb-6">
-                <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">Art Works</h1>
-                <p className="text-gray-600 dark:text-gray-400">Manage art works and their categories</p>
+        <div className="animate-fadeIn p-6">
+            <div className="flex justify-between items-center mb-6">
+                <div>
+                    <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Art Works</h1>
+                    <p className="text-gray-600 dark:text-gray-400">Manage gallery art works collection</p>
+                </div>
+                <Button onClick={() => openModal('create')}>
+                    <FaPlus /> Add Art Work
+                </Button>
             </div>
 
-            <DataTable
-                columns={columns}
-                data={items}
-                loading={loading}
-                pagination={pagination}
-                onPageChange={setPage}
-                actions={
-                    <Button onClick={() => openModal('create')}>
-                        <FaPlus /> Add Art Work
-                    </Button>
-                }
-            />
+            {loading ? (
+                <div className="flex justify-center py-20">
+                    <div className="spinner"></div>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {items.map((item) => (
+                        <div key={item.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-shadow overflow-hidden group">
+                            {/* Image Header with Price Tag */}
+                            <div className="relative h-64 overflow-hidden bg-gray-100 dark:bg-gray-700">
+                                <img
+                                    src={item.imageUrl || 'https://via.placeholder.com/300?text=Art+Work'}
+                                    alt={item.name}
+                                    className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
+                                />
+                                <div className="absolute top-2 right-2 flex flex-col items-end gap-1">
+                                    <span className="bg-white/90 dark:bg-gray-900/90 px-2 py-1 rounded-md text-xs font-bold shadow-sm">
+                                        ${item.discountPrice || item.basePrice}
+                                    </span>
+                                    {item.discountPrice && item.discountPrice < item.basePrice && (
+                                        <span className="bg-red-500 text-white px-2 py-1 rounded-md text-xs font-bold line-through shadow-sm">
+                                            ${item.basePrice}
+                                        </span>
+                                    )}
+                                </div>
+                                <div className="absolute bottom-2 left-2 bg-black/50 text-white px-2 py-1 rounded text-xs backdrop-blur-sm">
+                                    {item.categoryName}
+                                </div>
+                            </div>
+
+                            {/* Content Body */}
+                            <div className="p-4 space-y-2">
+                                <div className="flex justify-between items-start">
+                                    <h3 className="text-lg font-bold text-gray-800 dark:text-white line-clamp-1" title={item.name}>
+                                        {item.name}
+                                    </h3>
+                                </div>
+
+                                <p className="text-sm text-purple-600 dark:text-purple-400 font-medium">
+                                    {item.artistName}
+                                </p>
+
+                                <div className="text-xs text-gray-500 flex flex-wrap gap-2">
+                                    <span className="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">{item.artMedium}</span>
+                                    <span className="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">{item.size}</span>
+                                </div>
+
+                                <div className="flex items-center gap-4 text-xs text-gray-400 pt-2 border-t border-gray-100 dark:border-gray-700">
+                                    <span className="flex items-center gap-1"><FaViewIcon /> {item.views || 0}</span>
+                                    <span className="flex items-center gap-1"><FaHeart /> {item.likes || 0}</span>
+                                </div>
+
+                                <div className="flex justify-end pt-2 gap-2">
+                                    <button
+                                        onClick={() => openModal('edit', item)}
+                                        className="p-2 text-gray-600 hover:text-purple-600 hover:bg-purple-50 dark:text-gray-400 dark:hover:bg-purple-900/30 rounded-lg transition-colors"
+                                    >
+                                        <FaEdit />
+                                    </button>
+                                    <button
+                                        onClick={() => handleDelete(item.id)}
+                                        className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 dark:text-gray-400 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+                                    >
+                                        <FaTrash />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
 
             <Modal
                 isOpen={modalOpen}
                 onClose={() => setModalOpen(false)}
-                title={modalMode === 'create' ? 'Add Art Work' : modalMode === 'edit' ? 'Edit Art Work' : 'Art Work Details'}
+                title={modalMode === 'create' ? 'Create Art Work' : 'Edit Art Work'}
                 size="lg"
                 footer={
-                    modalMode !== 'view' && (
-                        <>
-                            <Button variant="secondary" onClick={() => setModalOpen(false)}>Cancel</Button>
-                            <Button onClick={handleSubmit} loading={formLoading}>{modalMode === 'create' ? 'Create' : 'Update'}</Button>
-                        </>
-                    )
+                    <>
+                        <Button variant="secondary" onClick={() => setModalOpen(false)}>Cancel</Button>
+                        <Button onClick={handleSubmit} loading={formLoading}>{modalMode === 'create' ? 'Create' : 'Save Changes'}</Button>
+                    </>
                 }
             >
-                {modalMode === 'view' ? (
-                    <div className="space-y-3">
-                        {selectedItem?.imageUrl && <img src={selectedItem.imageUrl} alt="" className="w-full h-48 object-cover rounded-xl mb-4" />}
-                        <div><strong>Title:</strong> {selectedItem?.title}</div>
-                        <div><strong>Category:</strong> {selectedItem?.categoryName || '-'}</div>
-                        <div><strong>Artist:</strong> {selectedItem?.artistName || '-'}</div>
-                        <div><strong>Medium:</strong> {selectedItem?.medium || '-'}</div>
-                        <div><strong>Dimensions:</strong> {selectedItem?.dimensions || '-'}</div>
-                        <div><strong>Year:</strong> {selectedItem?.yearCreated || '-'}</div>
-                        <div><strong>Price:</strong> {selectedItem?.price ? `$${selectedItem.price}` : '-'}</div>
-                        <div><strong>For Sale:</strong> {selectedItem?.isForSale ? 'Yes' : 'No'}</div>
-                        <div><strong>Featured:</strong> {selectedItem?.isFeatured ? 'Yes' : 'No'}</div>
-                        <div><strong>Views:</strong> {selectedItem?.viewsCount || 0}</div>
-                        <div><strong>Likes:</strong> {selectedItem?.likesCount || 0}</div>
-                        <div><strong>Description:</strong> {selectedItem?.description || '-'}</div>
-                    </div>
-                ) : (
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        <Input label="Title" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} required />
-                        <Select
-                            label="Category"
-                            value={formData.categoryId}
-                            onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
-                            options={categoryOptions}
-                            placeholder="Select category..."
+                <form className="space-y-4">
+                    <Input
+                        label="Title"
+                        value={formData.name}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        required
+                    />
+
+                    <Select
+                        label="Category"
+                        value={formData.categoryId}
+                        onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
+                        options={categoryOptions}
+                        placeholder="Select Category"
+                        required
+                    />
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <Input
+                            label="Artist Name"
+                            value={formData.artistName}
+                            onChange={(e) => setFormData({ ...formData, artistName: e.target.value })}
                             required
                         />
-                        <div className="grid grid-cols-2 gap-4">
-                            <Input label="Artist Name" value={formData.artistName} onChange={(e) => setFormData({ ...formData, artistName: e.target.value })} />
-                            <Input label="Medium" value={formData.medium} onChange={(e) => setFormData({ ...formData, medium: e.target.value })} placeholder="e.g., Oil on Canvas" />
-                        </div>
-                        <div className="grid grid-cols-3 gap-4">
-                            <Input label="Dimensions" value={formData.dimensions} onChange={(e) => setFormData({ ...formData, dimensions: e.target.value })} placeholder="e.g., 24x36 in" />
-                            <Input label="Year Created" type="number" value={formData.yearCreated} onChange={(e) => setFormData({ ...formData, yearCreated: e.target.value })} />
-                            <Input label="Price ($)" type="number" step="0.01" value={formData.price} onChange={(e) => setFormData({ ...formData, price: e.target.value })} />
-                        </div>
-                        <Input label="Image URL" value={formData.imageUrl} onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })} placeholder="https://..." />
-                        <div className="flex items-center gap-6">
-                            <label className="flex items-center gap-2">
-                                <input type="checkbox" checked={formData.isForSale} onChange={(e) => setFormData({ ...formData, isForSale: e.target.checked })} className="w-4 h-4" />
-                                <span className="text-sm text-gray-700 dark:text-gray-300">For Sale</span>
-                            </label>
-                            <label className="flex items-center gap-2">
-                                <input type="checkbox" checked={formData.isFeatured} onChange={(e) => setFormData({ ...formData, isFeatured: e.target.checked })} className="w-4 h-4" />
-                                <span className="text-sm text-gray-700 dark:text-gray-300">Featured</span>
-                            </label>
-                        </div>
-                        <Textarea label="Description" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} />
-                    </form>
-                )}
+                        <Input
+                            label="Art Medium"
+                            value={formData.artMedium}
+                            onChange={(e) => setFormData({ ...formData, artMedium: e.target.value })}
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-4">
+                        <Input
+                            label="Size"
+                            value={formData.size}
+                            onChange={(e) => setFormData({ ...formData, size: e.target.value })}
+                            placeholder="e.g. 24x36"
+                        />
+                        <Input
+                            label="Base Price ($)"
+                            type="number"
+                            value={formData.basePrice}
+                            onChange={(e) => setFormData({ ...formData, basePrice: e.target.value })}
+                            required
+                        />
+                        <Input
+                            label="Discount Price ($)"
+                            type="number"
+                            value={formData.discountPrice}
+                            onChange={(e) => setFormData({ ...formData, discountPrice: e.target.value })}
+                        />
+                    </div>
+
+                    <Input
+                        label="Image URL"
+                        value={formData.imageUrl}
+                        onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+                    />
+
+                    <Textarea
+                        label="Description"
+                        value={formData.description}
+                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                        rows={4}
+                    />
+
+                    <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                            type="checkbox"
+                            checked={formData.active}
+                            onChange={(e) => setFormData({ ...formData, active: e.target.checked })}
+                            className="rounded text-purple-600 focus:ring-purple-500"
+                        />
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Active / For Sale</span>
+                    </label>
+                </form>
             </Modal>
         </div>
     );

@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { FaPlus, FaEdit, FaTrash, FaEye } from 'react-icons/fa';
-import DataTable from '../components/ui/DataTable';
+import { FaPlus, FaEdit, FaTrash, FaMapMarkerAlt, FaGlobe, FaEnvelope, FaPhone } from 'react-icons/fa';
 import Modal from '../components/ui/Modal';
 import { Button, Input, Select, Textarea } from '../components/ui/FormComponents';
 import { useToast } from '../components/ui/Toast';
@@ -14,6 +13,8 @@ const GalleriesPage = () => {
     const [loading, setLoading] = useState(true);
     const [pagination, setPagination] = useState(null);
     const [page, setPage] = useState(0);
+
+    // Gallery Modal State
     const [modalOpen, setModalOpen] = useState(false);
     const [modalMode, setModalMode] = useState('create');
     const [selectedItem, setSelectedItem] = useState(null);
@@ -21,14 +22,18 @@ const GalleriesPage = () => {
         name: '',
         description: '',
         categoryId: '',
-        location: '',
         imageUrl: '',
-        openingHours: '',
-        contactEmail: '',
-        contactPhone: '',
-        website: '',
+        active: true,
     });
     const [formLoading, setFormLoading] = useState(false);
+
+    // Category Modal State
+    const [categoryModalOpen, setCategoryModalOpen] = useState(false);
+    const [categoryFormData, setCategoryFormData] = useState({
+        name: '',
+        parentId: ''
+    });
+    const [categoryFormLoading, setCategoryFormLoading] = useState(false);
 
     const loadCategories = useCallback(async () => {
         try {
@@ -70,15 +75,17 @@ const GalleriesPage = () => {
                 name: item.name || '',
                 description: item.description || '',
                 categoryId: item.categoryId || '',
-                location: item.location || '',
                 imageUrl: item.imageUrl || '',
-                openingHours: item.openingHours || '',
-                contactEmail: item.contactEmail || '',
-                contactPhone: item.contactPhone || '',
-                website: item.website || '',
+                active: item.active ?? true,
             });
         } else if (mode === 'create') {
-            setFormData({ name: '', description: '', categoryId: '', location: '', imageUrl: '', openingHours: '', contactEmail: '', contactPhone: '', website: '' });
+            setFormData({
+                name: '',
+                description: '',
+                categoryId: '',
+                imageUrl: '',
+                active: true,
+            });
         }
         setModalOpen(true);
     };
@@ -104,6 +111,22 @@ const GalleriesPage = () => {
         }
     };
 
+    const handleCategorySubmit = async (e) => {
+        e.preventDefault();
+        setCategoryFormLoading(true);
+        try {
+            await api.post(API_ENDPOINTS.ART_GALLERIES_CATEGORIES.CREATE, categoryFormData);
+            toast.success('Category created successfully');
+            setCategoryModalOpen(false);
+            setCategoryFormData({ name: '', parentId: '' });
+            loadCategories(); // Refresh categories list
+        } catch (error) {
+            toast.error(error.message || 'Failed to create category');
+        } finally {
+            setCategoryFormLoading(false);
+        }
+    };
+
     const handleDelete = async (id) => {
         if (!confirm('Delete this gallery?')) return;
         try {
@@ -115,64 +138,166 @@ const GalleriesPage = () => {
         }
     };
 
-    const columns = [
-        { key: 'imageUrl', label: 'Image', render: (val) => val ? <img src={val} alt="" className="w-12 h-12 object-cover rounded-lg" /> : <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-lg" /> },
-        { key: 'name', label: 'Name', sortable: true },
-        { key: 'categoryName', label: 'Category', render: (val) => val || '-' },
-        { key: 'location', label: 'Location', render: (val) => val || '-' },
-        { key: 'contactEmail', label: 'Email', render: (val) => val || '-' },
-        {
-            key: 'actions',
-            label: 'Actions',
-            render: (_, row) => (
-                <div className="flex gap-2">
-                    <button onClick={() => openModal('view', row)} className="p-2 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg"><FaEye /></button>
-                    <button onClick={() => openModal('edit', row)} className="p-2 text-green-500 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg"><FaEdit /></button>
-                    <button onClick={() => handleDelete(row.id)} className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg"><FaTrash /></button>
-                </div>
-            ),
-        },
-    ];
-
     const categoryOptions = categories.map(c => ({ value: c.id, label: c.name }));
 
     return (
-        <div className="animate-fadeIn">
-            <div className="mb-6">
-                <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">Art Galleries</h1>
-                <p className="text-gray-600 dark:text-gray-400">Manage partner galleries and venues</p>
+        <div className="animate-fadeIn p-6">
+            <div className="flex justify-between items-center mb-6">
+                <div>
+                    <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Art Galleries</h1>
+                    <p className="text-gray-600 dark:text-gray-400">Manage partner galleries and venues</p>
+                </div>
+                <div className="flex gap-3">
+                    <Button variant="secondary" onClick={() => setCategoryModalOpen(true)}>
+                        <FaPlus /> Add Category
+                    </Button>
+                    <Button onClick={() => openModal('create')}>
+                        <FaPlus /> Add Gallery
+                    </Button>
+                </div>
             </div>
 
-            <DataTable columns={columns} data={items} loading={loading} pagination={pagination} onPageChange={setPage} actions={<Button onClick={() => openModal('create')}><FaPlus /> Add Gallery</Button>} />
+            {loading ? (
+                <div className="flex justify-center py-20">
+                    <div className="spinner"></div>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {items.map((item) => (
+                        <div key={item.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-shadow overflow-hidden group">
+                            {/* Image Header */}
+                            <div className="relative h-48 overflow-hidden">
+                                <img
+                                    src={item.imageUrl || 'https://via.placeholder.com/300?text=Gallery'}
+                                    alt={item.name}
+                                    className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
+                                />
+                                <div className="absolute top-2 right-2 bg-white/90 dark:bg-gray-900/90 px-2 py-1 rounded-full text-xs font-semibold shadow-sm text-gray-800 dark:text-gray-200">
+                                    {item.categoryName || 'Uncategorized'}
+                                </div>
+                            </div>
 
-            <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title={modalMode === 'create' ? 'Add Gallery' : modalMode === 'edit' ? 'Edit Gallery' : 'Gallery Details'} size="lg" footer={modalMode !== 'view' && (<><Button variant="secondary" onClick={() => setModalOpen(false)}>Cancel</Button><Button onClick={handleSubmit} loading={formLoading}>{modalMode === 'create' ? 'Create' : 'Update'}</Button></>)}>
-                {modalMode === 'view' ? (
-                    <div className="space-y-3">
-                        {selectedItem?.imageUrl && <img src={selectedItem.imageUrl} alt="" className="w-full h-48 object-cover rounded-xl mb-4" />}
-                        <div><strong>Name:</strong> {selectedItem?.name}</div>
-                        <div><strong>Category:</strong> {selectedItem?.categoryName || '-'}</div>
-                        <div><strong>Location:</strong> {selectedItem?.location || '-'}</div>
-                        <div><strong>Opening Hours:</strong> {selectedItem?.openingHours || '-'}</div>
-                        <div><strong>Email:</strong> {selectedItem?.contactEmail || '-'}</div>
-                        <div><strong>Phone:</strong> {selectedItem?.contactPhone || '-'}</div>
-                        <div><strong>Website:</strong> {selectedItem?.website ? <a href={selectedItem.website} target="_blank" rel="noopener noreferrer" className="text-purple-500">{selectedItem.website}</a> : '-'}</div>
-                        <div><strong>Description:</strong> {selectedItem?.description || '-'}</div>
-                    </div>
-                ) : (
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        <Input label="Name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required />
-                        <Select label="Category" value={formData.categoryId} onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })} options={categoryOptions} placeholder="Select category..." required />
-                        <Input label="Location" value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} />
-                        <Input label="Opening Hours" value={formData.openingHours} onChange={(e) => setFormData({ ...formData, openingHours: e.target.value })} placeholder="e.g., Mon-Fri 9am-5pm" />
-                        <div className="grid grid-cols-2 gap-4">
-                            <Input label="Contact Email" type="email" value={formData.contactEmail} onChange={(e) => setFormData({ ...formData, contactEmail: e.target.value })} />
-                            <Input label="Contact Phone" value={formData.contactPhone} onChange={(e) => setFormData({ ...formData, contactPhone: e.target.value })} />
+                            {/* Content Body */}
+                            <div className="p-5 space-y-3">
+                                <div className="flex justify-between items-start">
+                                    <h3 className="text-xl font-bold text-gray-800 dark:text-white line-clamp-1" title={item.name}>
+                                        {item.name}
+                                    </h3>
+                                    <span className={`px-2 py-0.5 text-xs rounded-full ${item.active ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'}`}>
+                                        {item.active ? 'Active' : 'Inactive'}
+                                    </span>
+                                </div>
+
+                                <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-3 min-h-[3rem]">
+                                    {item.description || 'No description provided.'}
+                                </p>
+
+                                {/* Removed unsupported fields from view to match data model */}
+
+                                <div className="flex justify-end pt-3 gap-2 border-t border-gray-100 dark:border-gray-700">
+                                    <button
+                                        onClick={() => openModal('edit', item)}
+                                        className="p-2 text-gray-600 hover:text-purple-600 hover:bg-purple-50 dark:text-gray-400 dark:hover:bg-purple-900/30 rounded-lg transition-colors"
+                                    >
+                                        <FaEdit />
+                                    </button>
+                                    <button
+                                        onClick={() => handleDelete(item.id)}
+                                        className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 dark:text-gray-400 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+                                    >
+                                        <FaTrash />
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-                        <Input label="Website" value={formData.website} onChange={(e) => setFormData({ ...formData, website: e.target.value })} placeholder="https://..." />
-                        <Input label="Image URL" value={formData.imageUrl} onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })} />
-                        <Textarea label="Description" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} />
-                    </form>
-                )}
+                    ))}
+                </div>
+            )}
+
+            {/* Gallery Modal */}
+            <Modal
+                isOpen={modalOpen}
+                onClose={() => setModalOpen(false)}
+                title={modalMode === 'create' ? 'Create Gallery' : 'Edit Gallery'}
+                size="lg"
+                footer={
+                    <>
+                        <Button variant="secondary" onClick={() => setModalOpen(false)}>Cancel</Button>
+                        <Button onClick={handleSubmit} loading={formLoading}>{modalMode === 'create' ? 'Create' : 'Save Changes'}</Button>
+                    </>
+                }
+            >
+                <form className="space-y-4">
+                    <Input
+                        label="Name"
+                        value={formData.name}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        required
+                    />
+
+                    <Select
+                        label="Category"
+                        value={formData.categoryId}
+                        onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
+                        options={categoryOptions}
+                        placeholder="Select Category"
+                        required
+                    />
+
+                    <Input
+                        label="Image URL"
+                        value={formData.imageUrl}
+                        onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+                    />
+
+                    <Textarea
+                        label="Description"
+                        value={formData.description}
+                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                        rows={4}
+                    />
+
+                    <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                            type="checkbox"
+                            checked={formData.active}
+                            onChange={(e) => setFormData({ ...formData, active: e.target.checked })}
+                            className="rounded text-purple-600 focus:ring-purple-500"
+                        />
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Active</span>
+                    </label>
+                </form>
+            </Modal>
+
+            {/* Create Category Modal */}
+            <Modal
+                isOpen={categoryModalOpen}
+                onClose={() => setCategoryModalOpen(false)}
+                title="Create New Category"
+                size="md"
+                footer={
+                    <>
+                        <Button variant="secondary" onClick={() => setCategoryModalOpen(false)}>Cancel</Button>
+                        <Button onClick={handleCategorySubmit} loading={categoryFormLoading}>Create Category</Button>
+                    </>
+                }
+            >
+                <form className="space-y-4">
+                    <Input
+                        label="Category Name"
+                        value={categoryFormData.name}
+                        onChange={(e) => setCategoryFormData({ ...categoryFormData, name: e.target.value })}
+                        required
+                        placeholder="Enter category name"
+                    />
+
+                    <Input
+                        label="Parent Category ID (Optional)"
+                        value={categoryFormData.parentId}
+                        onChange={(e) => setCategoryFormData({ ...categoryFormData, parentId: e.target.value })}
+                        placeholder="Enter parent ID if applicable"
+                    />
+                </form>
             </Modal>
         </div>
     );
