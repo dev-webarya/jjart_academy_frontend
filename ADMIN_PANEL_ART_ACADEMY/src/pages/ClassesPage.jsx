@@ -1,7 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { FaPlus, FaEdit, FaTrash, FaClock, FaUserGraduate } from 'react-icons/fa';
 import Modal from '../components/ui/Modal';
+import ImagePreviewModal from '../components/ui/ImagePreviewModal';
 import { Button, Input, Select, Textarea } from '../components/ui/FormComponents';
+import Pagination from '../components/ui/Pagination';
+import ImageUpload from '../components/ui/ImageUpload';
 import { useToast } from '../components/ui/Toast';
 import api, { getPaginated } from '../api/apiService';
 import { API_ENDPOINTS } from '../api/endpoints';
@@ -13,6 +16,7 @@ const ClassesPage = () => {
     const [loading, setLoading] = useState(true);
     const [pagination, setPagination] = useState(null);
     const [page, setPage] = useState(0);
+    const [pageSize, setPageSize] = useState(20);
 
     // Class Modal State
     const [modalOpen, setModalOpen] = useState(false);
@@ -39,6 +43,10 @@ const ClassesPage = () => {
     });
     const [categoryFormLoading, setCategoryFormLoading] = useState(false);
 
+    // Image Preview State
+    const [previewImage, setPreviewImage] = useState(null);
+    const [previewTitle, setPreviewTitle] = useState('');
+
     // Fetch Categories
     const loadCategories = useCallback(async () => {
         try {
@@ -53,11 +61,11 @@ const ClassesPage = () => {
     const loadItems = useCallback(async () => {
         setLoading(true);
         try {
-            const response = await getPaginated(API_ENDPOINTS.ART_CLASSES.GET_ALL, { page, size: 20 });
+            const response = await getPaginated(API_ENDPOINTS.ART_CLASSES.GET_ALL, { page, size: pageSize });
             setItems(response.content || []);
             setPagination({
                 number: response.number || 0,
-                size: response.size || 20,
+                size: response.size || pageSize,
                 totalElements: response.totalElements || 0,
                 totalPages: response.totalPages || 1,
             });
@@ -66,7 +74,7 @@ const ClassesPage = () => {
         } finally {
             setLoading(false);
         }
-    }, [page, toast]);
+    }, [page, pageSize, toast]);
 
     useEffect(() => {
         loadCategories();
@@ -201,7 +209,11 @@ const ClassesPage = () => {
                                 <img
                                     src={item.imageUrl || 'https://via.placeholder.com/300?text=No+Image'}
                                     alt={item.name}
-                                    className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
+                                    className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300 cursor-pointer"
+                                    onClick={() => {
+                                        setPreviewImage(item.imageUrl || 'https://via.placeholder.com/300?text=No+Image');
+                                        setPreviewTitle(item.name);
+                                    }}
                                 />
                                 <div className="absolute top-2 right-2 bg-white/90 dark:bg-gray-900/90 px-2 py-1 rounded-full text-xs font-semibold shadow-sm text-gray-800 dark:text-gray-200">
                                     {item.categoryName || 'Uncategorized'}
@@ -275,6 +287,18 @@ const ClassesPage = () => {
                 </div>
             )}
 
+            <Pagination
+                pagination={pagination}
+                onPageChange={(newPage) => setPage(newPage)}
+                pageSize={pageSize}
+                onPageSizeChange={(newSize) => {
+                    setPageSize(newSize);
+                    setPage(0);
+                }}
+            />
+
+
+
             {/* Class Modal */}
             <Modal
                 isOpen={modalOpen}
@@ -337,11 +361,9 @@ const ClassesPage = () => {
                         />
                     </div>
 
-                    <Input
-                        label="Image URL"
+                    <ImageUpload
                         value={formData.imageUrl}
-                        onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-                        placeholder="https://..."
+                        onChange={(url) => setFormData({ ...formData, imageUrl: url })}
                     />
 
                     <Textarea
@@ -394,7 +416,15 @@ const ClassesPage = () => {
                     />
                 </form>
             </Modal>
-        </div>
+
+            {/* Image Preview Modal */}
+            <ImagePreviewModal
+                isOpen={!!previewImage}
+                onClose={() => setPreviewImage(null)}
+                imageUrl={previewImage}
+                title={previewTitle}
+            />
+        </div >
     );
 };
 

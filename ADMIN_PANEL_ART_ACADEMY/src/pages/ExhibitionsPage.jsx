@@ -1,7 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { FaPlus, FaEdit, FaTrash, FaMapMarkerAlt, FaCalendarAlt, FaPalette, FaUser } from 'react-icons/fa';
 import Modal from '../components/ui/Modal';
+import ImagePreviewModal from '../components/ui/ImagePreviewModal';
 import { Button, Input, Select, Textarea } from '../components/ui/FormComponents';
+import Pagination from '../components/ui/Pagination';
+import ImageUpload from '../components/ui/ImageUpload';
 import { useToast } from '../components/ui/Toast';
 import api, { getPaginated } from '../api/apiService';
 import { API_ENDPOINTS } from '../api/endpoints';
@@ -13,6 +16,7 @@ const ExhibitionsPage = () => {
     const [loading, setLoading] = useState(true);
     const [pagination, setPagination] = useState(null);
     const [page, setPage] = useState(0);
+    const [pageSize, setPageSize] = useState(20);
 
     // Exhibition Modal State
     const [modalOpen, setModalOpen] = useState(false);
@@ -40,6 +44,10 @@ const ExhibitionsPage = () => {
     });
     const [categoryFormLoading, setCategoryFormLoading] = useState(false);
 
+    // Image Preview State
+    const [previewImage, setPreviewImage] = useState(null);
+    const [previewTitle, setPreviewTitle] = useState('');
+
     const loadCategories = useCallback(async () => {
         try {
             const response = await getPaginated(API_ENDPOINTS.ART_EXHIBITIONS_CATEGORIES.GET_ALL, { size: 100 });
@@ -52,11 +60,11 @@ const ExhibitionsPage = () => {
     const loadItems = useCallback(async () => {
         setLoading(true);
         try {
-            const response = await getPaginated(API_ENDPOINTS.ART_EXHIBITIONS.GET_ALL, { page, size: 20 });
+            const response = await getPaginated(API_ENDPOINTS.ART_EXHIBITIONS.GET_ALL, { page, size: pageSize });
             setItems(response.content || []);
             setPagination({
                 number: response.number || 0,
-                size: response.size || 20,
+                size: response.size || pageSize,
                 totalElements: response.totalElements || 0,
                 totalPages: response.totalPages || 1,
             });
@@ -65,7 +73,7 @@ const ExhibitionsPage = () => {
         } finally {
             setLoading(false);
         }
-    }, [page, toast]);
+    }, [page, pageSize, toast]);
 
     useEffect(() => {
         loadCategories();
@@ -190,7 +198,11 @@ const ExhibitionsPage = () => {
                                 <img
                                     src={item.imageUrl || 'https://via.placeholder.com/300?text=Exhibition'}
                                     alt={item.name}
-                                    className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
+                                    className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300 cursor-pointer"
+                                    onClick={() => {
+                                        setPreviewImage(item.imageUrl || 'https://via.placeholder.com/300?text=Exhibition');
+                                        setPreviewTitle(item.name);
+                                    }}
                                 />
                                 <div className="absolute top-2 right-2 bg-white/90 dark:bg-gray-900/90 px-2 py-1 rounded-full text-xs font-semibold shadow-sm">
                                     {item.categoryName}
@@ -255,6 +267,16 @@ const ExhibitionsPage = () => {
                     ))}
                 </div>
             )}
+
+            <Pagination
+                pagination={pagination}
+                onPageChange={(newPage) => setPage(newPage)}
+                pageSize={pageSize}
+                onPageSizeChange={(newSize) => {
+                    setPageSize(newSize);
+                    setPage(0);
+                }}
+            />
 
             <Modal
                 isOpen={modalOpen}
@@ -324,11 +346,9 @@ const ExhibitionsPage = () => {
                         />
                     </div>
 
-                    <Input
-                        label="Image URL"
+                    <ImageUpload
                         value={formData.imageUrl}
-                        onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-                        placeholder="https://..."
+                        onChange={(url) => setFormData({ ...formData, imageUrl: url })}
                     />
 
                     <Textarea
@@ -380,7 +400,15 @@ const ExhibitionsPage = () => {
                     />
                 </form>
             </Modal>
-        </div>
+
+            {/* Image Preview Modal */}
+            <ImagePreviewModal
+                isOpen={!!previewImage}
+                onClose={() => setPreviewImage(null)}
+                imageUrl={previewImage}
+                title={previewTitle}
+            />
+        </div >
     );
 };
 

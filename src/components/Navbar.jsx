@@ -5,7 +5,6 @@ import { useTheme } from "../hooks/useTheme";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import EnrollmentForm from "./EnrollmentForm";
-import AdminLogin from "./auth/AdminLogin";
 import StudentLogin from "./auth/StudentLogin";
 import StudentRegister from "./auth/StudentRegister";
 const Navbar = () => {
@@ -14,7 +13,6 @@ const Navbar = () => {
   const [theme, toggleTheme] = useTheme();
   const [showEnrollForm, setShowEnrollForm] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
-  const [showAdminLogin, setShowAdminLogin] = useState(false);
   const [showStudentLogin, setShowStudentLogin] = useState(false);
   const [showLoginDropdown, setShowLoginDropdown] = useState(false);
   const [showShopDropdown, setShowShopDropdown] = useState(false);
@@ -239,19 +237,6 @@ const Navbar = () => {
                     </button>
                     {showLoginDropdown && (
                       <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden z-50">
-                        <button
-                          onClick={() => {
-                            setShowAdminLogin(true);
-                            setShowLoginDropdown(false);
-                          }}
-                          className="w-full px-4 py-3 text-left hover:bg-purple-50 dark:hover:bg-gray-700 transition-all flex items-center space-x-3 border-b border-gray-200 dark:border-gray-700"
-                        >
-                          <FaUserShield className="text-purple-600" size={20} />
-                          <div>
-                            <p className="font-semibold text-gray-800 dark:text-white text-sm">Admin Login</p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">Access admin panel</p>
-                          </div>
-                        </button>
 
                         <button
                           onClick={() => {
@@ -353,13 +338,6 @@ const Navbar = () => {
                 </button>
                 {showMobileLoginDropdown && (
                   <div className="space-y-2">
-                    <button
-                      onClick={() => { setShowAdminLogin(true); setIsOpen(false); setShowMobileLoginDropdown(false); }}
-                      className="w-full px-4 py-2.5 bg-purple-600 text-white rounded-xl font-bold text-xs shadow-lg hover:shadow-xl transition-all flex items-center justify-center space-x-2"
-                    >
-                      <FaUserShield size={14} />
-                      <span>Admin Login</span>
-                    </button>
 
                     <button
                       onClick={() => { setShowStudentLogin(true); setIsOpen(false); setShowMobileLoginDropdown(false); }}
@@ -385,7 +363,6 @@ const Navbar = () => {
           setShowStudentLogin(true);
         }}
       />
-      <AdminLogin isOpen={showAdminLogin} onClose={() => setShowAdminLogin(false)} />
       <StudentLogin isOpen={showStudentLogin} onClose={() => setShowStudentLogin(false)} />
     </nav>
   );

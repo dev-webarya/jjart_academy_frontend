@@ -1,7 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
-import { FaPlus, FaEdit, FaTrash, FaEye, FaHeart, FaEye as FaViewIcon, FaTag, FaPalette } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaEye } from 'react-icons/fa';
 import Modal from '../components/ui/Modal';
+import ImagePreviewModal from '../components/ui/ImagePreviewModal';
 import { Button, Input, Select, Textarea } from '../components/ui/FormComponents';
+import ImageUpload from '../components/ui/ImageUpload';
+import Pagination from '../components/ui/Pagination';
 import { useToast } from '../components/ui/Toast';
 import api, { getPaginated } from '../api/apiService';
 import { API_ENDPOINTS } from '../api/endpoints';
@@ -13,6 +16,9 @@ const ArtWorksPage = () => {
     const [loading, setLoading] = useState(true);
     const [pagination, setPagination] = useState(null);
     const [page, setPage] = useState(0);
+    const [pageSize, setPageSize] = useState(20);
+
+    // Art Work Modal State
     const [modalOpen, setModalOpen] = useState(false);
     const [modalMode, setModalMode] = useState('create');
     const [selectedItem, setSelectedItem] = useState(null);
@@ -30,6 +36,18 @@ const ArtWorksPage = () => {
     });
     const [formLoading, setFormLoading] = useState(false);
 
+    // Category Modal State
+    const [categoryModalOpen, setCategoryModalOpen] = useState(false);
+    const [categoryFormData, setCategoryFormData] = useState({
+        name: '',
+        parentId: ''
+    });
+    const [categoryFormLoading, setCategoryFormLoading] = useState(false);
+
+    // Image Preview State
+    const [previewImage, setPreviewImage] = useState(null);
+    const [previewTitle, setPreviewTitle] = useState('');
+
     // Fetch Categories
     const loadCategories = useCallback(async () => {
         try {
@@ -44,11 +62,11 @@ const ArtWorksPage = () => {
     const loadItems = useCallback(async () => {
         setLoading(true);
         try {
-            const response = await getPaginated(API_ENDPOINTS.ART_WORKS.GET_ALL, { page, size: 20 });
+            const response = await getPaginated(API_ENDPOINTS.ART_WORKS.GET_ALL, { page, size: pageSize });
             setItems(response.content || []);
             setPagination({
                 number: response.number || 0,
-                size: response.size || 20,
+                size: response.size || pageSize,
                 totalElements: response.totalElements || 0,
                 totalPages: response.totalPages || 1,
             });
@@ -57,7 +75,7 @@ const ArtWorksPage = () => {
         } finally {
             setLoading(false);
         }
-    }, [page, toast]);
+    }, [page, pageSize, toast]);
 
     useEffect(() => {
         loadCategories();
@@ -130,6 +148,22 @@ const ArtWorksPage = () => {
         }
     };
 
+    const handleCategorySubmit = async (e) => {
+        e.preventDefault();
+        setCategoryFormLoading(true);
+        try {
+            await api.post(API_ENDPOINTS.ART_WORKS_CATEGORIES.CREATE, categoryFormData);
+            toast.success('Category created successfully');
+            setCategoryModalOpen(false);
+            setCategoryFormData({ name: '', parentId: '' });
+            loadCategories(); // Refresh categories list
+        } catch (error) {
+            toast.error(error.message || 'Failed to create category');
+        } finally {
+            setCategoryFormLoading(false);
+        }
+    };
+
     const handleDelete = async (id) => {
         if (!confirm('Delete this art work?')) return;
         try {
@@ -150,9 +184,14 @@ const ArtWorksPage = () => {
                     <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Art Works</h1>
                     <p className="text-gray-600 dark:text-gray-400">Manage gallery art works collection</p>
                 </div>
-                <Button onClick={() => openModal('create')}>
-                    <FaPlus /> Add Art Work
-                </Button>
+                <div className="flex gap-3">
+                    <Button variant="secondary" onClick={() => setCategoryModalOpen(true)}>
+                        <FaPlus /> Add Category
+                    </Button>
+                    <Button onClick={() => openModal('create')}>
+                        <FaPlus /> Add Art Work
+                    </Button>
+                </div>
             </div>
 
             {loading ? (
@@ -168,7 +207,11 @@ const ArtWorksPage = () => {
                                 <img
                                     src={item.imageUrl || 'https://via.placeholder.com/300?text=Art+Work'}
                                     alt={item.name}
-                                    className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
+                                    className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300 cursor-pointer"
+                                    onClick={() => {
+                                        setPreviewImage(item.imageUrl || 'https://via.placeholder.com/300?text=Art+Work');
+                                        setPreviewTitle(item.name);
+                                    }}
                                 />
                                 <div className="absolute top-2 right-2 flex flex-col items-end gap-1">
                                     <span className="bg-white/90 dark:bg-gray-900/90 px-2 py-1 rounded-md text-xs font-bold shadow-sm">
@@ -180,8 +223,11 @@ const ArtWorksPage = () => {
                                         </span>
                                     )}
                                 </div>
-                                <div className="absolute bottom-2 left-2 bg-black/50 text-white px-2 py-1 rounded text-xs backdrop-blur-sm">
+                                <div className="absolute top-2 left-2 bg-white/90 dark:bg-gray-900/90 px-2 py-1 rounded text-xs font-semibold shadow-sm text-gray-800 dark:text-gray-200">
                                     {item.categoryName}
+                                </div>
+                                <div className={`absolute bottom-2 left-2 px-2 py-1 rounded-full text-xs font-bold shadow-sm ${item.active ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>
+                                    {item.active ? 'Active' : 'Inactive'}
                                 </div>
                             </div>
 
@@ -202,10 +248,7 @@ const ArtWorksPage = () => {
                                     <span className="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">{item.size}</span>
                                 </div>
 
-                                <div className="flex items-center gap-4 text-xs text-gray-400 pt-2 border-t border-gray-100 dark:border-gray-700">
-                                    <span className="flex items-center gap-1"><FaViewIcon /> {item.views || 0}</span>
-                                    <span className="flex items-center gap-1"><FaHeart /> {item.likes || 0}</span>
-                                </div>
+
 
                                 <div className="flex justify-end pt-2 gap-2">
                                     <button
@@ -227,6 +270,17 @@ const ArtWorksPage = () => {
                 </div>
             )}
 
+            <Pagination
+                pagination={pagination}
+                onPageChange={(newPage) => setPage(newPage)}
+                pageSize={pageSize}
+                onPageSizeChange={(newSize) => {
+                    setPageSize(newSize);
+                    setPage(0);
+                }}
+            />
+
+            {/* Create/Edit Art Work Modal */}
             <Modal
                 isOpen={modalOpen}
                 onClose={() => setModalOpen(false)}
@@ -292,10 +346,9 @@ const ArtWorksPage = () => {
                         />
                     </div>
 
-                    <Input
-                        label="Image URL"
+                    <ImageUpload
                         value={formData.imageUrl}
-                        onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+                        onChange={(url) => setFormData({ ...formData, imageUrl: url })}
                     />
 
                     <Textarea
@@ -316,7 +369,46 @@ const ArtWorksPage = () => {
                     </label>
                 </form>
             </Modal>
-        </div>
+
+            {/* Create Category Modal */}
+            <Modal
+                isOpen={categoryModalOpen}
+                onClose={() => setCategoryModalOpen(false)}
+                title="Create New Category"
+                size="md"
+                footer={
+                    <>
+                        <Button variant="secondary" onClick={() => setCategoryModalOpen(false)}>Cancel</Button>
+                        <Button onClick={handleCategorySubmit} loading={categoryFormLoading}>Create Category</Button>
+                    </>
+                }
+            >
+                <form className="space-y-4">
+                    <Input
+                        label="Category Name"
+                        value={categoryFormData.name}
+                        onChange={(e) => setCategoryFormData({ ...categoryFormData, name: e.target.value })}
+                        required
+                        placeholder="Enter category name"
+                    />
+
+                    <Input
+                        label="Parent Category ID (Optional)"
+                        value={categoryFormData.parentId}
+                        onChange={(e) => setCategoryFormData({ ...categoryFormData, parentId: e.target.value })}
+                        placeholder="Enter parent ID if applicable"
+                    />
+                </form>
+            </Modal>
+
+            {/* Image Preview Modal */}
+            <ImagePreviewModal
+                isOpen={!!previewImage}
+                onClose={() => setPreviewImage(null)}
+                imageUrl={previewImage}
+                title={previewTitle}
+            />
+        </div >
     );
 };
 

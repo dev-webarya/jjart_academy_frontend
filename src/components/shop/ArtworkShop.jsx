@@ -1,562 +1,480 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaHeart, FaShoppingCart, FaEye, FaStar, FaTimes, FaCheck, FaBox, FaBolt } from 'react-icons/fa';
+import { FaShoppingCart, FaSearch, FaFilter, FaSpinner, FaExclamationTriangle, FaEye, FaTimes, FaHeart, FaShare } from 'react-icons/fa';
 import { useCart } from '../../context/CartContext';
 import { useNotification } from '../../context/NotificationContext';
+import { useAuth } from '../../context/AuthContext';
 import SearchBar from '../common/SearchBar';
 import Pagination from '../common/Pagination';
 import Modal from '../common/Modal';
-import { artworksData, categoriesData } from '../../data/shopData';
+import ImagePreviewModal from '../ui/ImagePreviewModal';
+// Remove mock data import
+import artWorksService from '../../services/artWorksService';
 
 const ArtworkShop = () => {
-  const [artworks, setArtworks] = useState(artworksData);
-  const [filteredArtworks, setFilteredArtworks] = useState(artworksData);
-  const [selectedArtwork, setSelectedArtwork] = useState(null);
+  const [products, setProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [categories, setCategories] = useState(['All']);
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedProduct, setSelectedProduct] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 9;
+  const [itemsPerPage] = useState(12);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Image Preview State
+  const [previewImage, setPreviewImage] = useState(null);
+  const [previewTitle, setPreviewTitle] = useState('');
 
   const { addToCart } = useCart();
-  const { success } = useNotification();
+  const { success, error: showError } = useNotification();
+  const { isStudent } = useAuth();
   const navigate = useNavigate();
+
+  // Fetch Data from Backend
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        // Fetch Artworks and Categories in parallel
+        const [artworksRes, categoriesRes] = await Promise.all([
+          artWorksService.getAllArtWorks(),
+          artWorksService.getAllCategories()
+        ]);
+
+        if (artworksRes.success) {
+          setProducts(artworksRes.data);
+          setFilteredProducts(artworksRes.data);
+        } else {
+          // If fetching fails, we might want to show empty or handle error
+          console.error(artworksRes.message);
+          setError("Failed to load artworks.");
+        }
+
+        if (categoriesRes.success) {
+          // Standardize categories to strings if they are objects
+          const categoryNames = categoriesRes.data.map(c => typeof c === 'string' ? c : c.name || c.title);
+          setCategories(['All', ...categoryNames]);
+        }
+
+      } catch (err) {
+        console.error("Error loading shop data:", err);
+        setError("An error occurred while loading data.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   const handleSearch = (searchTerm) => {
-    let filtered = artworks;
-    
-    if (searchTerm) {
-      filtered = filtered.filter(art =>
-        art.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        art.artist.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        art.description.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-    
-    setFilteredArtworks(filtered);
-    setCurrentPage(1);
-  };
+    let filtered = products;
 
-  const handleFilterChange = (filters) => {
-    let filtered = artworks;
-
-    if (filters.category) {
-      filtered = filtered.filter(art => art.category === filters.category);
-    }
-
-    setFilteredArtworks(filtered);
-    setCurrentPage(1);
-  };
-
-  const handleAddToCart = (artwork, selectedSize, quantity = 1) => {
-    const sizeOption = artwork.sizeOptions?.find(s => s.id === selectedSize) || 
-                      artwork.sizeOptions?.find(s => s.isDefault) || 
-                      artwork.sizeOptions?.[0];
-    
-    const price = sizeOption?.price || artwork.price;
-    const sizeLabel = sizeOption?.label || `${artwork.size?.width}×${artwork.size?.height}"`;
-
-    // Add multiple items based on quantity
-    for (let i = 0; i < quantity; i++) {
-      addToCart({
-        id: `${artwork.id}-${selectedSize || 'default'}`,
-        name: artwork.title,
-        price: price,
-        image: artwork.images[0],
-        type: 'artwork',
-        artist: artwork.artist.name,
-        size: sizeLabel,
+    // Apply Category Filter first if selected
+    if (selectedCategory !== 'All') {
+      filtered = filtered.filter(product => {
+        const cat = product.category?.name || product.category || '';
+        return cat === selectedCategory;
       });
     }
-    success(`${quantity} × "${artwork.title}" (${sizeLabel}) added to cart!`);
+
+    if (searchTerm) {
+      filtered = filtered.filter(product =>
+        product.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (product.artist?.name || '').toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    setFilteredProducts(filtered);
+    setCurrentPage(1);
   };
 
-  const handleBuyNow = (artwork, selectedSize, quantity = 1) => {
-    handleAddToCart(artwork, selectedSize, quantity);
+  const handleFilterChange = (category) => {
+    setSelectedCategory(category);
+    let filtered = products;
+
+    if (category && category !== "All" && category !== "") {
+      filtered = filtered.filter(product => {
+        const cat = product.category?.name || product.category || '';
+        return cat === category;
+      });
+    }
+
+    setFilteredProducts(filtered);
+    setCurrentPage(1);
+  };
+
+  const handleAddToCart = (artwork, sizeOption, quantity = 1) => {
+    // Logic to handle size/price variations if they exist
+    const selectedVariant = sizeOption || artwork.sizeOptions?.find(s => s.isDefault) || artwork.sizeOptions?.[0];
+    const price = selectedVariant?.price || artwork.price;
+    const label = selectedVariant?.label || 'Standard';
+
+    addToCart({
+      id: `${artwork.id}-${selectedVariant?.id || 'standard'}`,
+      name: artwork.title,
+      price: price,
+      image: Array.isArray(artwork.images) ? artwork.images[0] : artwork.image,
+      type: 'artwork',
+      artist: artwork.artist?.name || 'Unknown',
+      size: label
+    });
+    success(`"${artwork.title}" added to cart!`);
+  };
+
+  const handleBuyNow = (artwork, sizeOption, quantity = 1) => {
+    handleAddToCart(artwork, sizeOption, quantity);
     navigate('/checkout');
   };
 
   // Pagination
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentArtworks = filteredArtworks.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(filteredArtworks.length / itemsPerPage);
+  const currentProducts = filteredProducts.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen bg-gray-50 dark:bg-gray-900">
+        <FaSpinner className="animate-spin text-4xl text-blue-600" />
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+
       {/* Hero Section */}
-      <div className="relative h-[500px] bg-linear-to-r from-indigo-900 via-purple-800 to-pink-700 overflow-hidden">
-        <img
-          src="/image-3.png"
-          alt="Student Artworks Hero Background"
-          className="absolute inset-0 w-full h-full object-cover opacity-50 z-0"
-        />
-        <div className="absolute inset-0 z-1"></div>
-        <div className="relative container mx-auto px-4 pt-20 h-full flex flex-col items-center justify-center text-center z-10">
-          <h1 className="text-5xl md:text-6xl font-bold text-white mb-4 drop-shadow-2xl">
-            Student Artworks Gallery
+      <section className="relative h-96 bg-gray-900 overflow-hidden">
+        <div className="absolute inset-0">
+          <img
+            src="https://images.unsplash.com/photo-1547891654-e66ed7ebb968?w=1600&q=80"
+            alt="Art Gallery"
+            className="w-full h-full object-cover opacity-40"
+          />
+          <div className="absolute inset-0 bg-linear-to-b from-transparent to-gray-900/90"></div>
+        </div>
+        <div className="relative container mx-auto px-4 h-full flex flex-col items-center justify-center text-center z-10">
+          <h1 className="text-4xl md:text-6xl font-bold text-white mb-4 drop-shadow-lg tracking-tight">
+            Curated <span className="text-transparent bg-clip-text bg-linear-to-r from-blue-400 to-purple-500">Masterpieces</span>
           </h1>
-          <p className="text-xl text-white/90 max-w-2xl mb-6 drop-shadow-lg">
-            Discover and purchase beautiful artworks created by our talented students
+          <p className="text-lg md:text-xl text-gray-300 max-w-2xl drop-shadow-md">
+            Discover and collect exceptional artworks from our talented community.
           </p>
         </div>
-      </div>
+      </section>
 
-      <div className="container mx-auto max-w-7xl px-4 py-6">
-        {/* Search and Category Filter */}
-        <div className="flex flex-col md:flex-row gap-4 mb-6 items-end">
-          <div className="flex-1">
-            <SearchBar 
-              placeholder="Search artworks, artists..." 
+      <div className="container mx-auto max-w-7xl px-4 py-12 -mt-20 relative z-20">
+        {/* Controls Bar */}
+        <div className="flex flex-col md:flex-row gap-4 mb-8 justify-between items-center bg-white/80 dark:bg-gray-800/80 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-white/20 dark:border-gray-700">
+          <div className="w-full md:w-96">
+            <SearchBar
+              placeholder="Search by title, artist..."
               onSearch={handleSearch}
             />
           </div>
-          <div className="w-full md:w-64">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Category
-            </label>
-            <select
-              onChange={(e) => handleFilterChange({ category: e.target.value })}
-              className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:border-purple-500 focus:outline-none"
-            >
-              <option value="">All Category</option>
-              {categoriesData.artworks.filter(c => c !== 'All').map((cat, i) => (
-                <option key={i} value={cat}>
+
+          <div className="flex items-center gap-3 w-full md:w-auto overflow-x-auto">
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap"><FaFilter className="inline mr-1" /> Category:</span>
+            <div className="flex gap-2">
+              {categories.map((cat, i) => (
+                <button
+                  key={i}
+                  onClick={() => handleFilterChange(cat)}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${cat === selectedCategory
+                      ? 'bg-blue-600 text-white shadow-md'
+                      : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                    }`}
+                >
                   {cat}
-                </option>
+                </button>
               ))}
-            </select>
+            </div>
           </div>
         </div>
 
-        <div className="flex gap-6">
-          {/* Artworks Grid */}
-          <div className="flex-1">
-            <div className="flex items-center justify-between mb-4">
-              <p className="text-gray-600 dark:text-gray-400">
-                {filteredArtworks.length} artworks found
-              </p>
+        {/* Product Grid */}
+        {error ? (
+          <div className="text-center py-20">
+            <FaExclamationTriangle className="text-4xl text-yellow-500 mx-auto mb-4" />
+            <p className="text-gray-500 dark:text-gray-400 text-lg">{error}</p>
+          </div>
+        ) : currentProducts.length > 0 ? (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+              {currentProducts.map((artwork) => (
+                <ArtworkCard
+                  key={artwork.id}
+                  artwork={artwork}
+                  onView={() => setSelectedProduct(artwork)}
+                  onAddToCart={handleAddToCart}
+                  onBuyNow={handleBuyNow}
+                  isStudent={isStudent}
+                  navigate={navigate}
+                  setPreviewImage={setPreviewImage}
+                  setPreviewTitle={setPreviewTitle}
+                />
+              ))}
             </div>
 
-            {currentArtworks.length === 0 ? (
-              <div className="text-center py-8">
-                <p className="text-gray-500 dark:text-gray-400 text-lg">
-                  No artworks found. Try adjusting your filters.
-                </p>
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="mt-16 flex justify-center">
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+                />
               </div>
-            ) : (
-              <>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                  {currentArtworks.map((artwork) => (
-                    <ArtworkCard
-                      key={artwork.id}
-                      artwork={artwork}
-                      onView={() => setSelectedArtwork(artwork)}
-                      onAddToCart={(size, quantity) => handleAddToCart(artwork, size, quantity)}
-                      onBuyNow={(size, quantity) => handleBuyNow(artwork, size, quantity)}
-                    />
-                  ))}
-                </div>
-
-                {/* Pagination */}
-                {totalPages > 1 && (
-                  <div className="mt-8">
-                    <Pagination
-                      currentPage={currentPage}
-                      totalPages={totalPages}
-                      onPageChange={setCurrentPage}
-                    />
-                  </div>
-                )}
-              </>
             )}
+          </>
+        ) : (
+          <div className="text-center py-20 bg-white dark:bg-gray-800 rounded-3xl shadow-xs">
+            <p className="text-gray-500 dark:text-gray-400 text-lg">No artworks found matching your criteria.</p>
+            <button onClick={() => { setSelectedCategory('All'); setFilteredProducts(products); }} className="mt-4 text-blue-600 hover:text-blue-500 font-medium">Clear Filters</button>
           </div>
-        </div>
+        )}
       </div>
 
-      {/* Artwork Detail Modal */}
-      {selectedArtwork && (
+      {/* Product Detail Modal */}
+      {selectedProduct && (
         <ArtworkDetailModal
-          artwork={selectedArtwork}
-          onClose={() => setSelectedArtwork(null)}
-          onAddToCart={(size, quantity) => {
-            handleAddToCart(selectedArtwork, size, quantity);
-            setSelectedArtwork(null);
-          }}
-          onBuyNow={(size, quantity) => {
-            handleBuyNow(selectedArtwork, size, quantity);
-            setSelectedArtwork(null);
-          }}
+          artwork={selectedProduct}
+          onClose={() => setSelectedProduct(null)}
+          onAddToCart={handleAddToCart}
+          onBuyNow={handleBuyNow}
+          isStudent={isStudent}
+          navigate={navigate}
         />
       )}
+
+      {/* Image Preview Modal */}
+      <ImagePreviewModal
+        isOpen={!!previewImage}
+        onClose={() => setPreviewImage(null)}
+        imageUrl={previewImage}
+        title={previewTitle}
+      />
     </div>
   );
 };
 
-const ArtworkCard = ({ artwork, onView, onAddToCart, onBuyNow }) => {
-  const [selectedSize, setSelectedSize] = useState(
-    artwork.sizeOptions?.find(s => s.isDefault)?.id || artwork.sizeOptions?.[0]?.id
-  );
-  const [quantity, setQuantity] = useState(1);
+const ArtworkCard = ({ artwork, onView, onAddToCart, onBuyNow, isStudent, navigate, setPreviewImage, setPreviewTitle }) => {
+  // Safe access to nested properties
+  const images = Array.isArray(artwork.images) ? artwork.images : [artwork.image];
+  const artistName = artwork.artist?.name || 'Unknown Artist';
+  const categoryName = artwork.category?.name || artwork.category || 'Art';
 
-  const currentSize = artwork.sizeOptions?.find(s => s.id === selectedSize);
-  const displayPrice = currentSize?.price || artwork.price;
-
-  const increaseQuantity = () => setQuantity(prev => prev + 1);
-  const decreaseQuantity = () => setQuantity(prev => (prev > 1 ? prev - 1 : 1));
+  // Determine image source (handle potential missing images)
+  const displayImage = images[0] || 'https://via.placeholder.com/400x300?text=No+Image';
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all transform hover:-translate-y-2 duration-300">
-      {/* Image */}
-      <div className="relative h-64 overflow-hidden cursor-pointer group" onClick={onView}>
+    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden group border border-gray-100 dark:border-gray-700 flex flex-col h-full transform hover:-translate-y-1">
+      {/* Image Container */}
+      <div className="relative h-64 overflow-hidden">
         <img
-          src={artwork.images[0]}
+          src={displayImage}
           alt={artwork.title}
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          <div className="absolute bottom-4 left-4 right-4 text-white">
-            <p className="text-sm font-semibold flex items-center gap-2">
-              <FaEye /> Click for details
-            </p>
-          </div>
+
+        {/* Overlay with Actions */}
+        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-3 backdrop-blur-xs">
+          <button
+            onClick={() => {
+              setPreviewImage(displayImage);
+              setPreviewTitle(artwork.title);
+            }}
+            className="p-3 bg-white/90 text-gray-900 rounded-full hover:bg-white transition hover:scale-110 shadow-lg"
+            title="View Fullscreen"
+          >
+            <FaEye />
+          </button>
+          <button
+            onClick={onView}
+            className="px-5 py-2.5 bg-blue-600/90 text-white rounded-full hover:bg-blue-600 transition hover:scale-105 shadow-lg font-medium text-sm"
+          >
+            Details
+          </button>
         </div>
-        {artwork.isAvailable && (
-          <div className="absolute top-3 right-3 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-bold">
-            Available
-          </div>
-        )}
+
+        <div className="absolute top-3 right-3 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold text-gray-800 dark:text-gray-200 shadow-sm z-10">
+          {categoryName}
+        </div>
       </div>
 
       {/* Content */}
-      <div className="p-5">
-        <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2 line-clamp-1 hover:text-purple-600 cursor-pointer" onClick={onView}>
-          {artwork.title}
-        </h3>
-        
-        {/* Artist */}
-        <div className="flex items-center gap-2 mb-3">
-          <img
-            src={artwork.artist.avatar}
-            alt={artwork.artist.name}
-            className="w-8 h-8 rounded-full ring-2 ring-purple-200"
-          />
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            by <span className="font-semibold">{artwork.artist.name}</span>
-          </p>
+      <div className="p-5 flex flex-col flex-grow">
+        <div className="flex justify-between items-start mb-2">
+          <div>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white line-clamp-1 hover:text-blue-600 cursor-pointer" onClick={onView}>
+              {artwork.title}
+            </h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">by {artistName}</p>
+          </div>
+          {artwork.artist?.avatar && (
+            <img src={artwork.artist.avatar} alt={artistName} className="w-8 h-8 rounded-full border border-gray-200 dark:border-gray-600" />
+          )}
         </div>
 
-        {/* Description */}
-        <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
-          {artwork.description}
-        </p>
+        <div className="mt-auto pt-4 flex items-center justify-between border-t border-gray-100 dark:border-gray-700">
+          <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+            ₹{artwork.price?.toLocaleString() || 'N/A'}
+          </span>
 
-        {/* Size Selection */}
-        {artwork.sizeOptions && artwork.sizeOptions.length > 0 && (
-          <div className="mb-4">
-            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">
-              Select Size:
-            </label>
-            <select
-              value={selectedSize}
-              onChange={(e) => setSelectedSize(e.target.value)}
-              className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:border-purple-500 focus:outline-none"
-            >
-              {artwork.sizeOptions.map((size) => (
-                <option key={size.id} value={size.id}>
-                  {size.label} - ₹{size.price.toLocaleString()}
-                </option>
-              ))}
-            </select>
+          <div className="flex gap-2">
+            <button className="text-gray-400 hover:text-red-500 transition">
+              <FaHeart />
+            </button>
+            <button className="text-gray-400 hover:text-blue-500 transition">
+              <FaShare />
+            </button>
           </div>
+        </div>
+
+        {/* Action Buttons for Students */}
+        {isStudent ? (
+          <div className="flex gap-2 mt-4">
+            <button
+              onClick={() => onAddToCart(artwork)}
+              disabled={!artwork.isAvailable}
+              className="flex-1 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 font-semibold text-sm transition"
+            >
+              Add to Cart
+            </button>
+            <button
+              onClick={() => onBuyNow(artwork)}
+              disabled={!artwork.isAvailable}
+              className="flex-1 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold text-sm transition shadow-md shadow-blue-500/20"
+            >
+              Buy Now
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => navigate('/login')}
+            className="w-full mt-4 py-2 bg-gray-900 dark:bg-gray-700 text-white rounded-lg text-sm hover:bg-black dark:hover:bg-gray-600 transition font-medium"
+          >
+            Login to Buy
+          </button>
         )}
-
-        {/* Details */}
-        <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400 mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
-          <span className="bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 px-2 py-1 rounded">
-            {artwork.medium}
-          </span>
-          <span className="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-1 rounded">
-            {artwork.category}
-          </span>
-        </div>
-
-        {/* Quantity Selector */}
-        <div className="mb-4">
-          <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">
-            Quantity:
-          </label>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={decreaseQuantity}
-              className="w-10 h-10 flex items-center justify-center bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-all font-bold text-lg"
-            >
-              −
-            </button>
-            <span className="text-xl font-bold text-gray-800 dark:text-white w-12 text-center">
-              {quantity}
-            </span>
-            <button
-              onClick={increaseQuantity}
-              className="w-10 h-10 flex items-center justify-center bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-all font-bold text-lg"
-            >
-              +
-            </button>
-          </div>
-        </div>
-
-        {/* Price */}
-        <div className="mb-3">
-          <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Total Price</p>
-          <span className="text-lg font-bold text-purple-600">
-            ₹{(displayPrice * quantity).toLocaleString()}
-          </span>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex gap-2">
-          <button
-            onClick={() => onAddToCart(selectedSize, quantity)}
-            disabled={!artwork.isAvailable}
-            className="flex-1 px-2.5 py-2 bg-white dark:bg-gray-700 border-2 border-purple-600 text-purple-600 dark:text-purple-400 rounded-lg hover:bg-purple-50 dark:hover:bg-gray-600 disabled:border-gray-400 disabled:text-gray-400 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-1.5 font-semibold text-sm"
-          >
-            <FaShoppingCart className="text-xs" /> Add
-          </button>
-          <button
-            onClick={() => onBuyNow(selectedSize, quantity)}
-            disabled={!artwork.isAvailable}
-            className="flex-1 px-2.5 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-1.5 font-semibold shadow-lg hover:shadow-xl text-sm"
-          >
-            <FaBolt className="text-xs" /> Buy
-          </button>
-        </div>
       </div>
     </div>
   );
 };
 
-const ArtworkDetailModal = ({ artwork, onClose, onAddToCart, onBuyNow }) => {
-  const [selectedSize, setSelectedSize] = useState(
-    artwork.sizeOptions?.find(s => s.isDefault)?.id || artwork.sizeOptions?.[0]?.id
-  );
+const ArtworkDetailModal = ({ artwork, onClose, onAddToCart, onBuyNow, isStudent, navigate }) => {
+  const images = Array.isArray(artwork.images) ? artwork.images : [artwork.image];
   const [activeImage, setActiveImage] = useState(0);
-  const [quantity, setQuantity] = useState(1);
 
-  const currentSize = artwork.sizeOptions?.find(s => s.id === selectedSize);
-  const displayPrice = currentSize?.price || artwork.price;
-  const sizeInfo = currentSize || { width: artwork.size?.width, height: artwork.size?.height };
-
-  const increaseQuantity = () => setQuantity(prev => prev + 1);
-  const decreaseQuantity = () => setQuantity(prev => (prev > 1 ? prev - 1 : 1));
+  // Safely handle potentially missing data
+  const categoryName = artwork.category?.name || artwork.category || 'Art';
+  const artistName = artwork.artist?.name || 'Unknown Artist';
+  const description = artwork.longDescription || artwork.description || 'No description available.';
 
   return (
-    <Modal isOpen={true} onClose={onClose} title="" size="lg">
-      <button
-        onClick={onClose}
-        className="absolute top-2 right-2 z-50 p-1.5 bg-white dark:bg-gray-800 rounded-full shadow-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all"
-      >
-        <FaTimes className="text-gray-600 dark:text-gray-300" />
-      </button>
+    <Modal isOpen={true} onClose={onClose} title="" size="xl">
+      <div className="relative">
+        <button
+          onClick={onClose}
+          className="absolute -top-4 -right-4 z-20 p-2 bg-white dark:bg-gray-800 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition shadow-md text-gray-500 dark:text-gray-400"
+        >
+          <FaTimes />
+        </button>
 
-      <div className="grid md:grid-cols-2 gap-4">
-        {/* Images */}
-        <div className="space-y-2">
-          <div className="relative h-64 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800">
-            <img
-              src={artwork.images[activeImage]}
-              alt={artwork.title}
-              className="w-full h-full object-contain"
-            />
-          </div>
-          {artwork.images.length > 1 && (
-            <div className="flex gap-2">
-              {artwork.images.map((img, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setActiveImage(idx)}
-                  className={`w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${
-                    activeImage === idx
-                      ? 'border-purple-600 ring-2 ring-purple-300'
-                      : 'border-gray-300 dark:border-gray-600 hover:border-purple-400'
-                  }`}
-                >
-                  <img src={img} alt={`View ${idx + 1}`} className="w-full h-full object-cover" />
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Details */}
-        <div className="space-y-3">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-1.5">
-              {artwork.title}
-            </h2>
-            <div className="flex items-center gap-2">
+        <div className="grid md:grid-cols-2 gap-8">
+          {/* Left: Images */}
+          <div className="space-y-4">
+            <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-gray-100 dark:bg-gray-900 shadow-inner">
               <img
-                src={artwork.artist.avatar}
-                alt={artwork.artist.name}
-                className="w-12 h-12 rounded-full ring-2 ring-purple-200"
+                src={images[activeImage] || 'https://via.placeholder.com/600x800?text=No+Image'}
+                alt={artwork.title}
+                className="w-full h-full object-contain"
               />
-              <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Created by</p>
-                <p className="font-semibold text-lg text-gray-800 dark:text-white">
-                  {artwork.artist.name}
-                </p>
-              </div>
             </div>
-          </div>
-
-          {/* Description */}
-          <div>
-            <h3 className="text-base font-semibold text-gray-800 dark:text-white mb-1.5">
-              About this Artwork
-            </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-              {artwork.description}
-            </p>
-          </div>
-
-          {/* Features */}
-          {artwork.features && (
-            <div>
-              <h3 className="text-base font-semibold text-gray-800 dark:text-white mb-1.5">
-                Features
-              </h3>
-              <div className="grid grid-cols-2 gap-1.5">
-                {artwork.features.map((feature, idx) => (
-                  <div key={idx} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                    <FaCheck className="text-green-500 flex-shrink-0" />
-                    <span>{feature}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Specifications */}
-          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 space-y-1">
-            <h3 className="text-base font-semibold text-gray-800 dark:text-white mb-1.5">
-              Specifications
-            </h3>
-            <div className="grid grid-cols-2 gap-2 text-sm">
-              <div>
-                <span className="text-gray-500 dark:text-gray-400">Category:</span>
-                <span className="ml-2 font-semibold text-gray-800 dark:text-white">
-                  {artwork.category}
-                </span>
-              </div>
-              <div>
-                <span className="text-gray-500 dark:text-gray-400">Medium:</span>
-                <span className="ml-2 font-semibold text-gray-800 dark:text-white">
-                  {artwork.medium}
-                </span>
-              </div>
-              <div>
-                <span className="text-gray-500 dark:text-gray-400">Dimensions:</span>
-                <span className="ml-2 font-semibold text-gray-800 dark:text-white">
-                  {sizeInfo.width} × {sizeInfo.height} {sizeInfo.unit || 'inches'}
-                </span>
-              </div>
-              <div>
-                <span className="text-gray-500 dark:text-gray-400">Views:</span>
-                <span className="ml-2 font-semibold text-gray-800 dark:text-white">
-                  {artwork.views}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Size Selection */}
-          {artwork.sizeOptions && artwork.sizeOptions.length > 0 && (
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                Select Size:
-              </label>
-              <div className="grid grid-cols-2 gap-2">
-                {artwork.sizeOptions.map((size) => (
+            {images.length > 1 && (
+              <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                {images.map((img, idx) => (
                   <button
-                    key={size.id}
-                    onClick={() => setSelectedSize(size.id)}
-                    className={`p-2 rounded-lg border-2 text-left transition-all ${
-                      selectedSize === size.id
-                        ? 'border-purple-600 bg-purple-50 dark:bg-purple-900/20'
-                        : 'border-gray-300 dark:border-gray-600 hover:border-purple-400'
-                    }`}
+                    key={idx}
+                    onClick={() => setActiveImage(idx)}
+                    className={`w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden border-2 transition-all ${activeImage === idx ? 'border-blue-600 ring-2 ring-blue-100' : 'border-transparent opacity-70 hover:opacity-100'
+                      }`}
                   >
-                    <p className="text-sm font-semibold text-gray-800 dark:text-white">
-                      {size.label.split('(')[0]}
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {size.width}×{size.height}"
-                    </p>
-                    <p className="text-lg font-bold text-purple-600 mt-1">
-                      ₹{size.price.toLocaleString()}
-                    </p>
+                    <img src={img} alt="" className="w-full h-full object-cover" />
                   </button>
                 ))}
               </div>
-            </div>
-          )}
+            )}
+          </div>
 
-          {/* Price and Action */}
-          <div className="border-t border-gray-200 dark:border-gray-700 pt-2 space-y-2">
-            {/* Quantity Selector */}
-            <div>
-              <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
-                Quantity:
-              </label>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={decreaseQuantity}
-                  className="w-8 h-8 flex items-center justify-center bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-all font-bold text-base"
-                >
-                  −
-                </button>
-                <span className="text-lg font-bold text-gray-800 dark:text-white w-10 text-center">
-                  {quantity}
-                </span>
-                <button
-                  onClick={increaseQuantity}
-                  className="w-8 h-8 flex items-center justify-center bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-all font-bold text-base"
-                >
-                  +
-                </button>
+          {/* Right: Info */}
+          <div className="flex flex-col h-full">
+            <div className="mb-6">
+              <span className="inline-block px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 rounded-full text-xs font-bold uppercase tracking-wide mb-3">
+                {categoryName}
+              </span>
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2">{artwork.title}</h2>
+              <div className="flex items-center gap-3 text-gray-600 dark:text-gray-400">
+                {artwork.artist?.avatar && <img src={artwork.artist.avatar} alt="" className="w-6 h-6 rounded-full" />}
+                <span className="font-medium">Created by {artistName}</span>
               </div>
             </div>
 
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mb-0">Total Price</p>
-                <span className="text-xl font-bold text-purple-600">
-                  ₹{(displayPrice * quantity).toLocaleString()}
-                </span>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0">
-                  ₹{displayPrice.toLocaleString()} × {quantity} {quantity > 1 ? 'items' : 'item'}
-                </p>
-              </div>
-              <div className={`px-4 py-2 rounded-full ${
-                artwork.isAvailable 
-                  ? 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300' 
-                  : 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300'
-              }`}>
-                <span className="font-semibold text-sm">
-                  {artwork.isAvailable ? 'In Stock' : 'Sold Out'}
-                </span>
-              </div>
+            <div className="prose dark:prose-invert text-gray-600 dark:text-gray-300 mb-6 flex-grow overflow-y-auto max-h-48 pr-2">
+              <p>{description}</p>
+              {artwork.features && (
+                <ul className="mt-4 space-y-1 list-none pl-0">
+                  {artwork.features.map((feature, i) => (
+                    <li key={i} className="flex items-center gap-2 text-sm">
+                      <span className="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => onAddToCart(selectedSize, quantity)}
-                disabled={!artwork.isAvailable}
-                className="flex-1 px-3 py-2 bg-white dark:bg-gray-700 border-2 border-purple-600 text-purple-600 dark:text-purple-400 rounded-lg hover:bg-purple-50 dark:hover:bg-gray-600 disabled:border-gray-400 disabled:text-gray-400 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-1.5 font-semibold text-sm"
-              >
-                <FaShoppingCart className="text-sm" /> Add to Cart
-              </button>
-              <button
-                onClick={() => onBuyNow(selectedSize, quantity)}
-                disabled={!artwork.isAvailable}
-                className="flex-1 px-3 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-1.5 font-bold shadow-lg hover:shadow-xl text-sm"
-              >
-                <FaBolt /> Buy Now
-              </button>
+
+            <div className="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-2xl mt-auto">
+              <div className="flex items-end justify-between mb-6">
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Price</p>
+                  <p className="text-4xl font-bold text-gray-900 dark:text-white">₹{artwork.price?.toLocaleString()}</p>
+                </div>
+                <div className="text-right">
+                  <p className={`text-sm font-bold ${artwork.isAvailable ? 'text-green-500' : 'text-red-500'}`}>
+                    {artwork.isAvailable ? 'In Stock' : 'Sold Out'}
+                  </p>
+                </div>
+              </div>
+
+              {isStudent ? (
+                <div className="flex gap-4">
+                  <button
+                    onClick={() => onAddToCart(artwork)}
+                    disabled={!artwork.isAvailable}
+                    className="flex-1 py-3.5 bg-white dark:bg-gray-700 border-2 border-blue-600 text-blue-600 dark:text-blue-400 rounded-xl font-bold hover:bg-blue-50 dark:hover:bg-blue-900/20 transition disabled:opacity-50"
+                  >
+                    Add to Cart
+                  </button>
+                  <button
+                    onClick={() => onBuyNow(artwork)}
+                    disabled={!artwork.isAvailable}
+                    className="flex-1 py-3.5 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-500/30 disabled:opacity-50"
+                  >
+                    Buy Now
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => navigate('/login')}
+                  className="w-full py-4 bg-gray-900 dark:bg-gray-700 text-white rounded-xl font-bold hover:bg-black dark:hover:bg-gray-600 transition shadow-lg"
+                >
+                  Login to Purchase
+                </button>
+              )}
             </div>
           </div>
         </div>

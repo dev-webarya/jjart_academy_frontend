@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { FaTimes, FaUser, FaEnvelope, FaPhone, FaCalendar, FaChild, FaMapMarkerAlt, FaExclamationCircle } from 'react-icons/fa';
+import enrollmentService from '../services/enrollmentService';
 
-const EnrollmentForm = ({ isOpen, onClose, onSuccess, selectedClassId }) => {
+const EnrollmentForm = ({ isOpen, onClose, onSuccess, selectedClassId, selectedClassName }) => {
   const [formData, setFormData] = useState({
     classId: '',
     studentName: '',
@@ -35,7 +36,7 @@ const EnrollmentForm = ({ isOpen, onClose, onSuccess, selectedClassId }) => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     // Store enrollment in localStorage (simulating backend call for now or prepping for it)
@@ -43,43 +44,56 @@ const EnrollmentForm = ({ isOpen, onClose, onSuccess, selectedClassId }) => {
     // However, the existing code was just saving to localStorage. I will keep the localStorage logic 
     // but update the object structure.
 
-    const enrollments = JSON.parse(localStorage.getItem('enrollments') || '[]');
-    const newEnrollment = {
-      id: Date.now(),
-      ...formData,
-      studentAge: parseInt(formData.studentAge, 10), // Ensure int as per JSON requirement
-      status: 'pending',
-      enrollmentDate: new Date().toISOString()
+    // Prepare payload matching user requirement
+    const payload = {
+      classId: formData.classId,
+      studentName: formData.studentName,
+      studentEmail: formData.studentEmail,
+      studentPhone: formData.studentPhone,
+      address: formData.address,
+      parentGuardianName: formData.parentGuardianName,
+      studentAge: parseInt(formData.studentAge, 10), // Ensure integer
+      schedule: formData.schedule,
+      additionalMessage: formData.additionalMessage,
+      emergencyContactName: formData.emergencyContactName,
+      emergencyContactPhone: formData.emergencyContactPhone
     };
-    enrollments.push(newEnrollment);
-    localStorage.setItem('enrollments', JSON.stringify(enrollments));
 
-    setSubmitted(true);
+    try {
+      await enrollmentService.createEnrollment(payload);
+      setSubmitted(true);
 
-    // Call onSuccess callback if provided
-    if (onSuccess) {
-      onSuccess();
+      // Call onSuccess callback if provided
+      if (onSuccess) {
+        onSuccess();
+      }
+
+      // Reset form after 3 seconds
+      setTimeout(() => {
+        setFormData({
+          classId: '',
+          studentName: '',
+          studentEmail: '',
+          studentPhone: '',
+          address: '',
+          parentGuardianName: '',
+          studentAge: '',
+          schedule: '',
+          additionalMessage: '',
+          emergencyContactName: '',
+          emergencyContactPhone: ''
+        });
+        setSubmitted(false);
+        onClose();
+      }, 3000);
+
+    } catch (error) {
+      console.error("Enrollment failed:", error);
+      alert(`Enrollment failed: ${error.message || "Unknown error"}`);
     }
-
-    // Reset form after 3 seconds
-    setTimeout(() => {
-      setFormData({
-        classId: '',
-        studentName: '',
-        studentEmail: '',
-        studentPhone: '',
-        address: '',
-        parentGuardianName: '',
-        studentAge: '',
-        schedule: '',
-        additionalMessage: '',
-        emergencyContactName: '',
-        emergencyContactPhone: ''
-      });
-      setSubmitted(false);
-      onClose();
-    }, 3000);
   };
+
+
 
   if (!isOpen) return null;
 
@@ -204,18 +218,21 @@ const EnrollmentForm = ({ isOpen, onClose, onSuccess, selectedClassId }) => {
               {/* Class Selection - Mapped to classId */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                  Class (ID) *
+                  Class / Event *
                 </label>
                 <input
                   type="text"
-                  name="classId"
-                  value={formData.classId}
-                  onChange={handleChange}
-                  required
-                  disabled={!!selectedClassId}
+                  name="classDisplayName"
+                  value={selectedClassName || formData.classId}
+                  readOnly={!!selectedClassId}
+                  onChange={!selectedClassId ? handleChange : undefined}
                   className={`w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-800 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent ${selectedClassId ? 'opacity-70 cursor-not-allowed bg-gray-100 dark:bg-gray-800' : ''}`}
                   placeholder="Enter class name or ID"
                 />
+                {/* Hidden input to ensure classId is submitted */}
+                {selectedClassId && (
+                  <input type="hidden" name="classId" value={formData.classId} />
+                )}
               </div>
 
               {/* Address - New Field */}
