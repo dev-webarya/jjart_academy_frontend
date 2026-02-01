@@ -132,7 +132,7 @@ export const AuthProvider = ({ children }) => {
 
     try {
       // Call real backend API for authentication
-      const response = await fetch('http://93.127.194.118:8095/api/v1/auth/login', {
+      const response = await fetch(`${import.meta.env.VITE_BASE_URL || "http://93.127.194.118:8095"}/api/v1/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -184,23 +184,134 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  const studentLogin = useCallback((studentData) => {
-    // Validate student data before storing
-    if (!studentData || !studentData.email) {
-      console.error('Invalid student data provided to studentLogin');
-      return { success: false, message: 'Invalid student data' };
+  const register = useCallback(async (registrationData) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_BASE_URL || "http://93.127.194.118:8095"}/api/v1/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(registrationData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return {
+          success: false,
+          message: data.message || 'Registration failed'
+        };
+      }
+
+      return { success: true, data };
+    } catch (error) {
+      console.error('❌ Registration error:', error);
+      return {
+        success: false,
+        message: 'Network error during registration.'
+      };
+    }
+  }, []);
+
+  const verifyOTP = useCallback(async (data) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_BASE_URL || "http://93.127.194.118:8095"}/api/v1/auth/verify-otp`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        return {
+          success: false,
+          message: result.message || 'OTP verification failed'
+        };
+      }
+
+      return { success: true, data: result };
+    } catch (error) {
+      console.error('❌ OTP Verification error:', error);
+      return {
+        success: false,
+        message: 'Network error during verification.'
+      };
+    }
+  }, []);
+
+  const requestOTP = useCallback(async (email) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_BASE_URL || "http://93.127.194.118:8095"}/api/v1/auth/request-otp`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        return {
+          success: false,
+          message: result.message || 'Failed to request OTP'
+        };
+      }
+
+      return { success: true, data: result };
+    } catch (error) {
+      console.error('❌ Request OTP error:', error);
+      return {
+        success: false,
+        message: 'Network error. Could not request OTP.'
+      };
+    }
+  }, []);
+
+  const studentLogin = useCallback(async (credentials) => {
+    // Expecting credentials to be { email, password } for real API
+    // Maintain backward compatibility if object passed has other fields (though we should update calls)
+    const { email, password } = credentials;
+
+    if (!email || !password) {
+      console.error('Invalid credentials provided to studentLogin');
+      return { success: false, message: 'Email and password are required' };
     }
 
     try {
-      // Ensure required fields exist
+      const response = await fetch(`${import.meta.env.VITE_BASE_URL || "http://93.127.194.118:8095"}/api/v1/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return {
+          success: false,
+          message: data.message || 'Login failed'
+        };
+      }
+
       const validatedData = {
-        id: studentData.id || Math.random().toString(36).substr(2, 9),
-        name: studentData.name || studentData.email.split('@')[0],
-        email: studentData.email,
-        role: studentData.role || 'Student',
+        id: data.userId || data.id,
+        name: `${data.firstName || ''} ${data.lastName || ''}`.trim() || email.split('@')[0],
+        email: data.email,
+        role: 'Student',
+        accessToken: data.accessToken,
         loginTime: new Date().toISOString(),
-        ...studentData
+        ...data // Include other fields returned by API
       };
+
+      if (data.accessToken) {
+        localStorage.setItem('token', data.accessToken);
+      }
 
       console.log('🔐 Logging in student:', validatedData.email);
 
@@ -239,7 +350,7 @@ export const AuthProvider = ({ children }) => {
       setUser(null);
       setIsAuthenticated(false);
       setIsStudent(false);
-      return { success: false, message: 'Login failed. Please try again.' };
+      return { success: false, message: error.message || 'Login failed. Please try again.' };
     }
   }, []);
 
@@ -266,12 +377,45 @@ export const AuthProvider = ({ children }) => {
     });
   }, [isStudent]);
 
+  const resetPassword = useCallback(async (data) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_BASE_URL || "http://93.127.194.118:8095"}/api/v1/auth/reset-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        return {
+          success: false,
+          message: result.message || 'Password reset failed'
+        };
+      }
+
+      return { success: true, data: result };
+    } catch (error) {
+      console.error('❌ Password Reset error:', error);
+      return {
+        success: false,
+        message: 'Network error during password reset.'
+      };
+    }
+  }, []);
+
   const value = {
     isAuthenticated,
     user,
     isStudent,
     isLoading,
     login,
+    register,
+    verifyOTP,
+    requestOTP,
+    resetPassword,
     studentLogin,
     logout,
     updateUser

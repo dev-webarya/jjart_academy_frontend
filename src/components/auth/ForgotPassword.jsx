@@ -5,19 +5,20 @@ const ForgotPassword = ({ isOpen, onClose, onBackToLogin }) => {
   const [step, setStep] = useState('email'); // email, verification, reset, success
   const [email, setEmail] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
-  const [generatedCode, setGeneratedCode] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [codeSent, setCodeSent] = useState(false);
+
+  const { requestOTP, verifyOTP, resetPassword } = useAuth();
 
   if (!isOpen) return null;
 
   // Step 1: Send verification code
-  const handleSendCode = (e) => {
+  // Step 1: Send verification code
+  const handleSendCode = async (e) => {
     e.preventDefault();
     setError('');
 
@@ -33,20 +34,46 @@ const ForgotPassword = ({ isOpen, onClose, onBackToLogin }) => {
     }
 
     setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      const code = Math.floor(100000 + Math.random() * 900000).toString();
-      setGeneratedCode(code);
-      setCodeSent(true);
-      setStep('verification');
+
+    try {
+      if (requestOTP) {
+        const result = await requestOTP(email);
+        if (result.success) {
+          setStep('verification');
+        } else {
+          setError(result.message || 'Failed to send verification code. Please try again.');
+        }
+      } else {
+        setError('Service unavailable');
+      }
+    } catch (err) {
+      setError('An error occurred. Please try again.');
+    } finally {
       setIsLoading(false);
-      // In production, send this code to the user's email
-      console.log('Verification code sent to:', email, 'Code:', code);
-    }, 1200);
+    }
+  };
+
+  const handleResendOTP = async () => {
+    setError('');
+    setIsLoading(true);
+    try {
+      if (requestOTP) {
+        const result = await requestOTP(email);
+        if (result.success) {
+          alert('OTP sent successfully!');
+        } else {
+          setError(result.message || 'Failed to resend OTP');
+        }
+      }
+    } catch (err) {
+      setError('Error resending OTP');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Step 2: Verify code
-  const handleVerifyCode = (e) => {
+  const handleVerifyCode = async (e) => {
     e.preventDefault();
     setError('');
 
@@ -61,19 +88,29 @@ const ForgotPassword = ({ isOpen, onClose, onBackToLogin }) => {
     }
 
     setIsLoading(true);
-    setTimeout(() => {
-      if (verificationCode === generatedCode) {
-        setStep('reset');
-        setIsLoading(false);
+
+    try {
+      if (verifyOTP) {
+        const result = await verifyOTP({ email, otp: verificationCode });
+
+        if (result.success) {
+          setStep('reset');
+        } else {
+          setError(result.message || 'Invalid verification code. Please try again.');
+        }
       } else {
-        setError('Invalid verification code. Please try again.');
-        setIsLoading(false);
+        setError('Service unavailable');
       }
-    }, 800);
+    } catch (err) {
+      setError('Verification failed. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Step 3: Reset password
-  const handleResetPassword = (e) => {
+  // Step 3: Reset password
+  const handleResetPassword = async (e) => {
     e.preventDefault();
     setError('');
 
@@ -93,13 +130,28 @@ const ForgotPassword = ({ isOpen, onClose, onBackToLogin }) => {
     }
 
     setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setStep('success');
+
+    try {
+      if (resetPassword) {
+        const result = await resetPassword({
+          email,
+          otp: verificationCode,
+          newPassword: password
+        });
+
+        if (result.success) {
+          setStep('success');
+        } else {
+          setError(result.message || 'Failed to reset password. Please try again.');
+        }
+      } else {
+        setError('Service unavailable');
+      }
+    } catch (err) {
+      setError('Reset password failed. Please try again.');
+    } finally {
       setIsLoading(false);
-      // In production, update password in backend
-      console.log('Password reset for:', email);
-    }, 1200);
+    }
   };
 
   // Reset to email step
@@ -110,7 +162,6 @@ const ForgotPassword = ({ isOpen, onClose, onBackToLogin }) => {
     setPassword('');
     setConfirmPassword('');
     setError('');
-    setCodeSent(false);
   };
 
   // Close and redirect to login
@@ -123,7 +174,7 @@ const ForgotPassword = ({ isOpen, onClose, onBackToLogin }) => {
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4">
       <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-2xl w-full sm:w-96 max-w-sm sm:max-w-md overflow-hidden transform transition-all">
-        
+
         {/* Header */}
         <div className="bg-linear-to-r from-blue-600 via-purple-600 to-blue-700 text-white p-4 sm:p-6 md:p-8 rounded-b-2xl sm:rounded-b-3xl relative overflow-hidden">
           <div className="absolute top-0 right-0 w-24 h-24 sm:w-40 sm:h-40 bg-white/10 rounded-full -mr-10 sm:-mr-20 -mt-10 sm:-mt-20"></div>
@@ -150,9 +201,8 @@ const ForgotPassword = ({ isOpen, onClose, onBackToLogin }) => {
         {/* Progress Bar */}
         <div className="h-0.5 sm:h-1 bg-gray-200 dark:bg-gray-700">
           <div
-            className={`h-full bg-linear-to-r from-blue-500 to-purple-500 transition-all duration-300 ${
-              step === 'email' ? 'w-1/4' : step === 'verification' ? 'w-2/4' : step === 'reset' ? 'w-3/4' : 'w-full'
-            }`}
+            className={`h-full bg-linear-to-r from-blue-500 to-purple-500 transition-all duration-300 ${step === 'email' ? 'w-1/4' : step === 'verification' ? 'w-2/4' : step === 'reset' ? 'w-3/4' : 'w-full'
+              }`}
           ></div>
         </div>
 
@@ -253,6 +303,28 @@ const ForgotPassword = ({ isOpen, onClose, onBackToLogin }) => {
                   className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all disabled:opacity-50 text-xl sm:text-2xl tracking-widest font-mono text-center"
                   placeholder="000000"
                 />
+              </div>
+
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={handleResendOTP}
+                  disabled={isLoading}
+                  className="text-xs sm:text-sm text-purple-600 font-bold hover:underline disabled:opacity-50"
+                >
+                  Resend OTP
+                </button>
+              </div>
+
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={handleResendOTP}
+                  disabled={isLoading}
+                  className="text-xs sm:text-sm text-purple-600 font-bold hover:underline disabled:opacity-50"
+                >
+                  Resend OTP
+                </button>
               </div>
 
               <div className="space-y-3">
