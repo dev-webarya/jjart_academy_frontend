@@ -1,5 +1,5 @@
 // Base Configuration
-export const BASE_URL = "http://93.127.194.118:8095";
+export const BASE_URL = "http://localhost:8095";
 export const API_PREFIX = "/api/v1";
 
 /**
@@ -177,6 +177,75 @@ export const API_ENDPOINTS = {
     GET_UPCOMING: `${API_PREFIX}/lms/events/upcoming`,
     GET_PUBLIC: `${API_PREFIX}/lms/events/public`,
     GET_BY_TYPE: (eventType) => `${API_PREFIX}/lms/events/type/${eventType}`,
+  },
+
+  // LMS Subscriptions (Student)
+  LMS_SUBSCRIPTIONS: {
+    MY: `${API_PREFIX}/lms/subscriptions/my`,
+    MY_ACTIVE: `${API_PREFIX}/lms/subscriptions/my/active`,
+    // Admin endpoints
+    GET_ALL: `${API_PREFIX}/lms/subscriptions`,
+    CREATE: `${API_PREFIX}/lms/subscriptions`,
+    GET_BY_ID: (id) => `${API_PREFIX}/lms/subscriptions/${id}`,
+    UPDATE: (id) => `${API_PREFIX}/lms/subscriptions/${id}`,
+    DELETE: (id) => `${API_PREFIX}/lms/subscriptions/${id}`,
+    GET_ACTIVE: `${API_PREFIX}/lms/subscriptions/active`,
+    GET_BY_STUDENT: (studentId) => `${API_PREFIX}/lms/subscriptions/student/${studentId}`,
+    RENEW: (enrollmentId) => `${API_PREFIX}/lms/subscriptions/enrollment/${enrollmentId}/renew`,
+    CANCEL: (id) => `${API_PREFIX}/lms/subscriptions/${id}/cancel`,
+    GET_OVER_LIMIT: `${API_PREFIX}/lms/subscriptions/over-limit`,
+  },
+
+  // LMS Attendance (Student)
+  LMS_ATTENDANCE: {
+    MY: `${API_PREFIX}/lms/attendance/my`,
+    // Admin endpoints
+    MARK: `${API_PREFIX}/lms/attendance`,
+    GET_BY_SESSION: (sessionId) => `${API_PREFIX}/lms/attendance/session/${sessionId}`,
+    GET_BY_STUDENT: (studentId) => `${API_PREFIX}/lms/attendance/student/${studentId}`,
+    GET_OVER_LIMIT: (year, month) => `${API_PREFIX}/lms/attendance/over-limit/${year}/${month}`,
+    GET_ELIGIBLE_STUDENTS: `${API_PREFIX}/lms/attendance/eligible-students`,
+  },
+
+  // LMS Gallery (Student)
+  LMS_GALLERY: {
+    UPLOAD: `${API_PREFIX}/lms/gallery`,
+    MY: `${API_PREFIX}/lms/gallery/my`,
+    PUBLIC: `${API_PREFIX}/lms/gallery/public`,
+    FEATURED: `${API_PREFIX}/lms/gallery/featured`,
+    // Admin endpoints
+    GET_ALL: `${API_PREFIX}/lms/gallery`,
+    GET_BY_ID: (id) => `${API_PREFIX}/lms/gallery/${id}`,
+    UPDATE: (id) => `${API_PREFIX}/lms/gallery/${id}`,
+    DELETE: (id) => `${API_PREFIX}/lms/gallery/${id}`,
+    GET_BY_STATUS: (status) => `${API_PREFIX}/lms/gallery/status/${status}`,
+    VERIFY: (id) => `${API_PREFIX}/lms/gallery/${id}/verify`,
+    COUNT_PENDING: `${API_PREFIX}/lms/gallery/pending/count`,
+  },
+
+  // LMS Class Sessions (Admin)
+  LMS_SESSIONS: {
+    GET_ALL: `${API_PREFIX}/lms/sessions`,
+    CREATE: `${API_PREFIX}/lms/sessions`,
+    GET_BY_ID: (id) => `${API_PREFIX}/lms/sessions/${id}`,
+    UPDATE: (id) => `${API_PREFIX}/lms/sessions/${id}`,
+    DELETE: (id) => `${API_PREFIX}/lms/sessions/${id}`,
+    GET_UPCOMING: `${API_PREFIX}/lms/sessions/upcoming`,
+    GET_BY_DATE: (date) => `${API_PREFIX}/lms/sessions/date/${date}`,
+    GET_BY_RANGE: `${API_PREFIX}/lms/sessions/range`,
+    UPDATE_STATUS: (id) => `${API_PREFIX}/lms/sessions/${id}/status`,
+    GET_WITH_ATTENDANCE: (id) => `${API_PREFIX}/lms/sessions/${id}/attendance`,
+  },
+
+  // LMS Events (Public)
+  LMS_EVENTS: {
+    GET_ALL: `${API_PREFIX}/lms/events`,
+    GET_PUBLIC: `${API_PREFIX}/lms/events/public`,
+    GET_UPCOMING: `${API_PREFIX}/lms/events/upcoming`,
+    GET_BY_ID: (id) => `${API_PREFIX}/lms/events/${id}`,
+    CREATE: `${API_PREFIX}/lms/events`,
+    UPDATE: (id) => `${API_PREFIX}/lms/events/${id}`,
+    DELETE: (id) => `${API_PREFIX}/lms/events/${id}`,
   },
 };
 

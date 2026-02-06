@@ -56,8 +56,7 @@ const StudentPanel = () => {
     { name: 'Regular Classes', path: '/student/classes', icon: FaChalkboardTeacher },
     { name: 'Online Classes', path: '/student/online-classes', icon: FaVideo },
     { name: 'Attendance', path: '/student/attendance', icon: FaCalendar },
-    { name: 'Fee Payment', path: '/student/fees', icon: FaMoneyBillWave },
-    { name: 'Certificates', path: '/student/certificates', icon: FaCertificate },
+    { name: 'Subscriptions', path: '/student/subscriptions', icon: FaMoneyBillWave },
     { name: 'My Orders', path: '/student/orders', icon: FaClipboardList },
     { name: 'Events', path: '/student/events', icon: FaCalendar },
   ];
@@ -174,8 +173,8 @@ const StudentPanel = () => {
                     <button
                       onClick={() => setOpenDropdown(isDropdownOpen ? null : item.name)}
                       className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all font-medium ${isDropdownOpen
-                          ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
-                          : 'text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-700'
+                        ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                        : 'text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-700'
                         } ${!sidebarOpen && 'lg:justify-center'}`}
                     >
                       <Icon size={20} className="shrink-0" />
@@ -193,8 +192,8 @@ const StudentPanel = () => {
                     <Link
                       to={item.path}
                       className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-all font-medium ${isActive
-                          ? 'bg-blue-600 text-white shadow-lg'
-                          : 'text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-700'
+                        ? 'bg-blue-600 text-white shadow-lg'
+                        : 'text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-700'
                         } ${!sidebarOpen && 'lg:justify-center'}`}
                     >
                       <Icon size={20} className="shrink-0" />
@@ -216,8 +215,8 @@ const StudentPanel = () => {
                             key={subitem.path}
                             to={subitem.path}
                             className={`flex items-center space-x-3 px-4 py-2 rounded-lg transition-all text-sm font-medium ${isSubActive
-                                ? 'bg-blue-600 text-white shadow-lg'
-                                : 'text-gray-600 dark:text-gray-400 hover:bg-blue-50 dark:hover:bg-gray-700'
+                              ? 'bg-blue-600 text-white shadow-lg'
+                              : 'text-gray-600 dark:text-gray-400 hover:bg-blue-50 dark:hover:bg-gray-700'
                               }`}
                           >
                             <SubIcon size={18} />

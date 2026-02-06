@@ -22,7 +22,7 @@ import Cart from './components/shop/Cart';
 import CheckoutPage from './components/shop/CheckoutPage';
 
 // Events Components
-
+import EventsPage from './pages/EventsPage';
 
 // Student Components
 import StudentPanel from './pages/StudentPanel';
@@ -35,9 +35,9 @@ import MyOrders from './pages/student/MyOrders';
 import MyEvents from './pages/student/MyEvents';
 import Settings from './pages/student/Settings';
 import OnlineClasses from './pages/student/OnlineClasses';
-import StudentCertificates from './pages/student/StudentCertificates';
 import RegularClasses from './pages/student/RegularClasses';
-import StudentFeePayment from './pages/student/StudentFeePayment';
+import MySubscriptions from './pages/student/MySubscriptions';
+import MyGallery from './pages/student/MyGallery';
 
 
 import './App.css';
@@ -79,6 +79,7 @@ const AppLayout = () => {
         <Route path="/testimonials" element={<TestimonialsPage />} />
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/fee-payment" element={<FeePaymentPage />} />
+        <Route path="/events" element={<EventsPage />} />
         {/* Shop Routes */}
         <Route path="/shop/artworks" element={<ArtworkShop />} />
         <Route path="/shop/materials" element={<MaterialsShop />} />
@@ -95,19 +96,21 @@ const AppLayout = () => {
           <Route path="classes" element={<RegularClasses />} />
           <Route path="attendance" element={<StudentAttendance />} />
           <Route path="online-classes" element={<OnlineClasses />} />
-          <Route path="fees" element={<StudentFeePayment />} />
-          <Route path="certificates" element={<StudentCertificates />} />
+          <Route path="subscriptions" element={<MySubscriptions />} />
+
           <Route path="profile" element={<EnhancedStudentProfile />} />
           <Route path="notifications" element={<StudentNotifications />} />
           <Route path="orders" element={<MyOrders />} />
           <Route path="events" element={<MyEvents />} />
           <Route path="settings" element={<Settings />} />
-          {/* Redirect removed routes to dashboard */}
+          {/* Redirect removed routes to dashboard or new pages */}
+          <Route path="fees" element={<Navigate to="/student/subscriptions" replace />} />
+          <Route path="certificates" element={<Navigate to="/student/dashboard" replace />} />
           <Route path="achievements" element={<Navigate to="/student/dashboard" replace />} />
           <Route path="assignments" element={<Navigate to="/student/dashboard" replace />} />
           <Route path="-classes" element={<Navigate to="/student/dashboard" replace />} />
-          <Route path="my-gallery" element={<Navigate to="/student/dashboard" replace />} />
-          <Route path="gallery" element={<Navigate to="/student/dashboard" replace />} />
+          <Route path="my-gallery" element={<MyGallery />} />
+          <Route path="gallery" element={<Navigate to="/student/my-gallery" replace />} />
         </Route>
 
       </Routes>

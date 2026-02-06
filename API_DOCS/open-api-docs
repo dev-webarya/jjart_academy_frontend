@@ -26,6 +26,10 @@
       "description": "Endpoints for managing art works categories"
     },
     {
+      "name": "LMS - Attendance",
+      "description": "Attendance management"
+    },
+    {
       "name": "Art Materials Categories",
       "description": "Endpoints for managing art materials categories"
     },
@@ -34,16 +38,12 @@
       "description": "Endpoints for managing art galleries"
     },
     {
-      "name": "LMS - Gallery",
-      "description": "Gallery management with verification (Admin only)"
-    },
-    {
       "name": "Art Galleries Categories",
       "description": "Endpoints for managing art galleries categories"
     },
     {
-      "name": "LMS - Attendance",
-      "description": "Attendance management (Admin only)"
+      "name": "LMS - Gallery",
+      "description": "Gallery management with verification"
     },
     {
       "name": "Art Exhibitions",
@@ -58,8 +58,8 @@
       "description": "Operations for enrolling in art classes"
     },
     {
-      "name": "LMS - Subscriptions",
-      "description": "Monthly subscription management for approved students (Admin only)"
+      "name": "LMS - Events",
+      "description": "Event management"
     },
     {
       "name": "Art Exhibitions Categories",
@@ -70,20 +70,20 @@
       "description": "Order management endpoints"
     },
     {
+      "name": "LMS - Subscriptions",
+      "description": "Monthly subscription management"
+    },
+    {
       "name": "Art Classes",
       "description": "Endpoints for managing art classes"
     },
     {
+      "name": "LMS - Class Sessions",
+      "description": "Class session management"
+    },
+    {
       "name": "Art Works",
       "description": "Endpoints for managing art works"
-    },
-    {
-      "name": "LMS - Events",
-      "description": "Event management (Admin only)"
-    },
-    {
-      "name": "LMS - Class Sessions",
-      "description": "Class session management (Admin only)"
     }
   ],
   "paths": {
@@ -229,7 +229,7 @@
         "tags": [
           "LMS - Subscriptions"
         ],
-        "summary": "Get subscription by ID",
+        "summary": "Get subscription by ID (Admin)",
         "operationId": "getById",
         "parameters": [
           {
@@ -239,8 +239,7 @@
             "required": true,
             "schema": {
               "type": "string"
-            },
-            "example": "sub123abc"
+            }
           }
         ],
         "responses": {
@@ -254,13 +253,18 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       },
       "put": {
         "tags": [
           "LMS - Subscriptions"
         ],
-        "summary": "Update a subscription",
+        "summary": "Update a subscription (Admin)",
         "operationId": "update",
         "parameters": [
           {
@@ -270,8 +274,7 @@
             "required": true,
             "schema": {
               "type": "string"
-            },
-            "example": "sub123abc"
+            }
           }
         ],
         "requestBody": {
@@ -295,13 +298,18 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       },
       "delete": {
         "tags": [
           "LMS - Subscriptions"
         ],
-        "summary": "Delete a subscription",
+        "summary": "Delete a subscription (Admin)",
         "operationId": "delete",
         "parameters": [
           {
@@ -311,15 +319,19 @@
             "required": true,
             "schema": {
               "type": "string"
-            },
-            "example": "sub123abc"
+            }
           }
         ],
         "responses": {
           "200": {
             "description": "OK"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/api/v1/lms/sessions/{id}": {
@@ -327,7 +339,7 @@
         "tags": [
           "LMS - Class Sessions"
         ],
-        "summary": "Get session by ID",
+        "summary": "Get session by ID (Admin)",
         "operationId": "getById_1",
         "parameters": [
           {
@@ -350,13 +362,18 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       },
       "put": {
         "tags": [
           "LMS - Class Sessions"
         ],
-        "summary": "Update a session",
+        "summary": "Update a session (Admin)",
         "operationId": "update_1",
         "parameters": [
           {
@@ -389,13 +406,18 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       },
       "delete": {
         "tags": [
           "LMS - Class Sessions"
         ],
-        "summary": "Delete a session",
+        "summary": "Delete a session (Admin)",
         "operationId": "delete_1",
         "parameters": [
           {
@@ -411,7 +433,12 @@
           "200": {
             "description": "OK"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/api/v1/lms/gallery/{id}": {
@@ -419,7 +446,7 @@
         "tags": [
           "LMS - Gallery"
         ],
-        "summary": "Get gallery item by ID",
+        "summary": "Get gallery item by ID (Admin)",
         "operationId": "getById_2",
         "parameters": [
           {
@@ -442,13 +469,18 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       },
       "put": {
         "tags": [
           "LMS - Gallery"
         ],
-        "summary": "Update a gallery item",
+        "summary": "Update a gallery item (Admin)",
         "operationId": "update_2",
         "parameters": [
           {
@@ -481,13 +513,18 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       },
       "delete": {
         "tags": [
           "LMS - Gallery"
         ],
-        "summary": "Delete a gallery item",
+        "summary": "Delete a gallery item (Admin)",
         "operationId": "delete_2",
         "parameters": [
           {
@@ -503,7 +540,12 @@
           "200": {
             "description": "OK"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/api/v1/lms/events/{id}": {
@@ -511,7 +553,7 @@
         "tags": [
           "LMS - Events"
         ],
-        "summary": "Get event by ID",
+        "summary": "Get event by ID (Admin)",
         "operationId": "getById_3",
         "parameters": [
           {
@@ -534,13 +576,18 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       },
       "put": {
         "tags": [
           "LMS - Events"
         ],
-        "summary": "Update an event",
+        "summary": "Update an event (Admin)",
         "operationId": "update_3",
         "parameters": [
           {
@@ -573,13 +620,18 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       },
       "delete": {
         "tags": [
           "LMS - Events"
         ],
-        "summary": "Delete an event",
+        "summary": "Delete an event (Admin)",
         "operationId": "delete_3",
         "parameters": [
           {
@@ -595,7 +647,12 @@
           "200": {
             "description": "OK"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/api/v1/enrollments/{enrollmentId}/status": {
@@ -1794,32 +1851,28 @@
         "tags": [
           "LMS - Subscriptions"
         ],
-        "summary": "Get all subscriptions (paginated)",
+        "summary": "Get all subscriptions (Admin)",
         "operationId": "getAll",
         "parameters": [
           {
             "name": "page",
             "in": "query",
-            "description": "Page number (0-based)",
             "required": false,
             "schema": {
               "type": "integer",
               "format": "int32",
               "default": 0
-            },
-            "example": 0
+            }
           },
           {
             "name": "size",
             "in": "query",
-            "description": "Page size",
             "required": false,
             "schema": {
               "type": "integer",
               "format": "int32",
               "default": 100
-            },
-            "example": 100
+            }
           }
         ],
         "responses": {
@@ -1833,13 +1886,18 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       },
       "post": {
         "tags": [
           "LMS - Subscriptions"
         ],
-        "summary": "Create a new monthly subscription for an approved student",
+        "summary": "Create a new monthly subscription (Admin)",
         "operationId": "create",
         "requestBody": {
           "content": {
@@ -1862,7 +1920,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/api/v1/lms/subscriptions/{id}/cancel": {
@@ -1870,18 +1933,16 @@
         "tags": [
           "LMS - Subscriptions"
         ],
-        "summary": "Cancel a subscription",
+        "summary": "Cancel a subscription (Admin)",
         "operationId": "cancel",
         "parameters": [
           {
             "name": "id",
             "in": "path",
-            "description": "Subscription ID",
             "required": true,
             "schema": {
               "type": "string"
-            },
-            "example": "sub123abc"
+            }
           }
         ],
         "responses": {
@@ -1895,7 +1956,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/api/v1/lms/subscriptions/enrollment/{enrollmentId}/renew": {
@@ -1903,18 +1969,16 @@
         "tags": [
           "LMS - Subscriptions"
         ],
-        "summary": "Renew subscription for next month (only for APPROVED enrollments)",
+        "summary": "Renew subscription for next month (Admin)",
         "operationId": "renew",
         "parameters": [
           {
             "name": "enrollmentId",
             "in": "path",
-            "description": "Enrollment ID",
             "required": true,
             "schema": {
               "type": "string"
-            },
-            "example": "enrollment123abc"
+            }
           }
         ],
         "responses": {
@@ -1928,7 +1992,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/api/v1/lms/sessions": {
@@ -1936,15 +2005,27 @@
         "tags": [
           "LMS - Class Sessions"
         ],
-        "summary": "Get all sessions (paginated)",
+        "summary": "Get all sessions (Admin)",
         "operationId": "getAll_1",
         "parameters": [
           {
-            "name": "pageable",
+            "name": "page",
             "in": "query",
-            "required": true,
+            "required": false,
             "schema": {
-              "$ref": "#/components/schemas/Pageable"
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 100
             }
           }
         ],
@@ -1959,13 +2040,18 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       },
       "post": {
         "tags": [
           "LMS - Class Sessions"
         ],
-        "summary": "Create a new class session",
+        "summary": "Create a new class session (Admin)",
         "operationId": "create_1",
         "requestBody": {
           "content": {
@@ -1988,7 +2074,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/api/v1/lms/gallery": {
@@ -1996,15 +2087,27 @@
         "tags": [
           "LMS - Gallery"
         ],
-        "summary": "Get all gallery items (paginated)",
+        "summary": "Get all gallery items (Admin)",
         "operationId": "getAll_2",
         "parameters": [
           {
-            "name": "pageable",
+            "name": "page",
             "in": "query",
-            "required": true,
+            "required": false,
             "schema": {
-              "$ref": "#/components/schemas/Pageable"
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 100
             }
           }
         ],
@@ -2019,13 +2122,18 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       },
       "post": {
         "tags": [
           "LMS - Gallery"
         ],
-        "summary": "Upload a new gallery item",
+        "summary": "Upload a new gallery item (auto PENDING status)",
         "operationId": "create_2",
         "requestBody": {
           "content": {
@@ -2048,7 +2156,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/api/v1/lms/gallery/{id}/verify": {
@@ -2056,7 +2169,7 @@
         "tags": [
           "LMS - Gallery"
         ],
-        "summary": "Verify a gallery item",
+        "summary": "Verify a gallery item (Admin)",
         "operationId": "verify",
         "parameters": [
           {
@@ -2089,7 +2202,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/api/v1/lms/events": {
@@ -2097,15 +2215,27 @@
         "tags": [
           "LMS - Events"
         ],
-        "summary": "Get all events (paginated)",
+        "summary": "Get all events (Admin)",
         "operationId": "getAll_3",
         "parameters": [
           {
-            "name": "pageable",
+            "name": "page",
             "in": "query",
-            "required": true,
+            "required": false,
             "schema": {
-              "$ref": "#/components/schemas/Pageable"
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 100
             }
           }
         ],
@@ -2120,13 +2250,18 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       },
       "post": {
         "tags": [
           "LMS - Events"
         ],
-        "summary": "Create a new event",
+        "summary": "Create a new event (Admin)",
         "operationId": "create_3",
         "requestBody": {
           "content": {
@@ -2149,7 +2284,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/api/v1/lms/attendance": {
@@ -2157,7 +2297,7 @@
         "tags": [
           "LMS - Attendance"
         ],
-        "summary": "Mark attendance for a session",
+        "summary": "Mark attendance for a session (Admin)",
         "operationId": "markAttendance",
         "requestBody": {
           "content": {
@@ -2180,7 +2320,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/api/v1/enrollments": {
@@ -2539,68 +2684,6 @@
           },
           "required": true
         },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ArtWorksResponseDto"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/art-works/{id}/views": {
-      "post": {
-        "tags": [
-          "Art Works"
-        ],
-        "summary": "Increment view count",
-        "operationId": "incrementViews",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ArtWorksResponseDto"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/art-works/{id}/likes": {
-      "post": {
-        "tags": [
-          "Art Works"
-        ],
-        "summary": "Increment like count",
-        "operationId": "incrementLikes",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -3454,7 +3537,7 @@
         "tags": [
           "LMS - Class Sessions"
         ],
-        "summary": "Update session status",
+        "summary": "Update session status (Admin)",
         "operationId": "updateStatus_2",
         "parameters": [
           {
@@ -3499,7 +3582,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/api/v1/lms/subscriptions/student/{studentId}": {
@@ -3507,18 +3595,16 @@
         "tags": [
           "LMS - Subscriptions"
         ],
-        "summary": "Get all subscriptions for a student (by user ID)",
+        "summary": "Get subscriptions for a student (Admin)",
         "operationId": "getByStudent",
         "parameters": [
           {
             "name": "studentId",
             "in": "path",
-            "description": "User ID",
             "required": true,
             "schema": {
               "type": "string"
-            },
-            "example": "user123abc"
+            }
           }
         ],
         "responses": {
@@ -3535,40 +3621,12 @@
               }
             }
           }
-        }
-      }
-    },
-    "/api/v1/lms/subscriptions/student/{studentId}/active": {
-      "get": {
-        "tags": [
-          "LMS - Subscriptions"
-        ],
-        "summary": "Get active subscription for a student",
-        "operationId": "getActiveByStudent",
-        "parameters": [
+        },
+        "security": [
           {
-            "name": "studentId",
-            "in": "path",
-            "description": "User ID",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "example": "user123abc"
+            "bearerAuth": []
           }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/LmsSubscriptionResponseDto"
-                }
-              }
-            }
-          }
-        }
+        ]
       }
     },
     "/api/v1/lms/subscriptions/over-limit": {
@@ -3576,7 +3634,7 @@
         "tags": [
           "LMS - Subscriptions"
         ],
-        "summary": "Get students who have exceeded their session limit (8+)",
+        "summary": "Get students over session limit (Admin)",
         "operationId": "getOverLimit",
         "responses": {
           "200": {
@@ -3592,40 +3650,21 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
-    "/api/v1/lms/subscriptions/month/{year}/{month}": {
+    "/api/v1/lms/subscriptions/my": {
       "get": {
         "tags": [
           "LMS - Subscriptions"
         ],
-        "summary": "Get all subscriptions for a specific month",
-        "operationId": "getByMonth",
-        "parameters": [
-          {
-            "name": "year",
-            "in": "path",
-            "description": "Year",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            },
-            "example": 2026
-          },
-          {
-            "name": "month",
-            "in": "path",
-            "description": "Month (1-12)",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            },
-            "example": 2
-          }
-        ],
+        "summary": "Get current user's subscriptions",
+        "operationId": "getMySubscriptions",
         "responses": {
           "200": {
             "description": "OK",
@@ -3640,7 +3679,38 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/lms/subscriptions/my/active": {
+      "get": {
+        "tags": [
+          "LMS - Subscriptions"
+        ],
+        "summary": "Get current user's active subscription",
+        "operationId": "getMyActiveSubscription",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/LmsSubscriptionResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/api/v1/lms/subscriptions/active": {
@@ -3648,32 +3718,28 @@
         "tags": [
           "LMS - Subscriptions"
         ],
-        "summary": "Get all active subscriptions (paginated)",
+        "summary": "Get all active subscriptions (Admin)",
         "operationId": "getActive",
         "parameters": [
           {
             "name": "page",
             "in": "query",
-            "description": "Page number (0-based)",
             "required": false,
             "schema": {
               "type": "integer",
               "format": "int32",
               "default": 0
-            },
-            "example": 0
+            }
           },
           {
             "name": "size",
             "in": "query",
-            "description": "Page size",
             "required": false,
             "schema": {
               "type": "integer",
               "format": "int32",
               "default": 100
-            },
-            "example": 100
+            }
           }
         ],
         "responses": {
@@ -3687,7 +3753,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/api/v1/lms/sessions/{id}/attendance": {
@@ -3695,7 +3766,7 @@
         "tags": [
           "LMS - Class Sessions"
         ],
-        "summary": "Get session with attendance records",
+        "summary": "Get session with attendance records (Admin)",
         "operationId": "getSessionWithAttendance",
         "parameters": [
           {
@@ -3718,7 +3789,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/api/v1/lms/sessions/upcoming": {
@@ -3730,11 +3806,23 @@
         "operationId": "getUpcoming",
         "parameters": [
           {
-            "name": "pageable",
+            "name": "page",
             "in": "query",
-            "required": true,
+            "required": false,
             "schema": {
-              "$ref": "#/components/schemas/Pageable"
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 100
             }
           }
         ],
@@ -3749,7 +3837,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/api/v1/lms/sessions/range": {
@@ -3757,7 +3850,7 @@
         "tags": [
           "LMS - Class Sessions"
         ],
-        "summary": "Get sessions by date range",
+        "summary": "Get sessions by date range (Admin)",
         "operationId": "getByDateRange",
         "parameters": [
           {
@@ -3793,7 +3886,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/api/v1/lms/sessions/date/{date}": {
@@ -3828,46 +3926,12 @@
               }
             }
           }
-        }
-      }
-    },
-    "/api/v1/lms/gallery/uploader/{userId}": {
-      "get": {
-        "tags": [
-          "LMS - Gallery"
-        ],
-        "summary": "Get gallery items by uploader",
-        "operationId": "getByUploader",
-        "parameters": [
+        },
+        "security": [
           {
-            "name": "userId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "pageable",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/Pageable"
-            }
+            "bearerAuth": []
           }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/PageLmsGalleryItemResponseDto"
-                }
-              }
-            }
-          }
-        }
+        ]
       }
     },
     "/api/v1/lms/gallery/status/{status}": {
@@ -3875,7 +3939,7 @@
         "tags": [
           "LMS - Gallery"
         ],
-        "summary": "Get gallery items by verification status",
+        "summary": "Get gallery items by status (Admin)",
         "operationId": "getByStatus",
         "parameters": [
           {
@@ -3892,11 +3956,23 @@
             }
           },
           {
-            "name": "pageable",
+            "name": "page",
             "in": "query",
-            "required": true,
+            "required": false,
             "schema": {
-              "$ref": "#/components/schemas/Pageable"
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 100
             }
           }
         ],
@@ -3911,7 +3987,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/api/v1/lms/gallery/public": {
@@ -3923,11 +4004,23 @@
         "operationId": "getPublicItems",
         "parameters": [
           {
-            "name": "pageable",
+            "name": "page",
             "in": "query",
-            "required": true,
+            "required": false,
             "schema": {
-              "$ref": "#/components/schemas/Pageable"
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 100
             }
           }
         ],
@@ -3942,7 +4035,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/api/v1/lms/gallery/pending/count": {
@@ -3950,7 +4048,7 @@
         "tags": [
           "LMS - Gallery"
         ],
-        "summary": "Count pending items for verification",
+        "summary": "Count pending items (Admin)",
         "operationId": "countPending",
         "responses": {
           "200": {
@@ -3964,23 +4062,40 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
-    "/api/v1/lms/gallery/featured": {
+    "/api/v1/lms/gallery/my": {
       "get": {
         "tags": [
           "LMS - Gallery"
         ],
-        "summary": "Get featured gallery items",
-        "operationId": "getFeaturedItems",
+        "summary": "Get current user's gallery uploads",
+        "operationId": "getMyUploads",
         "parameters": [
           {
-            "name": "pageable",
+            "name": "page",
             "in": "query",
-            "required": true,
+            "required": false,
             "schema": {
-              "$ref": "#/components/schemas/Pageable"
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 100
             }
           }
         ],
@@ -3995,7 +4110,60 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/lms/gallery/featured": {
+      "get": {
+        "tags": [
+          "LMS - Gallery"
+        ],
+        "summary": "Get featured gallery items",
+        "operationId": "getFeaturedItems",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageLmsGalleryItemResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/api/v1/lms/events/upcoming": {
@@ -4007,11 +4175,23 @@
         "operationId": "getUpcoming_1",
         "parameters": [
           {
-            "name": "pageable",
+            "name": "page",
             "in": "query",
-            "required": true,
+            "required": false,
             "schema": {
-              "$ref": "#/components/schemas/Pageable"
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 100
             }
           }
         ],
@@ -4026,7 +4206,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/api/v1/lms/events/type/{eventType}": {
@@ -4034,7 +4219,7 @@
         "tags": [
           "LMS - Events"
         ],
-        "summary": "Get events by type",
+        "summary": "Get events by type (Admin)",
         "operationId": "getByType",
         "parameters": [
           {
@@ -4052,11 +4237,23 @@
             }
           },
           {
-            "name": "pageable",
+            "name": "page",
             "in": "query",
-            "required": true,
+            "required": false,
             "schema": {
-              "$ref": "#/components/schemas/Pageable"
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 100
             }
           }
         ],
@@ -4071,7 +4268,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/api/v1/lms/events/public": {
@@ -4083,11 +4285,23 @@
         "operationId": "getPublicEvents",
         "parameters": [
           {
-            "name": "pageable",
+            "name": "page",
             "in": "query",
-            "required": true,
+            "required": false,
             "schema": {
-              "$ref": "#/components/schemas/Pageable"
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 100
             }
           }
         ],
@@ -4102,7 +4316,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/api/v1/lms/attendance/student/{studentId}": {
@@ -4110,42 +4329,36 @@
         "tags": [
           "LMS - Attendance"
         ],
-        "summary": "Get attendance history for a student",
+        "summary": "Get attendance history for a student (Admin)",
         "operationId": "getByStudent_1",
         "parameters": [
           {
             "name": "studentId",
             "in": "path",
-            "description": "User ID",
             "required": true,
             "schema": {
               "type": "string"
-            },
-            "example": "user123abc"
+            }
           },
           {
             "name": "page",
             "in": "query",
-            "description": "Page number",
             "required": false,
             "schema": {
               "type": "integer",
               "format": "int32",
               "default": 0
-            },
-            "example": 0
+            }
           },
           {
             "name": "size",
             "in": "query",
-            "description": "Page size",
             "required": false,
             "schema": {
               "type": "integer",
               "format": "int32",
               "default": 100
-            },
-            "example": 100
+            }
           }
         ],
         "responses": {
@@ -4159,62 +4372,12 @@
               }
             }
           }
-        }
-      }
-    },
-    "/api/v1/lms/attendance/student/{studentId}/monthly/{year}/{month}": {
-      "get": {
-        "tags": [
-          "LMS - Attendance"
-        ],
-        "summary": "Get monthly attendance summary for a student",
-        "operationId": "getStudentMonthlyAttendance",
-        "parameters": [
+        },
+        "security": [
           {
-            "name": "studentId",
-            "in": "path",
-            "description": "User ID",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "example": "user123abc"
-          },
-          {
-            "name": "year",
-            "in": "path",
-            "description": "Year",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            },
-            "example": 2026
-          },
-          {
-            "name": "month",
-            "in": "path",
-            "description": "Month (1-12)",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            },
-            "example": 2
+            "bearerAuth": []
           }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/LmsAttendanceResponseDto"
-                }
-              }
-            }
-          }
-        }
+        ]
       }
     },
     "/api/v1/lms/attendance/session/{sessionId}": {
@@ -4222,18 +4385,16 @@
         "tags": [
           "LMS - Attendance"
         ],
-        "summary": "Get attendance records for a session",
+        "summary": "Get attendance records for a session (Admin)",
         "operationId": "getBySession",
         "parameters": [
           {
             "name": "sessionId",
             "in": "path",
-            "description": "Session ID",
             "required": true,
             "schema": {
               "type": "string"
-            },
-            "example": "session123abc"
+            }
           }
         ],
         "responses": {
@@ -4250,7 +4411,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/api/v1/lms/attendance/over-limit/{year}/{month}": {
@@ -4258,30 +4424,26 @@
         "tags": [
           "LMS - Attendance"
         ],
-        "summary": "Get students over session limit for a month (8+ sessions)",
+        "summary": "Get students over session limit (Admin)",
         "operationId": "getOverLimitStudents",
         "parameters": [
           {
             "name": "year",
             "in": "path",
-            "description": "Year",
             "required": true,
             "schema": {
               "type": "integer",
               "format": "int32"
-            },
-            "example": 2026
+            }
           },
           {
             "name": "month",
             "in": "path",
-            "description": "Month (1-12)",
             "required": true,
             "schema": {
               "type": "integer",
               "format": "int32"
-            },
-            "example": 2
+            }
           }
         ],
         "responses": {
@@ -4298,7 +4460,60 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/lms/attendance/my": {
+      "get": {
+        "tags": [
+          "LMS - Attendance"
+        ],
+        "summary": "Get current user's attendance history",
+        "operationId": "getMyAttendance",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageLmsAttendanceResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/api/v1/lms/attendance/eligible-students": {
@@ -4306,7 +4521,7 @@
         "tags": [
           "LMS - Attendance"
         ],
-        "summary": "Get students eligible for attendance (active subscriptions for current month)",
+        "summary": "Get students eligible for attendance (Admin)",
         "operationId": "getEligibleStudents",
         "responses": {
           "200": {
@@ -4322,7 +4537,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/api/v1/enrollments/{enrollmentId}": {
@@ -4487,30 +4707,6 @@
         ]
       }
     },
-    "/api/v1/art-works-categories/root": {
-      "get": {
-        "tags": [
-          "Art Works Categories"
-        ],
-        "summary": "Get all Root Categories",
-        "operationId": "getAllRootCategories",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ArtWorksCategoryResponseDto"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/v1/art-payments/order/{orderId}": {
       "get": {
         "tags": [
@@ -4596,102 +4792,6 @@
               "*/*": {
                 "schema": {
                   "$ref": "#/components/schemas/PageArtOrderResponseDto"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/art-materials-categories/root": {
-      "get": {
-        "tags": [
-          "Art Materials Categories"
-        ],
-        "summary": "Get all Root Categories",
-        "operationId": "getAllRootCategories_1",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ArtMaterialsCategoryResponseDto"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/art-galleries-categories/root": {
-      "get": {
-        "tags": [
-          "Art Galleries Categories"
-        ],
-        "summary": "Get all Root Categories",
-        "operationId": "getAllRootCategories_2",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ArtGalleryCategoryResponseDto"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/art-exhibitions-categories/root": {
-      "get": {
-        "tags": [
-          "Art Exhibitions Categories"
-        ],
-        "summary": "Get all Root Categories",
-        "operationId": "getAllRootCategories_3",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ArtExhibitionCategoryResponseDto"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/art-classes-categories/root": {
-      "get": {
-        "tags": [
-          "Art Classes Categories"
-        ],
-        "summary": "Get all Root Categories",
-        "operationId": "getAllRootCategories_4",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ArtClassesCategoryResponseDto"
-                  }
                 }
               }
             }
@@ -5579,14 +5679,6 @@
           "size": {
             "type": "string"
           },
-          "views": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "likes": {
-            "type": "integer",
-            "format": "int32"
-          },
           "categoryId": {
             "type": "string"
           },
@@ -5614,9 +5706,6 @@
         "properties": {
           "name": {
             "type": "string"
-          },
-          "parentId": {
-            "type": "string"
           }
         },
         "required": [
@@ -5631,18 +5720,6 @@
           },
           "name": {
             "type": "string"
-          },
-          "parentId": {
-            "type": "string"
-          },
-          "parentName": {
-            "type": "string"
-          },
-          "subcategories": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ArtWorksCategoryResponseDto"
-            }
           },
           "createdAt": {
             "type": "string",
@@ -5927,9 +6004,6 @@
         "properties": {
           "name": {
             "type": "string"
-          },
-          "parentId": {
-            "type": "string"
           }
         },
         "required": [
@@ -5944,18 +6018,6 @@
           },
           "name": {
             "type": "string"
-          },
-          "parentId": {
-            "type": "string"
-          },
-          "parentName": {
-            "type": "string"
-          },
-          "subcategories": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ArtMaterialsCategoryResponseDto"
-            }
           },
           "createdAt": {
             "type": "string",
@@ -6031,9 +6093,6 @@
         "properties": {
           "name": {
             "type": "string"
-          },
-          "parentId": {
-            "type": "string"
           }
         },
         "required": [
@@ -6048,18 +6107,6 @@
           },
           "name": {
             "type": "string"
-          },
-          "parentId": {
-            "type": "string"
-          },
-          "parentName": {
-            "type": "string"
-          },
-          "subcategories": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ArtGalleryCategoryResponseDto"
-            }
           },
           "createdAt": {
             "type": "string",
@@ -6180,9 +6227,6 @@
         "properties": {
           "name": {
             "type": "string"
-          },
-          "parentId": {
-            "type": "string"
           }
         },
         "required": [
@@ -6197,18 +6241,6 @@
           },
           "name": {
             "type": "string"
-          },
-          "parentId": {
-            "type": "string"
-          },
-          "parentName": {
-            "type": "string"
-          },
-          "subcategories": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ArtExhibitionCategoryResponseDto"
-            }
           },
           "createdAt": {
             "type": "string",
@@ -6316,9 +6348,6 @@
           },
           "description": {
             "type": "string"
-          },
-          "parentId": {
-            "type": "string"
           }
         },
         "required": [
@@ -6333,18 +6362,6 @@
           },
           "name": {
             "type": "string"
-          },
-          "parentId": {
-            "type": "string"
-          },
-          "parentName": {
-            "type": "string"
-          },
-          "subcategories": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ArtClassesCategoryResponseDto"
-            }
           },
           "createdAt": {
             "type": "string",
@@ -6843,13 +6860,13 @@
       "PageUserResponse": {
         "type": "object",
         "properties": {
-          "totalElements": {
-            "type": "integer",
-            "format": "int64"
-          },
           "totalPages": {
             "type": "integer",
             "format": "int32"
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
           },
           "size": {
             "type": "integer",
@@ -6918,10 +6935,10 @@
           "empty": {
             "type": "boolean"
           },
-          "sorted": {
+          "unsorted": {
             "type": "boolean"
           },
-          "unsorted": {
+          "sorted": {
             "type": "boolean"
           }
         }
@@ -6929,13 +6946,13 @@
       "PageLmsSubscriptionResponseDto": {
         "type": "object",
         "properties": {
-          "totalElements": {
-            "type": "integer",
-            "format": "int64"
-          },
           "totalPages": {
             "type": "integer",
             "format": "int32"
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
           },
           "size": {
             "type": "integer",
@@ -6975,13 +6992,13 @@
       "PageLmsClassSessionResponseDto": {
         "type": "object",
         "properties": {
-          "totalElements": {
-            "type": "integer",
-            "format": "int64"
-          },
           "totalPages": {
             "type": "integer",
             "format": "int32"
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
           },
           "size": {
             "type": "integer",
@@ -7021,13 +7038,13 @@
       "PageLmsGalleryItemResponseDto": {
         "type": "object",
         "properties": {
-          "totalElements": {
-            "type": "integer",
-            "format": "int64"
-          },
           "totalPages": {
             "type": "integer",
             "format": "int32"
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
           },
           "size": {
             "type": "integer",
@@ -7067,13 +7084,13 @@
       "PageLmsEventResponseDto": {
         "type": "object",
         "properties": {
-          "totalElements": {
-            "type": "integer",
-            "format": "int64"
-          },
           "totalPages": {
             "type": "integer",
             "format": "int32"
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
           },
           "size": {
             "type": "integer",
@@ -7173,13 +7190,13 @@
       "PageLmsAttendanceResponseDto": {
         "type": "object",
         "properties": {
-          "totalElements": {
-            "type": "integer",
-            "format": "int64"
-          },
           "totalPages": {
             "type": "integer",
             "format": "int32"
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
           },
           "size": {
             "type": "integer",
@@ -7283,13 +7300,13 @@
       "PageClassEnrollmentResponseDto": {
         "type": "object",
         "properties": {
-          "totalElements": {
-            "type": "integer",
-            "format": "int64"
-          },
           "totalPages": {
             "type": "integer",
             "format": "int32"
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
           },
           "size": {
             "type": "integer",
@@ -7329,13 +7346,13 @@
       "PageArtWorksResponseDto": {
         "type": "object",
         "properties": {
-          "totalElements": {
-            "type": "integer",
-            "format": "int64"
-          },
           "totalPages": {
             "type": "integer",
             "format": "int32"
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
           },
           "size": {
             "type": "integer",
@@ -7375,13 +7392,13 @@
       "PageArtWorksCategoryResponseDto": {
         "type": "object",
         "properties": {
-          "totalElements": {
-            "type": "integer",
-            "format": "int64"
-          },
           "totalPages": {
             "type": "integer",
             "format": "int32"
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
           },
           "size": {
             "type": "integer",
@@ -7421,13 +7438,13 @@
       "PageArtOrderResponseDto": {
         "type": "object",
         "properties": {
-          "totalElements": {
-            "type": "integer",
-            "format": "int64"
-          },
           "totalPages": {
             "type": "integer",
             "format": "int32"
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
           },
           "size": {
             "type": "integer",
@@ -7467,13 +7484,13 @@
       "PageArtMaterialsResponseDto": {
         "type": "object",
         "properties": {
-          "totalElements": {
-            "type": "integer",
-            "format": "int64"
-          },
           "totalPages": {
             "type": "integer",
             "format": "int32"
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
           },
           "size": {
             "type": "integer",
@@ -7513,13 +7530,13 @@
       "PageArtMaterialsCategoryResponseDto": {
         "type": "object",
         "properties": {
-          "totalElements": {
-            "type": "integer",
-            "format": "int64"
-          },
           "totalPages": {
             "type": "integer",
             "format": "int32"
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
           },
           "size": {
             "type": "integer",
@@ -7559,13 +7576,13 @@
       "PageArtGalleryResponseDto": {
         "type": "object",
         "properties": {
-          "totalElements": {
-            "type": "integer",
-            "format": "int64"
-          },
           "totalPages": {
             "type": "integer",
             "format": "int32"
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
           },
           "size": {
             "type": "integer",
@@ -7605,13 +7622,13 @@
       "PageArtGalleryCategoryResponseDto": {
         "type": "object",
         "properties": {
-          "totalElements": {
-            "type": "integer",
-            "format": "int64"
-          },
           "totalPages": {
             "type": "integer",
             "format": "int32"
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
           },
           "size": {
             "type": "integer",
@@ -7651,13 +7668,13 @@
       "PageArtExhibitionResponseDto": {
         "type": "object",
         "properties": {
-          "totalElements": {
-            "type": "integer",
-            "format": "int64"
-          },
           "totalPages": {
             "type": "integer",
             "format": "int32"
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
           },
           "size": {
             "type": "integer",
@@ -7697,13 +7714,13 @@
       "PageArtExhibitionCategoryResponseDto": {
         "type": "object",
         "properties": {
-          "totalElements": {
-            "type": "integer",
-            "format": "int64"
-          },
           "totalPages": {
             "type": "integer",
             "format": "int32"
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
           },
           "size": {
             "type": "integer",
@@ -7743,13 +7760,13 @@
       "PageArtClassesResponseDto": {
         "type": "object",
         "properties": {
-          "totalElements": {
-            "type": "integer",
-            "format": "int64"
-          },
           "totalPages": {
             "type": "integer",
             "format": "int32"
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
           },
           "size": {
             "type": "integer",
@@ -7789,13 +7806,13 @@
       "PageArtClassesCategoryResponseDto": {
         "type": "object",
         "properties": {
-          "totalElements": {
-            "type": "integer",
-            "format": "int64"
-          },
           "totalPages": {
             "type": "integer",
             "format": "int32"
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
           },
           "size": {
             "type": "integer",
@@ -7844,4 +7861,3 @@
     }
   }
 }
-
