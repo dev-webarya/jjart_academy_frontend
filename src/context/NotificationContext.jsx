@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback } from 'react';
+import { createContext, useContext, useState, useCallback, useMemo } from 'react';
 import { FaCheckCircle, FaExclamationCircle, FaInfoCircle, FaTimes } from 'react-icons/fa';
 
 const NotificationContext = createContext();
@@ -17,7 +17,7 @@ export const NotificationProvider = ({ children }) => {
   const addNotification = useCallback((message, type = 'info', duration = 5000) => {
     const id = Date.now() + Math.random();
     const notification = { id, message, type };
-    
+
     setNotifications(prev => [...prev, notification]);
 
     if (duration > 0) {
@@ -49,7 +49,7 @@ export const NotificationProvider = ({ children }) => {
     return addNotification(message, 'warning', duration);
   }, [addNotification]);
 
-  const value = {
+  const value = useMemo(() => ({
     notifications,
     addNotification,
     removeNotification,
@@ -57,7 +57,7 @@ export const NotificationProvider = ({ children }) => {
     error,
     info,
     warning,
-  };
+  }), [notifications, addNotification, removeNotification, success, error, info, warning]);
 
   return (
     <NotificationContext.Provider value={value}>
