@@ -281,7 +281,7 @@ const Classes = () => {
                         <span className="text-xs text-gray-500 dark:text-gray-400">Price</span>
                         <div className="flex items-baseline gap-2">
                           <span className="text-lg font-bold text-gray-900 dark:text-white">
-                            ₹{item.discountPrice || item.price || item.basePrice}
+                            ₹{(Number(item.discountPrice) > 0 ? item.discountPrice : (Number(item.price) > 0 ? item.price : item.basePrice || 0)).toLocaleString()}
                           </span>
                           {(item.discountPrice || item.originalPrice) && (
                             <span className="text-sm text-gray-400 line-through">

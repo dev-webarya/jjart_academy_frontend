@@ -114,24 +114,29 @@ const MaterialsShop = () => {
 
     if (stock === 0) return;
 
-    // Add multiple items based on quantity
-    for (let i = 0; i < quantity; i++) {
-      addToCart({
-        id: `${product.id}-${selectedSize || 'default'}`,
-        name: product.name,
-        price: price,
-        image: Array.isArray(product.images) ? product.images[0] : product.image,
-        type: 'material',
-        brand: product.brand,
-        size: sizeLabel,
-      });
-    }
+    // Add to cart with specific variant ID if available
+    const itemToAddId = sizeOption?.id || product.id;
+
+    addToCart({
+      id: itemToAddId, // Send Specific Variant ID
+      productId: itemToAddId,
+      name: product.name,
+      price: price,
+      image: Array.isArray(product.images) ? product.images[0] : product.image,
+      type: 'material',
+      productType: 'ART_MATERIAL', // Backend product type
+      brand: product.brand,
+      size: sizeLabel,
+      quantity: quantity, // Pass quantity directly
+    });
+
     success(`${quantity} × "${product.name}" (${sizeLabel}) added to cart!`);
   };
 
+
   const handleBuyNow = (product, selectedSize, quantity = 1) => {
     handleAddToCart(product, selectedSize, quantity);
-    navigate('/checkout');
+    navigate('/cart'); // Go to cart first so user can review before checkout
   };
 
   // Pagination
@@ -272,8 +277,8 @@ const ProductCard = ({ product, onView, onAddToCart, onBuyNow, isStudent, naviga
   const [quantity, setQuantity] = useState(1);
 
   const currentSize = product.sizeOptions?.find(s => s.id === selectedSize);
-  const displayPrice = currentSize?.price || product.price;
-  const displayDiscountPrice = currentSize?.discountPrice || product.discountPrice;
+  const displayPrice = Number(currentSize?.price) > 0 ? Number(currentSize?.price) : Number(product.price);
+  const displayDiscountPrice = Number(currentSize?.discountPrice) > 0 ? Number(currentSize?.discountPrice) : Number(product.discountPrice);
   const stock = currentSize?.stock || product.stock;
 
   // Safe image access
@@ -405,8 +410,8 @@ const ProductDetailModal = ({ product, onClose, onAddToCart, onBuyNow, isStudent
   const images = Array.isArray(product.images) ? product.images : [product.image];
 
   const currentSize = product.sizeOptions?.find(s => s.id === selectedSize);
-  const displayPrice = currentSize?.price || product.price;
-  const displayDiscountPrice = currentSize?.discountPrice || product.discountPrice;
+  const displayPrice = Number(currentSize?.price) > 0 ? Number(currentSize?.price) : Number(product.price);
+  const displayDiscountPrice = Number(currentSize?.discountPrice) > 0 ? Number(currentSize?.discountPrice) : Number(product.discountPrice);
   const stock = currentSize?.stock || product.stock;
 
   const finalPrice = displayDiscountPrice || displayPrice;
@@ -445,8 +450,8 @@ const ProductDetailModal = ({ product, onClose, onAddToCart, onBuyNow, isStudent
                     key={idx}
                     onClick={() => setActiveImage(idx)}
                     className={`w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden border-2 transition-all p-1 bg-white dark:bg-gray-800 ${activeImage === idx
-                        ? 'border-blue-600'
-                        : 'border-transparent hover:border-gray-200 dark:hover:border-gray-600'
+                      ? 'border-blue-600'
+                      : 'border-transparent hover:border-gray-200 dark:hover:border-gray-600'
                       }`}
                   >
                     <img src={img} alt="" className="w-full h-full object-contain" />
@@ -501,8 +506,8 @@ const ProductDetailModal = ({ product, onClose, onAddToCart, onBuyNow, isStudent
                           setQuantity(1);
                         }}
                         className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all ${selectedSize === size.id
-                            ? 'bg-white dark:bg-gray-700 border-blue-600 text-blue-600 dark:text-blue-400 shadow-sm'
-                            : 'bg-transparent border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-gray-400'
+                          ? 'bg-white dark:bg-gray-700 border-blue-600 text-blue-600 dark:text-blue-400 shadow-sm'
+                          : 'bg-transparent border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-gray-400'
                           }`}
                       >
                         {size.label}

@@ -17,17 +17,17 @@ class ClassesService {
     try {
       const url = `${this.baseURL}${API_ENDPOINTS.ART_CLASSES.GET_ALL}`;
       console.log('📡 Fetching all classes from:', url);
-      
+
       const response = await fetch(url);
       console.log('📊 Response status:', response.status);
-      
+
       if (!response.ok) {
         throw new Error(`Failed to fetch classes: HTTP ${response.status}`);
       }
 
       const data = await response.json();
       console.log('✅ Raw API response:', data);
-      
+
       // Extract actual data from response - handles multiple formats
       let classes = [];
       if (Array.isArray(data)) {
@@ -46,11 +46,24 @@ class ClassesService {
         classes = data.artClasses;
         console.log('📋 Response format: {artClasses: Array}');
       }
-      console.log('✅ Extracted classes:', classes);
-      
+      // Process and normalize classes
+      const mappedClasses = classes.map(item => ({
+        ...item,
+        id: item.id,
+        title: item.name || item.title || 'Untitled Class',
+        price: Number(item.price) > 0 ? Number(item.price) :
+          (Number(item.basePrice) > 0 ? Number(item.basePrice) :
+            (Number(item.enrollmentFee) > 0 ? Number(item.enrollmentFee) : 0)),
+        discountPrice: Number(item.discountPrice) > 0 ? Number(item.discountPrice) : null,
+        category: item.categoryName || item.category || 'Art',
+        proficiency: item.proficiency || item.level || 'Beginner'
+      }));
+
+      console.log('✅ Normalized classes:', mappedClasses);
+
       return {
         success: true,
-        data: classes,
+        data: mappedClasses,
         message: 'Classes fetched successfully'
       };
     } catch (error) {
@@ -71,9 +84,9 @@ class ClassesService {
     try {
       const url = `${this.baseURL}${API_ENDPOINTS.ART_CLASSES.GET_BY_ID(id)}`;
       console.log('📡 Fetching class by ID:', url);
-      
+
       const response = await fetch(url);
-      
+
       if (!response.ok) {
         throw new Error(`Failed to fetch class: ${response.status}`);
       }
@@ -103,16 +116,16 @@ class ClassesService {
     try {
       const url = `${this.baseURL}${API_ENDPOINTS.ART_CLASSES_CATEGORIES.GET_ALL}`;
       console.log('📡 Fetching all classes categories from:', url);
-      
+
       const response = await fetch(url);
-      
+
       if (!response.ok) {
         throw new Error(`Failed to fetch classes categories: ${response.status}`);
       }
 
       const data = await response.json();
       console.log('✅ Raw categories API response:', data);
-      
+
       // Extract actual data from response - handles multiple formats
       let categories = [];
       if (Array.isArray(data)) {
@@ -129,7 +142,7 @@ class ClassesService {
         console.log('📋 Response format: {categories: Array}');
       }
       console.log('✅ Extracted categories:', categories);
-      
+
       return {
         success: true,
         data: categories,
@@ -153,16 +166,16 @@ class ClassesService {
     try {
       const url = `${this.baseURL}${API_ENDPOINTS.ART_CLASSES_CATEGORIES.GET_ROOT}`;
       console.log('📡 Fetching root categories from:', url);
-      
+
       const response = await fetch(url);
-      
+
       if (!response.ok) {
         throw new Error(`Failed to fetch root categories: ${response.status}`);
       }
 
       const data = await response.json();
       console.log('✅ Root categories fetched:', data);
-      
+
       return {
         success: true,
         data: data.data || data,
@@ -186,16 +199,16 @@ class ClassesService {
     try {
       const url = `${this.baseURL}${API_ENDPOINTS.ART_CLASSES_CATEGORIES.GET_BY_ID(id)}`;
       console.log('📡 Fetching category by ID:', url);
-      
+
       const response = await fetch(url);
-      
+
       if (!response.ok) {
         throw new Error(`Failed to fetch category: ${response.status}`);
       }
 
       const data = await response.json();
       console.log(`✅ Category ${id} fetched:`, data);
-      
+
       return {
         success: true,
         data: data.data || data,
@@ -224,7 +237,7 @@ class ClassesService {
         },
         body: JSON.stringify(classData)
       });
-      
+
       if (!response.ok) {
         throw new Error(`Failed to create class: ${response.status}`);
       }
@@ -258,7 +271,7 @@ class ClassesService {
         },
         body: JSON.stringify(classData)
       });
-      
+
       if (!response.ok) {
         throw new Error(`Failed to update class: ${response.status}`);
       }
@@ -288,7 +301,7 @@ class ClassesService {
       const response = await fetch(`${this.baseURL}${API_ENDPOINTS.ART_CLASSES.DELETE(id)}`, {
         method: 'DELETE'
       });
-      
+
       if (!response.ok) {
         throw new Error(`Failed to delete class: ${response.status}`);
       }

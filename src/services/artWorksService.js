@@ -52,15 +52,25 @@ class ArtWorksService {
                 images: item.imageUrl ? [item.imageUrl] : (item.images || []),
                 category: item.categoryName || item.category || 'Art',
                 medium: item.medium || 'Mixed Media',
-                price: item.price || (item.variants && item.variants.length > 0 ? item.variants[0].price : 0),
-                sizeOptions: item.variants ? item.variants.map(v => ({
-                    id: v.id || v.size, // Fallback if id missing
-                    label: v.size,
-                    price: v.price,
-                    discountPrice: v.discountPrice,
-                    stock: v.stock,
-                    isDefault: false
-                })) : [],
+                price: (() => {
+                    const check = (val) => val !== undefined && val !== null && Number(val) > 0 ? Number(val) : 0;
+                    // Prioritize unitPrice/amount as selling price, then base fields
+                    return check(item.unitPrice) || check(item.amount) || check(item.price) || check(item.basePrice) ||
+                        (item.variants && item.variants.length > 0 ?
+                            (check(item.variants[0].unitPrice) || check(item.variants[0].amount) || check(item.variants[0].price) || check(item.variants[0].basePrice)) : 0);
+                })(),
+                discountPrice: item.discountPrice || item.salePrice || (item.variants?.[0]?.discountPrice) || null,
+                sizeOptions: item.variants ? item.variants.map(v => {
+                    const vPrice = v.price || v.unitPrice || v.basePrice || v.amount || item.price || 0;
+                    return {
+                        id: v.id || v.size || v.label,
+                        label: v.size || v.label || 'Standard',
+                        price: Number(vPrice) > 0 ? Number(vPrice) : 0,
+                        discountPrice: v.discountPrice || v.salePrice,
+                        stock: v.stock !== undefined ? v.stock : 10,
+                        isDefault: !!v.isDefault
+                    };
+                }) : [],
                 isAvailable: item.active !== false, // Default to true if undefined, false if explicitly false
                 createdAt: item.createdAt,
                 likes: item.likes || 0,

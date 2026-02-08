@@ -17,6 +17,7 @@ const validateAuthData = (data) => {
   }
   // Only require email as minimum validation
   if (!data.email || typeof data.email !== 'string') {
+    console.warn('🔍 Auth validation failed: Missing or invalid email in stored data');
     return false;
   }
   return true;
@@ -69,11 +70,18 @@ export const AuthProvider = ({ children }) => {
           const studentData = JSON.parse(storedStudent);
           if (validateAuthData(studentData)) {
             console.log('✅ Student session verified:', studentData.email);
-            // State already initialized, just confirm it's correct
+            // Sync state with stored data
             setUser(studentData);
             setIsAuthenticated(true);
             setIsStudent(true);
+
+            // Ensure token is also in its own key if it was missing
+            if (studentData.accessToken && !localStorage.getItem('token')) {
+              localStorage.setItem('token', studentData.accessToken);
+            }
             return;
+          } else {
+            console.warn('⚠️ Stored session data failed validation');
           }
         }
 
@@ -230,9 +238,9 @@ export const AuthProvider = ({ children }) => {
       const validatedData = {
         id: data.userId || data.id,
         name: `${data.firstName || ''} ${data.lastName || ''}`.trim() || email.split('@')[0],
-        email: data.email,
+        email: data.email || email, // Fallback to login email if API doesn't return it
         role: 'Student',
-        accessToken: data.accessToken,
+        accessToken: data.accessToken || localStorage.getItem('token'),
         loginTime: new Date().toISOString(),
         ...data // Include other fields returned by API
       };

@@ -112,21 +112,28 @@ const ArtworkShop = () => {
     const price = selectedVariant?.price || artwork.price;
     const label = selectedVariant?.label || 'Standard';
 
+    // Add to cart with specific variant ID if available
+    const itemToAddId = selectedVariant?.id || artwork.id;
+
+    // Add to cart with real product ID for backend sync
     addToCart({
-      id: `${artwork.id}-${selectedVariant?.id || 'standard'}`,
+      id: itemToAddId, // Send Specific Variant ID
+      productId: itemToAddId, // Explicitly pass productId
       name: artwork.title,
       price: price,
       image: Array.isArray(artwork.images) ? artwork.images[0] : artwork.image,
       type: 'artwork',
+      productType: 'ART_WORK', // Backend product type
       artist: artwork.artist?.name || 'Unknown',
-      size: label
+      size: label,
+      quantity: quantity, // Pass quantity directly
     });
     success(`"${artwork.title}" added to cart!`);
   };
 
   const handleBuyNow = (artwork, sizeOption, quantity = 1) => {
     handleAddToCart(artwork, sizeOption, quantity);
-    navigate('/checkout');
+    navigate('/cart'); // Go to cart first so user can review before checkout
   };
 
   // Pagination
@@ -184,8 +191,8 @@ const ArtworkShop = () => {
                   key={i}
                   onClick={() => handleFilterChange(cat)}
                   className={`px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${cat === selectedCategory
-                      ? 'bg-blue-600 text-white shadow-md'
-                      : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                    ? 'bg-blue-600 text-white shadow-md'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                     }`}
                 >
                   {cat}
@@ -313,6 +320,8 @@ const ArtworkCard = ({ artwork, onView, onAddToCart, onBuyNow, isStudent, naviga
               {artwork.title}
             </h3>
             <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">by {artistName}</p>
+            {/* Debug log for developers - only visible in console */}
+            {(() => { if (Number(artwork.price) === 0) console.log('🔍 Price Debug:', { id: artwork.id, title: artwork.title, rawPrice: artwork.price, variants: artwork.sizeOptions }); return null; })()}
           </div>
           {artwork.artist?.avatar && (
             <img src={artwork.artist.avatar} alt={artistName} className="w-8 h-8 rounded-full border border-gray-200 dark:border-gray-600" />
@@ -320,9 +329,18 @@ const ArtworkCard = ({ artwork, onView, onAddToCart, onBuyNow, isStudent, naviga
         </div>
 
         <div className="mt-auto pt-4 flex items-center justify-between border-t border-gray-100 dark:border-gray-700">
-          <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-            ₹{artwork.price?.toLocaleString() || 'N/A'}
-          </span>
+          <div className="flex flex-col">
+            <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+              ₹{(Number(artwork.discountPrice) > 0 ? Number(artwork.discountPrice) :
+                (Number(artwork.price) > 0 ? Number(artwork.price) :
+                  (Number(artwork.sizeOptions?.find(s => Number(s.price) > 0)?.price) || Number(artwork.sizeOptions?.[0]?.price) || 0))).toLocaleString()}
+            </span>
+            {Number(artwork.discountPrice) > 0 && Number(artwork.price) > Number(artwork.discountPrice) && (
+              <span className="text-xs text-gray-400 line-through">
+                ₹{Number(artwork.price).toLocaleString()}
+              </span>
+            )}
+          </div>
 
           <div className="flex gap-2">
             <button className="text-gray-400 hover:text-red-500 transition">
@@ -441,7 +459,18 @@ const ArtworkDetailModal = ({ artwork, onClose, onAddToCart, onBuyNow, isStudent
               <div className="flex items-end justify-between mb-6">
                 <div>
                   <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Price</p>
-                  <p className="text-4xl font-bold text-gray-900 dark:text-white">₹{artwork.price?.toLocaleString()}</p>
+                  <div className="flex items-baseline gap-3">
+                    <p className="text-4xl font-bold text-gray-900 dark:text-white">
+                      ₹{(Number(artwork.discountPrice) > 0 ? Number(artwork.discountPrice) :
+                        (Number(artwork.price) > 0 ? Number(artwork.price) :
+                          (Number(artwork.sizeOptions?.find(s => Number(s.price) > 0)?.price) || Number(artwork.sizeOptions?.[0]?.price) || 0))).toLocaleString()}
+                    </p>
+                    {Number(artwork.discountPrice) > 0 && Number(artwork.price) > Number(artwork.discountPrice) && (
+                      <p className="text-xl text-gray-400 line-through">
+                        ₹{Number(artwork.price).toLocaleString()}
+                      </p>
+                    )}
+                  </div>
                 </div>
                 <div className="text-right">
                   <p className={`text-sm font-bold ${artwork.isAvailable ? 'text-green-500' : 'text-red-500'}`}>

@@ -2,12 +2,14 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import { useNotification } from '../../context/NotificationContext';
-import { FaCreditCard, FaUniversity, FaCheckCircle, FaTruck, FaShieldAlt, FaGift, FaArrowRight } from 'react-icons/fa';
+import orderService from '../../services/orderService';
+import paymentService from '../../services/paymentService';
+import { FaCreditCard, FaUniversity, FaCheckCircle, FaTruck, FaShieldAlt, FaGift, FaArrowRight, FaSpinner } from 'react-icons/fa';
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
   const { cartItems, cartTotal, clearCart } = useCart();
-  const { success } = useNotification();
+  const { success, error: showError } = useNotification();
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -17,11 +19,12 @@ const CheckoutPage = () => {
     city: '',
     state: '',
     pincode: '',
-    paymentMethod: 'card',
+    paymentMethod: 'online',
   });
 
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [orderStatus, setOrderStatus] = useState(''); // 'creating', 'payment', 'verifying', 'success'
 
   const shippingCost = cartTotal >= 2000 ? 0 : 150;
   const tax = Math.round(cartTotal * 0.10);
@@ -49,31 +52,142 @@ const CheckoutPage = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handlePlaceOrder = (e) => {
+  const handlePlaceOrder = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
 
     if (cartItems.length === 0) {
-      alert('Your cart is empty!');
+      showError('Your cart is empty!');
       return;
     }
 
     setIsLoading(true);
-    // Simulate order placement
-    setTimeout(() => {
-      success('Order placed successfully! Order ID: #ORD' + Math.floor(Math.random() * 10000));
-      clearCart();
+    setOrderStatus('creating');
+
+    try {
+      // Step 1: Create order by checking out cart
+      // Build shipping address as a simple string (API expects string, not object)
+      const shippingAddress = `${formData.fullName}, ${formData.address}, ${formData.city}, ${formData.state} - ${formData.pincode}, Phone: ${formData.phone}, Email: ${formData.email}`;
+
+      let orderResult;
+
+      try {
+        // Attempt 1: Create order with explicit items/prices (Frontend Source of Truth)
+        // This fixes the issue where backend cart has 0 prices
+        const orderData = {
+          shippingAddress,
+          items: cartItems.map(item => {
+            // Normalize type to backend enum (ARTWORK, MATERIAL)
+            let type = item.productType;
+            if (type === 'ART_WORK') type = 'ARTWORK';
+            if (type === 'ART_MATERIAL') type = 'MATERIAL';
+
+            return {
+              itemId: item.productId || item.id, // Match backend naming
+              itemType: type, // Match backend naming
+              quantity: item.quantity,
+              price: item.price
+            };
+          }),
+          totalAmount: finalTotal
+        };
+        console.log('Attempting createOrder with explicit data:', orderData);
+        orderResult = await orderService.createOrder(orderData);
+
+        if (!orderResult.success) {
+          throw new Error(orderResult.error || 'createOrder failed');
+        }
+      } catch (err) {
+        console.warn('Explicit createOrder failed, falling back to checkoutCart:', err);
+        // Attempt 2: Fallback to standard checkoutCart (Backend Source of Truth)
+        // This works if backend logic is fixed or if createOrder endpoint doesn't exist
+        orderResult = await orderService.checkoutCart(shippingAddress);
+      }
+
+      if (!orderResult.success) {
+        throw new Error(orderResult.error || 'Failed to create order');
+      }
+
+      const order = orderResult.data;
+
+      // If COD payment, mark as success directly
+      if (formData.paymentMethod === 'cod') {
+        setOrderStatus('success');
+        success(`Order placed successfully! Order ID: ${order.orderNumber || order.id}`);
+        clearCart();
+        setTimeout(() => {
+          navigate('/student/orders');
+        }, 2000);
+        return;
+      }
+
+      // Step 2: Initiate payment for online payment
+      setOrderStatus('payment');
+      const paymentResult = await paymentService.initiatePayment(order.id);
+
+      if (!paymentResult.success) {
+        throw new Error(paymentResult.error || 'Failed to initiate payment');
+      }
+
+      const paymentData = paymentResult.data;
+
+      // Step 3: Open Razorpay checkout
+      await paymentService.openRazorpayCheckout(
+        paymentData,
+        // On Success
+        (verificationData) => {
+          setOrderStatus('success');
+          success(`Payment successful! Order ID: ${order.orderNumber || order.id}`);
+          clearCart();
+          setTimeout(() => {
+            navigate('/student/orders');
+          }, 2000);
+        },
+        // On Failure
+        (errorData) => {
+          setIsLoading(false);
+          setOrderStatus('');
+          if (errorData.cancelled) {
+            showError('Payment was cancelled. You can retry or choose Cash on Delivery.');
+          } else {
+            showError(errorData.error || 'Payment failed. Please try again.');
+          }
+        },
+        // User info for prefill
+        {
+          name: formData.fullName,
+          email: formData.email,
+          phone: formData.phone,
+        }
+      );
+
+    } catch (err) {
+      console.error('Checkout error:', err);
+      showError(err.message || 'Something went wrong. Please try again.');
       setIsLoading(false);
-      setTimeout(() => {
-        navigate('/student/orders');
-      }, 2000);
-    }, 1500);
+      setOrderStatus('');
+    }
   };
 
-  if (cartItems.length === 0) {
+  const getStatusMessage = () => {
+    switch (orderStatus) {
+      case 'creating':
+        return 'Creating your order...';
+      case 'payment':
+        return 'Opening payment gateway...';
+      case 'verifying':
+        return 'Verifying payment...';
+      case 'success':
+        return 'Order placed successfully!';
+      default:
+        return 'Processing...';
+    }
+  };
+
+  if (cartItems.length === 0 && orderStatus !== 'success') {
     return (
       <div className="min-h-screen bg-linear-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
         <div className="text-center max-w-md">
@@ -170,9 +284,9 @@ const CheckoutPage = () => {
                       value={formData.fullName}
                       onChange={handleInputChange}
                       placeholder="Enter your full name"
-                      className={`w-full px-4 py-3 border-2 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white transition-colors ${
-                        errors.fullName ? 'border-red-500' : 'border-gray-200 dark:border-gray-600 focus:border-purple-500'
-                      } focus:outline-none`}
+                      disabled={isLoading}
+                      className={`w-full px-4 py-3 border-2 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white transition-colors ${errors.fullName ? 'border-red-500' : 'border-gray-200 dark:border-gray-600 focus:border-purple-500'
+                        } focus:outline-none disabled:opacity-50`}
                     />
                     {errors.fullName && <p className="text-red-500 text-sm mt-2 flex items-center gap-1">✗ {errors.fullName}</p>}
                   </div>
@@ -188,9 +302,9 @@ const CheckoutPage = () => {
                         value={formData.email}
                         onChange={handleInputChange}
                         placeholder="your@email.com"
-                        className={`w-full px-4 py-3 border-2 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white transition-colors ${
-                          errors.email ? 'border-red-500' : 'border-gray-200 dark:border-gray-600 focus:border-purple-500'
-                        } focus:outline-none`}
+                        disabled={isLoading}
+                        className={`w-full px-4 py-3 border-2 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white transition-colors ${errors.email ? 'border-red-500' : 'border-gray-200 dark:border-gray-600 focus:border-purple-500'
+                          } focus:outline-none disabled:opacity-50`}
                       />
                       {errors.email && <p className="text-red-500 text-sm mt-2 flex items-center gap-1">✗ {errors.email}</p>}
                     </div>
@@ -205,9 +319,9 @@ const CheckoutPage = () => {
                         value={formData.phone}
                         onChange={handleInputChange}
                         placeholder="+91 98765 43210"
-                        className={`w-full px-4 py-3 border-2 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white transition-colors ${
-                          errors.phone ? 'border-red-500' : 'border-gray-200 dark:border-gray-600 focus:border-purple-500'
-                        } focus:outline-none`}
+                        disabled={isLoading}
+                        className={`w-full px-4 py-3 border-2 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white transition-colors ${errors.phone ? 'border-red-500' : 'border-gray-200 dark:border-gray-600 focus:border-purple-500'
+                          } focus:outline-none disabled:opacity-50`}
                       />
                       {errors.phone && <p className="text-red-500 text-sm mt-2 flex items-center gap-1">✗ {errors.phone}</p>}
                     </div>
@@ -223,9 +337,9 @@ const CheckoutPage = () => {
                       onChange={handleInputChange}
                       placeholder="Enter your full address"
                       rows="3"
-                      className={`w-full px-4 py-3 border-2 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white transition-colors ${
-                        errors.address ? 'border-red-500' : 'border-gray-200 dark:border-gray-600 focus:border-purple-500'
-                      } focus:outline-none resize-none`}
+                      disabled={isLoading}
+                      className={`w-full px-4 py-3 border-2 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white transition-colors ${errors.address ? 'border-red-500' : 'border-gray-200 dark:border-gray-600 focus:border-purple-500'
+                        } focus:outline-none resize-none disabled:opacity-50`}
                     />
                     {errors.address && <p className="text-red-500 text-sm mt-2 flex items-center gap-1">✗ {errors.address}</p>}
                   </div>
@@ -241,9 +355,9 @@ const CheckoutPage = () => {
                         value={formData.city}
                         onChange={handleInputChange}
                         placeholder="City"
-                        className={`w-full px-4 py-3 border-2 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white transition-colors ${
-                          errors.city ? 'border-red-500' : 'border-gray-200 dark:border-gray-600 focus:border-purple-500'
-                        } focus:outline-none`}
+                        disabled={isLoading}
+                        className={`w-full px-4 py-3 border-2 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white transition-colors ${errors.city ? 'border-red-500' : 'border-gray-200 dark:border-gray-600 focus:border-purple-500'
+                          } focus:outline-none disabled:opacity-50`}
                       />
                       {errors.city && <p className="text-red-500 text-sm mt-2 flex items-center gap-1">✗ {errors.city}</p>}
                     </div>
@@ -258,9 +372,9 @@ const CheckoutPage = () => {
                         value={formData.state}
                         onChange={handleInputChange}
                         placeholder="State"
-                        className={`w-full px-4 py-3 border-2 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white transition-colors ${
-                          errors.state ? 'border-red-500' : 'border-gray-200 dark:border-gray-600 focus:border-purple-500'
-                        } focus:outline-none`}
+                        disabled={isLoading}
+                        className={`w-full px-4 py-3 border-2 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white transition-colors ${errors.state ? 'border-red-500' : 'border-gray-200 dark:border-gray-600 focus:border-purple-500'
+                          } focus:outline-none disabled:opacity-50`}
                       />
                       {errors.state && <p className="text-red-500 text-sm mt-2 flex items-center gap-1">✗ {errors.state}</p>}
                     </div>
@@ -275,9 +389,9 @@ const CheckoutPage = () => {
                         value={formData.pincode}
                         onChange={handleInputChange}
                         placeholder="Pincode"
-                        className={`w-full px-4 py-3 border-2 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white transition-colors ${
-                          errors.pincode ? 'border-red-500' : 'border-gray-200 dark:border-gray-600 focus:border-purple-500'
-                        } focus:outline-none`}
+                        disabled={isLoading}
+                        className={`w-full px-4 py-3 border-2 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white transition-colors ${errors.pincode ? 'border-red-500' : 'border-gray-200 dark:border-gray-600 focus:border-purple-500'
+                          } focus:outline-none disabled:opacity-50`}
                       />
                       {errors.pincode && <p className="text-red-500 text-sm mt-2 flex items-center gap-1">✗ {errors.pincode}</p>}
                     </div>
@@ -292,57 +406,37 @@ const CheckoutPage = () => {
                   <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Payment Method</h2>
                 </div>
                 <div className="space-y-3">
-                  <label className={`flex items-center p-4 border-2 rounded-xl cursor-pointer transition-all transform hover:scale-105 ${
-                    formData.paymentMethod === 'card' 
-                      ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20' 
-                      : 'border-gray-200 dark:border-gray-600 hover:border-purple-300'
-                  }`}>
+                  <label className={`flex items-center p-4 border-2 rounded-xl cursor-pointer transition-all transform hover:scale-105 ${formData.paymentMethod === 'online'
+                    ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20'
+                    : 'border-gray-200 dark:border-gray-600 hover:border-purple-300'
+                    } ${isLoading ? 'opacity-50 pointer-events-none' : ''}`}>
                     <input
                       type="radio"
                       name="paymentMethod"
-                      value="card"
-                      checked={formData.paymentMethod === 'card'}
+                      value="online"
+                      checked={formData.paymentMethod === 'online'}
                       onChange={handleInputChange}
+                      disabled={isLoading}
                       className="mr-4"
                     />
                     <FaCreditCard className="text-3xl text-purple-600 mr-4" />
                     <div>
-                      <div className="font-semibold text-gray-800 dark:text-white">Credit/Debit Card</div>
-                      <div className="text-sm text-gray-600 dark:text-gray-400">Visa, Mastercard, Rupay</div>
+                      <div className="font-semibold text-gray-800 dark:text-white">Online Payment</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">Credit/Debit Card, UPI, Net Banking</div>
                     </div>
                   </label>
 
-                  <label className={`flex items-center p-4 border-2 rounded-xl cursor-pointer transition-all transform hover:scale-105 ${
-                    formData.paymentMethod === 'upi' 
-                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' 
-                      : 'border-gray-200 dark:border-gray-600 hover:border-blue-300'
-                  }`}>
-                    <input
-                      type="radio"
-                      name="paymentMethod"
-                      value="upi"
-                      checked={formData.paymentMethod === 'upi'}
-                      onChange={handleInputChange}
-                      className="mr-4"
-                    />
-                    <FaUniversity className="text-3xl text-blue-600 mr-4" />
-                    <div>
-                      <div className="font-semibold text-gray-800 dark:text-white">UPI Payment</div>
-                      <div className="text-sm text-gray-600 dark:text-gray-400">Google Pay, PhonePe, BHIM</div>
-                    </div>
-                  </label>
-
-                  <label className={`flex items-center p-4 border-2 rounded-xl cursor-pointer transition-all transform hover:scale-105 ${
-                    formData.paymentMethod === 'cod' 
-                      ? 'border-green-500 bg-green-50 dark:bg-green-900/20' 
-                      : 'border-gray-200 dark:border-gray-600 hover:border-green-300'
-                  }`}>
+                  <label className={`flex items-center p-4 border-2 rounded-xl cursor-pointer transition-all transform hover:scale-105 ${formData.paymentMethod === 'cod'
+                    ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
+                    : 'border-gray-200 dark:border-gray-600 hover:border-green-300'
+                    } ${isLoading ? 'opacity-50 pointer-events-none' : ''}`}>
                     <input
                       type="radio"
                       name="paymentMethod"
                       value="cod"
                       checked={formData.paymentMethod === 'cod'}
                       onChange={handleInputChange}
+                      disabled={isLoading}
                       className="mr-4"
                     />
                     <FaCheckCircle className="text-3xl text-green-600 mr-4" />
@@ -362,7 +456,7 @@ const CheckoutPage = () => {
                   <div className="w-10 h-10 bg-linear-to-r from-blue-600 to-teal-600 text-white rounded-full flex items-center justify-center font-bold">3</div>
                   <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Order Summary</h2>
                 </div>
-                
+
                 <div className="space-y-3 mb-6 max-h-72 overflow-y-auto">
                   {cartItems.map((item) => (
                     <div key={item.id} className="flex justify-between items-center text-sm p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
@@ -407,16 +501,16 @@ const CheckoutPage = () => {
                 <button
                   onClick={handlePlaceOrder}
                   disabled={isLoading}
-                  className="w-full px-6 py-4 bg-linear-to-r from-purple-600 to-indigo-600 text-white rounded-xl hover:shadow-lg transform hover:scale-105 transition-all font-bold text-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="w-full px-6 py-4 bg-linear-to-r from-purple-600 to-indigo-600 text-white rounded-xl hover:shadow-lg transform hover:scale-105 transition-all font-bold text-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
                 >
                   {isLoading ? (
                     <>
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                      Processing...
+                      <FaSpinner className="animate-spin" />
+                      {getStatusMessage()}
                     </>
                   ) : (
                     <>
-                      Place Order <FaArrowRight />
+                      {formData.paymentMethod === 'online' ? 'Pay Now' : 'Place Order'} <FaArrowRight />
                     </>
                   )}
                 </button>

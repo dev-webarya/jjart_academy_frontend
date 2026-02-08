@@ -48,7 +48,10 @@ const Gallery = () => {
             );
             setGalleries(transformedGalleries);
           } else {
-            setError('No galleries found');
+            // If backend is empty, we could show mock data or just leave it empty
+            // For now, let's keep it empty but remove the error so the UI shows the empty state nicely
+            console.log('ℹ️ No galleries returned from backend');
+            setGalleries([]);
           }
         }
 
@@ -84,7 +87,12 @@ const Gallery = () => {
   const filteredImages =
     selectedCategory === "All"
       ? galleries
-      : galleries.filter((img) => (img.categoryName || img.category) === selectedCategory);
+      : galleries.filter((img) => {
+        const itemCategoryName =
+          img.categoryName ||
+          (typeof img.category === 'string' ? img.category : img.category?.name);
+        return itemCategoryName === selectedCategory;
+      });
 
   // Pagination Logic
   const indexOfLastItem = currentPage * itemsPerPage;
