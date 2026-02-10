@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import {
   FaHome, FaCalendar, FaCertificate,
   FaSignOutAlt, FaPalette, FaBell, FaUser, FaBars, FaTimes,
-  FaClipboardList, FaCog, FaChalkboardTeacher, FaVideo, FaMoneyBillWave
+  FaClipboardList, FaCog, FaChalkboardTeacher, FaVideo, FaMoneyBillWave, FaImage
 } from 'react-icons/fa';
 
 const StudentPanel = () => {
@@ -59,6 +59,7 @@ const StudentPanel = () => {
     { name: 'Subscriptions', path: '/student/subscriptions', icon: FaMoneyBillWave },
     { name: 'My Orders', path: '/student/orders', icon: FaClipboardList },
     { name: 'Events', path: '/student/events', icon: FaCalendar },
+    { name: 'My Uploads', path: '/student/my-gallery', icon: FaImage },
   ];
 
   return (

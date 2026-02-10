@@ -87,6 +87,7 @@ export const API_ENDPOINTS = {
   // Art Galleries
   ART_GALLERIES: {
     GET_ALL: `${API_PREFIX}/art-galleries`,
+    MY: `${API_PREFIX}/art-galleries/my`, // Get current user's gallery items
     CREATE: `${API_PREFIX}/art-galleries`,
     GET_BY_ID: (id) => `${API_PREFIX}/art-galleries/${id}`,
     UPDATE: (id) => `${API_PREFIX}/art-galleries/${id}`,

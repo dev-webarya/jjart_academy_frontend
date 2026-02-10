@@ -7,6 +7,101 @@ class GalleryService {
   constructor() {
     this.baseURL = BASE_URL;
   }
+
+  /**
+   * Get authentication headers with JWT token
+   */
+  getAuthHeaders() {
+    const token = localStorage.getItem('token');
+    return {
+      'Content-Type': 'application/json',
+      'Authorization': token ? `Bearer ${token}` : '',
+    };
+  }
+
+  /**
+   * Create a new gallery item (Student upload)
+   * POST /api/v1/art-galleries
+   * @param {Object} galleryData - Gallery data matching ArtGalleryRequestDto
+   * @param {string} galleryData.title - Title of the gallery item (required)
+   * @param {string} galleryData.description - Description
+   * @param {string} galleryData.artistName - Artist name
+   * @param {string} galleryData.medium - Art medium
+   * @param {string} galleryData.imageUrl - Image URL or base64 data
+   * @param {string} galleryData.categoryId - Category ID  
+   * @param {string[]} galleryData.tags - Tags array
+   */
+  async createGalleryItem(galleryData) {
+    try {
+      const response = await fetch(`${this.baseURL}${API_ENDPOINTS.ART_GALLERIES.CREATE}`, {
+        method: 'POST',
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify(galleryData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Failed to create gallery item: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('✅ Gallery item created:', data);
+      return {
+        success: true,
+        data: data,
+        message: 'Gallery item created successfully'
+      };
+    } catch (error) {
+      console.error('❌ Error creating gallery item:', error);
+      return {
+        success: false,
+        message: error.message,
+        error
+      };
+    }
+  }
+
+  /**
+   * Get current user's gallery items (for students to see their uploads)
+   * GET /api/v1/art-galleries/my
+   */
+  async getMyGalleryItems() {
+    try {
+      const response = await fetch(`${this.baseURL}${API_ENDPOINTS.ART_GALLERIES.MY}`, {
+        headers: this.getAuthHeaders(),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch gallery items: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('✅ My gallery items fetched:', data);
+
+      // Extract galleries - handles multiple formats
+      let galleries = [];
+      if (Array.isArray(data)) {
+        galleries = data;
+      } else if (data.content && Array.isArray(data.content)) {
+        galleries = data.content;
+      } else if (data.data && Array.isArray(data.data)) {
+        galleries = data.data;
+      }
+
+      return {
+        success: true,
+        data: galleries,
+        message: 'Gallery items fetched successfully'
+      };
+    } catch (error) {
+      console.error('❌ Error fetching gallery items:', error);
+      return {
+        success: false,
+        message: error.message,
+        error
+      };
+    }
+  }
   /**
    * Fetch all galleries
    * GET /api/v1/art-galleries
@@ -15,17 +110,17 @@ class GalleryService {
     try {
       const url = `${this.baseURL}${API_ENDPOINTS.ART_GALLERIES.GET_ALL}`;
       console.log('📡 Fetching from:', url);
-      
+
       const response = await fetch(url);
       console.log('📊 Response status:', response.status);
-      
+
       if (!response.ok) {
         throw new Error(`Failed to fetch galleries: HTTP ${response.status}`);
       }
 
       const data = await response.json();
       console.log('✅ Raw API response:', data);
-      
+
       // Extract actual data from response - handles multiple formats
       let galleries = [];
       if (Array.isArray(data)) {
@@ -42,7 +137,7 @@ class GalleryService {
         console.log('📋 Response format: {galleries: Array}');
       }
       console.log('✅ Extracted galleries:', galleries);
-      
+
       return {
         success: true,
         data: galleries,
@@ -65,7 +160,7 @@ class GalleryService {
   async getGalleryById(id) {
     try {
       const response = await fetch(`${this.baseURL}${API_ENDPOINTS.ART_GALLERIES.GET_BY_ID(id)}`);
-      
+
       if (!response.ok) {
         throw new Error(`Failed to fetch gallery: ${response.status}`);
       }
@@ -93,14 +188,14 @@ class GalleryService {
   async getAllGalleryCategories() {
     try {
       const response = await fetch(`${this.baseURL}${API_ENDPOINTS.ART_GALLERIES_CATEGORIES.GET_ALL}`);
-      
+
       if (!response.ok) {
         throw new Error(`Failed to fetch gallery categories: ${response.status}`);
       }
 
       const data = await response.json();
       console.log('✅ Gallery categories fetched:', data);
-      
+
       // Extract categories - handles multiple formats
       let categories = [];
       if (Array.isArray(data)) {
@@ -112,7 +207,7 @@ class GalleryService {
       } else if (data.categories && Array.isArray(data.categories)) {
         categories = data.categories;
       }
-      
+
       return {
         success: true,
         data: categories,
@@ -135,14 +230,14 @@ class GalleryService {
   async getRootGalleryCategory() {
     try {
       const response = await fetch(`${this.baseURL}${API_ENDPOINTS.ART_GALLERIES_CATEGORIES.GET_ROOT}`);
-      
+
       if (!response.ok) {
         throw new Error(`Failed to fetch root gallery category: ${response.status}`);
       }
 
       const data = await response.json();
       console.log('✅ Root gallery category fetched:', data);
-      
+
       // Extract root category - handles multiple formats
       let category = data;
       if (data.data && typeof data.data === 'object') {
@@ -150,7 +245,7 @@ class GalleryService {
       } else if (data.content && typeof data.content === 'object') {
         category = data.content;
       }
-      
+
       return {
         success: true,
         data: category,
@@ -172,7 +267,7 @@ class GalleryService {
   async getGalleryCategoryById(id) {
     try {
       const response = await fetch(`${this.baseURL}${API_ENDPOINTS.ART_GALLERIES_CATEGORIES.GET_BY_ID(id)}`);
-      
+
       if (!response.ok) {
         throw new Error(`Failed to fetch gallery category: ${response.status}`);
       }

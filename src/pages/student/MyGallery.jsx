@@ -4,7 +4,7 @@ import {
     FaImage, FaUpload, FaCheckCircle, FaClock, FaTimesCircle,
     FaSpinner, FaPlus, FaTimes, FaExternalLinkAlt
 } from 'react-icons/fa';
-import lmsService from '../../services/lmsService';
+import galleryService from '../../services/galleryService';
 import { useNotification } from '../../context/NotificationContext';
 
 const MyGallery = () => {
@@ -15,23 +15,36 @@ const MyGallery = () => {
     const [loading, setLoading] = useState(true);
     const [uploading, setUploading] = useState(false);
     const [showUploadModal, setShowUploadModal] = useState(false);
+    const [uploadType, setUploadType] = useState('file'); // 'file' or 'url'
     const [formData, setFormData] = useState({
-        title: '',
+        name: '',
         description: '',
         imageUrl: '',
-        medium: '',
-        tags: '',
+        categoryId: '',
     });
+    const [categories, setCategories] = useState([]);
 
-    // Fetch user's gallery uploads
+    // Fetch user's gallery uploads and categories
     useEffect(() => {
         fetchMyGallery();
+        fetchCategories();
     }, []);
+
+    const fetchCategories = async () => {
+        try {
+            const response = await galleryService.getAllGalleryCategories();
+            if (response.success && response.data) {
+                setCategories(response.data);
+            }
+        } catch (error) {
+            console.error('Error fetching categories:', error);
+        }
+    };
 
     const fetchMyGallery = async () => {
         setLoading(true);
         try {
-            const response = await lmsService.getMyGalleryUploads(0, 100);
+            const response = await galleryService.getMyGalleryItems();
             if (response.success) {
                 const data = response.data?.content || response.data || [];
                 setGalleryItems(Array.isArray(data) ? data : []);
@@ -49,33 +62,57 @@ const MyGallery = () => {
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
+    const handleFileChange = (e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                showNotification('Image size should be less than 5MB', 'error');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                setFormData(prev => ({
+                    ...prev,
+                    imageUrl: event.target?.result
+                }));
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (!formData.title || !formData.imageUrl) {
-            showNotification('Please provide a title and image URL', 'error');
+        if (!formData.name || !formData.imageUrl) {
+            showNotification('Please provide a name and image', 'error');
+            return;
+        }
+
+        if (!formData.categoryId) {
+            showNotification('Please select a category', 'error');
             return;
         }
 
         setUploading(true);
         try {
             const galleryData = {
-                title: formData.title,
-                description: formData.description,
+                name: formData.name,
+                description: formData.description || '',
                 imageUrl: formData.imageUrl,
-                medium: formData.medium,
-                tags: formData.tags ? formData.tags.split(',').map(t => t.trim()) : [],
+                categoryId: formData.categoryId,
             };
 
-            const response = await lmsService.uploadGalleryItem(galleryData);
+            const response = await galleryService.createGalleryItem(galleryData);
 
             if (response.success) {
-                showNotification('Artwork submitted successfully! Pending admin approval.', 'success');
+                showNotification('Gallery item submitted successfully! Pending admin approval.', 'success');
                 setShowUploadModal(false);
-                setFormData({ title: '', description: '', imageUrl: '', medium: '', tags: '' });
+                setFormData({ name: '', description: '', imageUrl: '', categoryId: '' });
+                setUploadType('file');
                 fetchMyGallery(); // Refresh the list
             } else {
-                showNotification(response.message || 'Failed to upload artwork', 'error');
+                showNotification(response.message || 'Failed to upload item', 'error');
             }
         } catch (error) {
             console.error('Upload error:', error);
@@ -89,25 +126,25 @@ const MyGallery = () => {
         switch (status) {
             case 'APPROVED':
                 return (
-                    <span className="flex items-center gap-1 px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full text-sm font-medium">
-                        <FaCheckCircle /> Approved
+                    <span className="flex items-center gap-0.5 px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full text-[10px] font-medium shadow-sm">
+                        <FaCheckCircle size={10} /> Approved
                     </span>
                 );
             case 'PENDING':
                 return (
-                    <span className="flex items-center gap-1 px-3 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 rounded-full text-sm font-medium">
-                        <FaClock /> Pending
+                    <span className="flex items-center gap-0.5 px-2 py-0.5 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 rounded-full text-[10px] font-medium shadow-sm">
+                        <FaClock size={10} /> Pending
                     </span>
                 );
             case 'REJECTED':
                 return (
-                    <span className="flex items-center gap-1 px-3 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-full text-sm font-medium">
-                        <FaTimesCircle /> Rejected
+                    <span className="flex items-center gap-0.5 px-2 py-0.5 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-full text-[10px] font-medium shadow-sm">
+                        <FaTimesCircle size={10} /> Rejected
                     </span>
                 );
             default:
                 return (
-                    <span className="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-full text-sm">
+                    <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-full text-[10px]">
                         {status}
                     </span>
                 );
@@ -132,14 +169,14 @@ const MyGallery = () => {
                         My Gallery 🎨
                     </h1>
                     <p className="text-gray-600 dark:text-gray-400">
-                        Upload your artwork to showcase in the public gallery
+                        Upload your pictures to showcase in the public gallery
                     </p>
                 </div>
                 <button
                     onClick={() => setShowUploadModal(true)}
                     className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl hover:opacity-90 transition-all shadow-lg hover:shadow-xl"
                 >
-                    <FaPlus /> Upload Artwork
+                    <FaPlus /> Upload Item
                 </button>
             </div>
 
@@ -192,83 +229,89 @@ const MyGallery = () => {
                         No artwork uploaded yet
                     </h3>
                     <p className="text-gray-500 dark:text-gray-400 mb-6">
-                        Start showcasing your creative work by uploading your first artwork!
+                        Start showcasing your creative work by uploading your first item!
                     </p>
                     <button
                         onClick={() => setShowUploadModal(true)}
                         className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl hover:opacity-90 transition-all"
                     >
-                        Upload Your First Artwork
+                        Upload Your First Item
                     </button>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                     {galleryItems.map((item) => (
                         <div
                             key={item.id}
-                            className="bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all"
+                            className="group bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
                         >
-                            <div className="relative aspect-square">
+                            {/* Image Container - Smaller aspect ratio */}
+                            <div className="relative aspect-[4/3] overflow-hidden">
                                 <img
                                     src={item.imageUrl || '/placeholder-art.jpg'}
-                                    alt={item.title}
-                                    className="w-full h-full object-cover"
+                                    alt={item.name}
+                                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                                     onError={(e) => {
-                                        e.target.src = 'https://via.placeholder.com/400x400?text=Artwork';
+                                        e.target.src = 'https://via.placeholder.com/400x300?text=Gallery+Item';
                                     }}
                                 />
-                                <div className="absolute top-4 right-4">
+                                {/* Status Badge - Smaller and top-right */}
+                                <div className="absolute top-2 right-2">
                                     {getStatusBadge(item.status)}
                                 </div>
+                                {/* Featured Badge */}
                                 {item.featured && (
-                                    <div className="absolute top-4 left-4 px-3 py-1 bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-full text-sm font-medium">
+                                    <div className="absolute top-2 left-2 px-2 py-1 bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-full text-xs font-medium shadow-lg">
                                         ⭐ Featured
                                     </div>
                                 )}
+                                {/* Gradient overlay on hover */}
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                             </div>
-                            <div className="p-5">
-                                <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-2">
-                                    {item.title}
+
+                            {/* Content - More compact */}
+                            <div className="p-3">
+                                <h3 className="text-sm font-bold text-gray-800 dark:text-white mb-1 line-clamp-1">
+                                    {item.name}
                                 </h3>
+
                                 {item.description && (
-                                    <p className="text-gray-600 dark:text-gray-400 text-sm mb-3 line-clamp-2">
+                                    <p className="text-gray-600 dark:text-gray-400 text-xs mb-2 line-clamp-1">
                                         {item.description}
                                     </p>
                                 )}
-                                <div className="flex flex-wrap gap-2 mb-3">
-                                    {item.medium && (
-                                        <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded text-xs">
-                                            {item.medium}
+
+                                {/* Category Tag - More compact */}
+                                {item.categoryName && (
+                                    <div className="mb-2">
+                                        <span className="inline-flex items-center px-2 py-0.5 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 text-blue-700 dark:text-blue-400 rounded-md text-xs font-medium">
+                                            {item.categoryName}
                                         </span>
-                                    )}
-                                    {item.tags?.slice(0, 3).map((tag, index) => (
-                                        <span
-                                            key={index}
-                                            className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded text-xs"
-                                        >
-                                            #{tag}
-                                        </span>
-                                    ))}
-                                </div>
-                                <div className="flex justify-between items-center text-xs text-gray-500 dark:text-gray-400">
-                                    <span>
-                                        {item.createdAt ? new Date(item.createdAt).toLocaleDateString() : 'Recently'}
+                                    </div>
+                                )}
+
+                                {/* Footer - Compact */}
+                                <div className="flex justify-between items-center text-xs text-gray-500 dark:text-gray-400 pt-2 border-t border-gray-100 dark:border-gray-700">
+                                    <span className="text-[10px]">
+                                        {item.createdAt ? new Date(item.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Recent'}
                                     </span>
                                     {item.status === 'APPROVED' && (
                                         <a
                                             href="/gallery"
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="flex items-center gap-1 text-blue-500 hover:text-blue-600"
+                                            className="flex items-center gap-1 text-blue-500 hover:text-blue-600 text-[10px] font-medium"
                                         >
-                                            View in Gallery <FaExternalLinkAlt />
+                                            View <FaExternalLinkAlt size={8} />
                                         </a>
                                     )}
                                 </div>
+
+                                {/* Rejection Note - Keep original styling */}
                                 {item.status === 'REJECTED' && item.notes && (
-                                    <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
-                                        <p className="text-red-600 dark:text-red-400 text-sm">
-                                            <strong>Rejection reason:</strong> {item.notes}
+                                    <div className="mt-2 p-2 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+                                        <p className="text-red-600 dark:text-red-400 text-[10px] leading-tight">
+                                            <strong className="font-semibold">Reason:</strong> {item.notes}
                                         </p>
                                     </div>
                                 )}
@@ -284,7 +327,7 @@ const MyGallery = () => {
                     <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl">
                         <div className="flex justify-between items-center mb-6">
                             <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
-                                Upload Artwork
+                                Upload Gallery Item
                             </h2>
                             <button
                                 onClick={() => setShowUploadModal(false)}
@@ -297,47 +340,104 @@ const MyGallery = () => {
                         <form onSubmit={handleSubmit} className="space-y-5">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Title *
+                                    Name *
                                 </label>
                                 <input
                                     type="text"
-                                    name="title"
-                                    value={formData.title}
+                                    name="name"
+                                    value={formData.name}
                                     onChange={handleInputChange}
-                                    placeholder="Enter artwork title"
+                                    placeholder="Enter item name"
                                     className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                                     required
                                 />
                             </div>
 
+                            {/* Image Upload/URL Toggle */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Image URL *
+                                    Image *
                                 </label>
-                                <input
-                                    type="url"
-                                    name="imageUrl"
-                                    value={formData.imageUrl}
-                                    onChange={handleInputChange}
-                                    placeholder="https://example.com/your-artwork.jpg"
-                                    className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                                    required
-                                />
-                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                    Upload your image to a hosting service and paste the URL here
-                                </p>
+
+                                <div className="flex bg-gray-100 dark:bg-gray-700 p-1 rounded-xl mb-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => setUploadType('file')}
+                                        className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${uploadType === 'file'
+                                            ? 'bg-white dark:bg-gray-600 shadow text-purple-600'
+                                            : 'text-gray-500 dark:text-gray-400'
+                                            }`}
+                                    >
+                                        Upload File
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setUploadType('url')}
+                                        className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${uploadType === 'url'
+                                            ? 'bg-white dark:bg-gray-600 shadow text-purple-600'
+                                            : 'text-gray-500 dark:text-gray-400'
+                                            }`}
+                                    >
+                                        Image URL
+                                    </button>
+                                </div>
+
+                                {uploadType === 'file' ? (
+                                    <div className="space-y-3">
+                                        <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-6 text-center hover:border-purple-500 transition-colors cursor-pointer group relative">
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={handleFileChange}
+                                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                            />
+                                            <div className="flex flex-col items-center">
+                                                <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                                                    <FaUpload className="text-purple-600 dark:text-purple-400" />
+                                                </div>
+                                                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                    Click or drag to upload
+                                                </p>
+                                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                                    JPG, PNG (Max 5MB)
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div>
+                                        <input
+                                            type="url"
+                                            name="imageUrl"
+                                            value={formData.imageUrl}
+                                            onChange={handleInputChange}
+                                            placeholder="https://example.com/your-artwork.jpg"
+                                            className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                        />
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                            Paste a direct link to your image
+                                        </p>
+                                    </div>
+                                )}
                             </div>
 
                             {formData.imageUrl && (
-                                <div className="rounded-xl overflow-hidden border border-gray-200 dark:border-gray-600">
+                                <div className="rounded-xl overflow-hidden border border-gray-200 dark:border-gray-600 relative group">
                                     <img
                                         src={formData.imageUrl}
                                         alt="Preview"
                                         className="w-full h-48 object-cover"
                                         onError={(e) => {
-                                            e.target.src = 'https://via.placeholder.com/400x200?text=Invalid+URL';
+                                            e.target.src = 'https://via.placeholder.com/400x200?text=Invalid+Image';
                                         }}
                                     />
+                                    <button
+                                        type="button"
+                                        onClick={() => setFormData(prev => ({ ...prev, imageUrl: '' }))}
+                                        className="absolute top-2 right-2 p-1.5 bg-red-500/80 text-white rounded-full hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100"
+                                    >
+                                        <FaTimes size={12} />
+                                    </button>
                                 </div>
                             )}
 
@@ -349,7 +449,7 @@ const MyGallery = () => {
                                     name="description"
                                     value={formData.description}
                                     onChange={handleInputChange}
-                                    placeholder="Describe your artwork..."
+                                    placeholder="Describe your item..."
                                     rows={3}
                                     className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
                                 />
@@ -357,45 +457,25 @@ const MyGallery = () => {
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Medium
+                                    Category *
                                 </label>
                                 <select
-                                    name="medium"
-                                    value={formData.medium}
+                                    name="categoryId"
+                                    value={formData.categoryId}
                                     onChange={handleInputChange}
                                     className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                    required
                                 >
-                                    <option value="">Select medium</option>
-                                    <option value="Watercolor">Watercolor</option>
-                                    <option value="Oil Paint">Oil Paint</option>
-                                    <option value="Acrylic">Acrylic</option>
-                                    <option value="Digital Art">Digital Art</option>
-                                    <option value="Pencil Drawing">Pencil Drawing</option>
-                                    <option value="Charcoal">Charcoal</option>
-                                    <option value="Mixed Media">Mixed Media</option>
-                                    <option value="Sculpture">Sculpture</option>
-                                    <option value="Photography">Photography</option>
-                                    <option value="Other">Other</option>
+                                    <option value="">Select a category</option>
+                                    {categories.map((cat) => (
+                                        <option key={cat.id} value={cat.id}>{cat.name}</option>
+                                    ))}
                                 </select>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Tags
-                                </label>
-                                <input
-                                    type="text"
-                                    name="tags"
-                                    value={formData.tags}
-                                    onChange={handleInputChange}
-                                    placeholder="landscape, nature, abstract (comma-separated)"
-                                    className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                                />
                             </div>
 
                             <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
                                 <p className="text-blue-700 dark:text-blue-400 text-sm">
-                                    <strong>Note:</strong> Your artwork will be reviewed by an admin before appearing in the public gallery. You'll be notified once it's approved.
+                                    <strong>Note:</strong> Your item will be reviewed by an admin before appearing in the public gallery. You'll be notified once it's approved.
                                 </p>
                             </div>
 
