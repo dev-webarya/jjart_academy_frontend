@@ -6,6 +6,7 @@ import {
 } from 'react-icons/fa';
 import galleryService from '../../services/galleryService';
 import { useNotification } from '../../context/NotificationContext';
+import ImageUpload from '../../components/ImageUpload';
 
 const MyGallery = () => {
     const { student } = useOutletContext();
@@ -15,7 +16,6 @@ const MyGallery = () => {
     const [loading, setLoading] = useState(true);
     const [uploading, setUploading] = useState(false);
     const [showUploadModal, setShowUploadModal] = useState(false);
-    const [uploadType, setUploadType] = useState('file'); // 'file' or 'url'
     const [formData, setFormData] = useState({
         name: '',
         description: '',
@@ -62,24 +62,7 @@ const MyGallery = () => {
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleFileChange = (e) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            if (file.size > 5 * 1024 * 1024) { // 5MB limit
-                showNotification('Image size should be less than 5MB', 'error');
-                return;
-            }
 
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                setFormData(prev => ({
-                    ...prev,
-                    imageUrl: event.target?.result
-                }));
-            };
-            reader.readAsDataURL(file);
-        }
-    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -353,93 +336,12 @@ const MyGallery = () => {
                                 />
                             </div>
 
-                            {/* Image Upload/URL Toggle */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Image *
-                                </label>
-
-                                <div className="flex bg-gray-100 dark:bg-gray-700 p-1 rounded-xl mb-3">
-                                    <button
-                                        type="button"
-                                        onClick={() => setUploadType('file')}
-                                        className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${uploadType === 'file'
-                                            ? 'bg-white dark:bg-gray-600 shadow text-purple-600'
-                                            : 'text-gray-500 dark:text-gray-400'
-                                            }`}
-                                    >
-                                        Upload File
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => setUploadType('url')}
-                                        className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${uploadType === 'url'
-                                            ? 'bg-white dark:bg-gray-600 shadow text-purple-600'
-                                            : 'text-gray-500 dark:text-gray-400'
-                                            }`}
-                                    >
-                                        Image URL
-                                    </button>
-                                </div>
-
-                                {uploadType === 'file' ? (
-                                    <div className="space-y-3">
-                                        <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-6 text-center hover:border-purple-500 transition-colors cursor-pointer group relative">
-                                            <input
-                                                type="file"
-                                                accept="image/*"
-                                                onChange={handleFileChange}
-                                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                            />
-                                            <div className="flex flex-col items-center">
-                                                <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                                                    <FaUpload className="text-purple-600 dark:text-purple-400" />
-                                                </div>
-                                                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                                    Click or drag to upload
-                                                </p>
-                                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                                    JPG, PNG (Max 5MB)
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div>
-                                        <input
-                                            type="url"
-                                            name="imageUrl"
-                                            value={formData.imageUrl}
-                                            onChange={handleInputChange}
-                                            placeholder="https://example.com/your-artwork.jpg"
-                                            className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                                        />
-                                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                            Paste a direct link to your image
-                                        </p>
-                                    </div>
-                                )}
-                            </div>
-
-                            {formData.imageUrl && (
-                                <div className="rounded-xl overflow-hidden border border-gray-200 dark:border-gray-600 relative group">
-                                    <img
-                                        src={formData.imageUrl}
-                                        alt="Preview"
-                                        className="w-full h-48 object-cover"
-                                        onError={(e) => {
-                                            e.target.src = 'https://via.placeholder.com/400x200?text=Invalid+Image';
-                                        }}
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => setFormData(prev => ({ ...prev, imageUrl: '' }))}
-                                        className="absolute top-2 right-2 p-1.5 bg-red-500/80 text-white rounded-full hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100"
-                                    >
-                                        <FaTimes size={12} />
-                                    </button>
-                                </div>
-                            )}
+                            {/* Image Upload */}
+                            <ImageUpload
+                                value={formData.imageUrl}
+                                onChange={(url) => setFormData(prev => ({ ...prev, imageUrl: url }))}
+                                label="Image *"
+                            />
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
