@@ -1,6 +1,6 @@
 # LMS API Testing Guide
 
-> **Base URL:** `http://localhost:8095`  
+> **Base URL:** `http://93.127.194.118:8095`  
 > **Authorization:** Bearer Token (Admin login required)
 
 ---
