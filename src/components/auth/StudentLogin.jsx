@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaTimes, FaEye, FaEyeSlash, FaEnvelope, FaLock, FaUserGraduate } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
@@ -13,46 +13,39 @@ const StudentLogin = ({ isOpen, onClose }) => {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
-  const navigate = useNavigate();
-  const { studentLogin } = useAuth();
 
-  if (!isOpen) return null;
+  const navigate = useNavigate();
+
+  // Safe useAuth destructuring
+  const auth = useAuth();
+  const { studentLogin } = auth || {};
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    
+
     if (!formData.email || !formData.password) {
       setError('Please fill in all fields');
       return;
     }
 
     setIsLoading(true);
-    
+
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      // For demo: any email and password works
-      const studentData = {
-        id: Math.random().toString(36).substr(2, 9),
-        name: formData.email.split('@')[0],
-        email: formData.email,
-        role: 'Student',
-        loginTime: new Date().toISOString()
-      };
-      
-      const result = studentLogin(studentData);
-      
-      if (result.success) {
-        // Give a small delay to ensure localStorage and state are synced
-        await new Promise(resolve => setTimeout(resolve, 100));
-        
-        onClose();
-        // Navigate to dashboard - NOT just /student
-        navigate('/student/dashboard', { replace: true });
+      if (studentLogin) {
+        const result = await studentLogin({
+          email: formData.email,
+          password: formData.password
+        });
+
+        if (result.success) {
+          onClose();
+          navigate('/', { replace: true });
+        } else {
+          setError(result.message || 'Login failed');
+        }
       } else {
-        setError(result.message || 'Login failed');
+        setError('Login service unavailable');
       }
     } catch (error) {
       console.error('Login error:', error);
@@ -62,13 +55,23 @@ const StudentLogin = ({ isOpen, onClose }) => {
     }
   };
 
+  // Auto-dismiss errors after 5 seconds
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => setError(''), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
-    setError('');
+    if (error) setError('');
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4">
@@ -87,7 +90,7 @@ const StudentLogin = ({ isOpen, onClose }) => {
               </div>
               <p className="text-blue-100 text-xs sm:text-sm">Access your student dashboard</p>
             </div>
-            <button 
+            <button
               onClick={onClose}
               className="text-white hover:bg-white/20 rounded-full p-1.5 sm:p-2 transition-all transform hover:scale-110 shrink-0"
             >
@@ -170,7 +173,7 @@ const StudentLogin = ({ isOpen, onClose }) => {
           </button>
 
           {/* Forgot Password Link */}
-          <div className="text-center pt-1.5 sm:pt-2">
+          {/* <div className="text-center pt-1.5 sm:pt-2">
             <button
               type="button"
               onClick={() => setShowForgotPassword(true)}
@@ -178,12 +181,12 @@ const StudentLogin = ({ isOpen, onClose }) => {
             >
               Forgot Password?
             </button>
-          </div>
+          </div> */}
         </form>
 
         {/* ForgotPassword Modal */}
-        <ForgotPassword 
-          isOpen={showForgotPassword} 
+        <ForgotPassword
+          isOpen={showForgotPassword}
           onClose={() => setShowForgotPassword(false)}
         />
       </div>

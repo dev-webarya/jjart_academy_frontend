@@ -17,7 +17,7 @@ const StudentLogin = ({ isOpen, onClose }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     setError('');
-    
+
     if (!formData.email || !formData.password) {
       setError('Please fill in all fields');
       return;
@@ -31,7 +31,7 @@ const StudentLogin = ({ isOpen, onClose }) => {
         email: formData.email,
         role: 'Student'
       };
-      
+
       const result = studentLogin(studentData);
       setIsLoading(false);
       if (result.success) {
@@ -66,7 +66,7 @@ const StudentLogin = ({ isOpen, onClose }) => {
               </div>
               <p className="text-blue-100 text-sm">Access your student dashboard</p>
             </div>
-            <button 
+            <button
               onClick={onClose}
               className="text-white hover:bg-white/20 rounded-full p-2 transition-all transform hover:scale-110"
             >
@@ -147,11 +147,11 @@ const StudentLogin = ({ isOpen, onClose }) => {
           </button>
 
           {/* Forgot Password Link */}
-          <div className="text-center pt-2">
+          {/* <div className="text-center pt-2">
             <a href="#" className="text-sm text-blue-600 dark:text-blue-400 hover:underline transition-colors">
               Forgot Password?
             </a>
-          </div>
+          </div> */}
         </form>
       </div>
     </div>

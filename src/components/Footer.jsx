@@ -9,69 +9,102 @@ import {
   FaArrowUp,
   FaChevronDown,
   FaWhatsapp,
+  FaEnvelope,
+  FaPhone,
+  FaMapMarkerAlt,
 } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 const Footer = () => {
   const [isPagesOpen, setIsPagesOpen] = useState(false);
   const [isShopOpen, setIsShopOpen] = useState(false);
+  const [isQuickLinksOpen, setIsQuickLinksOpen] = useState(false);
+  
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
+  
   const footerLinks = [
     { name: "Home", link: "/" },
-    { name: "About", link: "/about" },
+    { name: "About Us", link: "/about" },
     { name: "Classes", link: "/classes" },
+    { name: "Exhibitions", link: "/exhibitions" },
     { name: "Gallery", link: "/gallery" },
+    { name: "Instructors", link: "/instructors" },
+    { name: "Testimonials", link: "/testimonials" },
     { name: "Contact", link: "/contact" },
   ];
+  
   const shopLinks = [
-    { name: "Art Shop", link: "/shop/artworks" },
-    { name: "Materials Shop", link: "/shop/materials" },
-    { name: "Cart", link: "/cart" },
+    { name: "Student Artworks", link: "/shop/artworks" },
+    { name: "Art Materials", link: "/shop/materials" },
+    { name: "Shopping Cart", link: "/cart" },
   ];
+  
+  const quickLinks = [
+    { name: "Fee Payment", link: "/fee-payment" },
+    { name: "Enrollment", link: "/" },
+    { name: "Events", link: "/exhibitions" },
+  ];
+  
   const socialLinks = [
-    { icon: FaFacebook, link: "#", color: "hover:bg-blue-600" },
-    { icon: FaTwitter, link: "#", color: "hover:bg-sky-500" },
-    { icon: FaInstagram, link: "https://www.instagram.com/jjartacademy?utm_source=qr&igsh=NjVtMGl5MHh1bm5n", color: "hover:bg-pink-600" },
-    { icon: FaLinkedin, link: "#", color: "hover:bg-blue-700" },
-    { icon: FaYoutube, link: "https://youtube.com/@jjartacademy108?si=0GThm9orG2EQRYUl", color: "hover:bg-red-600" },
+    { icon: FaInstagram, link: "https://www.instagram.com/jjartacademy?utm_source=qr&igsh=NjVtMGl5MHh1bm5n", color: "hover:bg-pink-600", name: "Instagram" },
+    { icon: FaYoutube, link: "https://youtube.com/@jjartacademy108?si=0GThm9orG2EQRYUl", color: "hover:bg-red-600", name: "YouTube" },
+    { icon: FaFacebook, link: "https://facebook.com", color: "hover:bg-blue-600", name: "Facebook" },
+    { icon: FaTwitter, link: "https://twitter.com", color: "hover:bg-sky-500", name: "Twitter" },
+    { icon: FaLinkedin, link: "https://linkedin.com", color: "hover:bg-blue-700", name: "LinkedIn" },
   ];
   return (
-    <footer className="bg-linear-to-b from-gray-900 via-gray-950 to-black text-white relative overflow-hidden pt-10 sm:pt-10 pb-3 sm:pb-8">
+    <footer className="bg-linear-to-b from-gray-900 via-gray-950 to-black text-white relative overflow-hidden pt-12 sm:pt-16 pb-6 sm:pb-8">
       {/* Decorative Background */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute top-0 right-0 w-96 h-96 bg-purple-600 rounded-full blur-3xl"></div>
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-pink-600 rounded-full blur-3xl"></div>
       </div>
+      
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 lg:max-w-7xl relative z-10">
         {/* Main Footer Content */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 lg:gap-16 mb-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-10 lg:gap-12 mb-12">
           {/* Brand Column */}
-          <div>
-            <div className="flex items-center justify-center sm:justify-start gap-4 sm:gap-5 mb-6">
-              <div className="p-3 bg-linear-to-br from-purple-600 to-pink-600 rounded-xl shadow-xl shadow-purple-600/30">
-                <img 
-                  src="/aa.jpeg" 
-                  alt=" Logo" 
-                  className="h-20 sm:h-24 w-auto object-contain"
-                />
+          <div className="lg:col-span-1">
+            <Link to="/" onClick={scrollToTop}>
+              <div className="flex items-center justify-center sm:justify-start gap-3 mb-6 group cursor-pointer">
+                <div className="p-2 bg-linear-to-br from-purple-600 to-pink-600 rounded-xl shadow-xl group-hover:shadow-purple-500/50 transition-all group-hover:scale-105">
+                  <img 
+                    src="/logo.png" 
+                    alt="Art Academy Logo" 
+                    className="h-16 sm:h-20 w-auto object-contain"
+                  />
+                </div>
               </div>
-              <div className="flex flex-col">
-                <span className="text-3xl sm:text-4xl font-bold leading-tight bg-linear-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent"></span>
-                <span className="text-sm sm:text-base font-semibold text-transparent bg-linear-to-r from-purple-400 to-pink-500 bg-clip-text"></span>
+            </Link>
+            <p className="text-gray-400 leading-relaxed mb-6 text-sm sm:text-base text-center sm:text-left">
+              Empowering young artists to discover their creativity and express themselves through exceptional art education.
+            </p>
+            
+            {/* Contact Info */}
+            <div className="space-y-3 text-sm text-gray-400">
+              <a href="tel:+917337880767" className="flex items-center gap-3 hover:text-purple-400 transition-colors">
+                <FaPhone className="text-purple-500" />
+                <span>+91 73378 80767</span>
+              </a>
+              <a href="mailto:info@artacademy.com" className="flex items-center gap-3 hover:text-purple-400 transition-colors">
+                <FaEnvelope className="text-purple-500" />
+                <span>info@artacademy.com</span>
+              </a>
+              <div className="flex items-start gap-3">
+                <FaMapMarkerAlt className="text-purple-500 mt-1" />
+                <span>Art Academy, City Center, Your City</span>
               </div>
             </div>
-            <p className="text-gray-300 leading-relaxed mt-4 text-sm sm:text-base text-center sm:text-left font-light max-w-xs">
-              Empowering young artists to discover their creativity and express themselves through exceptional art education and exhibitions.
-            </p>
           </div>
-          {/* Main Links */}
+          
+          {/* Pages Links */}
           <div>
             <div className="text-center sm:text-left">
               <button
                 onClick={() => setIsPagesOpen(!isPagesOpen)}
-                className="w-full sm:w-auto flex items-center justify-center sm:justify-start gap-2 mb-5 hover:opacity-80 transition-opacity"
+                className="w-full sm:w-auto flex items-center justify-center sm:justify-start gap-2 mb-6 hover:opacity-80 transition-opacity"
               >
                 <div className="w-1 h-6 bg-linear-to-b from-purple-500 to-pink-500 rounded-full"></div>
                 <h4 className="font-bold text-lg sm:text-xl text-white">Pages</h4>
@@ -82,21 +115,24 @@ const Footer = () => {
                   <li key={index}>
                     <Link
                       to={link.link}
-                      className="text-gray-400 hover:text-transparent hover:bg-linear-to-r hover:from-purple-400 hover:to-pink-400 hover:bg-clip-text transition-all duration-300 text-sm sm:text-base group relative"
+                      onClick={scrollToTop}
+                      className="text-gray-400 hover:text-purple-400 transition-all duration-300 text-sm sm:text-base group relative inline-flex items-center gap-2"
                     >
-                      <span className="group-hover:translate-x-1 inline-block transition-transform">→</span> {link.name}
+                      <span className="group-hover:translate-x-1 inline-block transition-transform">→</span> 
+                      {link.name}
                     </Link>
                   </li>
                 ))}
               </ul>
             </div>
           </div>
+          
           {/* Shop Links */}
           <div>
             <div className="text-center sm:text-left">
               <button
                 onClick={() => setIsShopOpen(!isShopOpen)}
-                className="w-full sm:w-auto flex items-center justify-center sm:justify-start gap-2 mb-5 hover:opacity-80 transition-opacity"
+                className="w-full sm:w-auto flex items-center justify-center sm:justify-start gap-2 mb-6 hover:opacity-80 transition-opacity"
               >
                 <div className="w-1 h-6 bg-linear-to-b from-purple-500 to-pink-500 rounded-full"></div>
                 <h4 className="font-bold text-lg sm:text-xl text-white">Shop</h4>
@@ -107,24 +143,84 @@ const Footer = () => {
                   <li key={index}>
                     <Link
                       to={link.link}
-                      className="text-gray-400 hover:text-transparent hover:bg-linear-to-r hover:from-purple-400 hover:to-pink-400 hover:bg-clip-text transition-all duration-300 text-sm sm:text-base group relative">
-                      <span className="group-hover:translate-x-1 inline-block transition-transform">→</span> {link.name}
+                      onClick={scrollToTop}
+                      className="text-gray-400 hover:text-purple-400 transition-all duration-300 text-sm sm:text-base group relative inline-flex items-center gap-2"
+                    >
+                      <span className="group-hover:translate-x-1 inline-block transition-transform">→</span> 
+                      {link.name}
                     </Link>
                   </li>
                 ))}
               </ul>
             </div>
           </div>
+          
+          {/* Quick Links */}
+          <div>
+            <div className="text-center sm:text-left">
+              <button
+                onClick={() => setIsQuickLinksOpen(!isQuickLinksOpen)}
+                className="w-full sm:w-auto flex items-center justify-center sm:justify-start gap-2 mb-6 hover:opacity-80 transition-opacity"
+              >
+                <div className="w-1 h-6 bg-linear-to-b from-purple-500 to-pink-500 rounded-full"></div>
+                <h4 className="font-bold text-lg sm:text-xl text-white">Quick Links</h4>
+                <FaChevronDown className={`sm:hidden transition-transform duration-300 ${isQuickLinksOpen ? 'rotate-180' : ''}`} />
+              </button>
+              <ul className={`space-y-3 mb-6 ${isQuickLinksOpen ? 'block' : 'hidden sm:block'}`}>
+                {quickLinks.map((link, index) => (
+                  <li key={index}>
+                    <Link
+                      to={link.link}
+                      onClick={scrollToTop}
+                      className="text-gray-400 hover:text-purple-400 transition-all duration-300 text-sm sm:text-base group relative inline-flex items-center gap-2"
+                    >
+                      <span className="group-hover:translate-x-1 inline-block transition-transform">→</span> 
+                      {link.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+              
+              {/* Social Links */}
+              <div className="text-center sm:text-left">
+                <h4 className="font-bold text-sm text-gray-400 mb-4">Follow Us</h4>
+                <div className="flex gap-3 justify-center sm:justify-start flex-wrap">
+                  {socialLinks.map((social, index) => (
+                    <a
+                      key={index}
+                      href={social.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center text-white transition-all duration-300 ${social.color} hover:scale-110 hover:shadow-lg`}
+                      aria-label={social.name}
+                    >
+                      <social.icon size={18} />
+                    </a>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+        
         {/* Divider */}
-        <div className="border-t border-gray-800 mt-12 pt-8 pb-4">
-          <div className="flex justify-center">
+        <div className="border-t border-gray-800 pt-8 pb-4">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
             {/* Copyright */}
             <p className="text-gray-500 text-xs sm:text-sm text-center hover:text-gray-300 transition-colors">
-              © {new Date().getFullYear()} ArtClass. Made with{" "}
-              <FaHeart className="inline text-red-500 animate-pulse" /> by
-              passionate artists.
+              © {new Date().getFullYear()} Art Academy. Made with{" "}
+              <FaHeart className="inline text-red-500 animate-pulse" /> for young artists.
             </p>
+            
+            {/* Additional Links */}
+            <div className="flex gap-6 text-xs sm:text-sm text-gray-500">
+              <Link to="/contact" className="hover:text-purple-400 transition-colors">
+                Privacy Policy
+              </Link>
+              <Link to="/contact" className="hover:text-purple-400 transition-colors">
+                Terms of Service
+              </Link>
+            </div>
           </div>
         </div>
       </div>

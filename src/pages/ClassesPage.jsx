@@ -25,7 +25,6 @@ const ClassesPage = () => {
           </p>
         </div>
       </section>
-      
       <Classes />
     </div>
   );

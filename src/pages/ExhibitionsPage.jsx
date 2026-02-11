@@ -1,117 +1,34 @@
 import React, { useState, useEffect } from "react";
-import { FaCalendar, FaMapMarkerAlt, FaClock, FaFilter, FaArrowRight, FaTimes } from "react-icons/fa";
+import { FaCalendar, FaMapMarkerAlt, FaClock, FaFilter, FaArrowRight, FaTimes, FaPalette, FaUser } from "react-icons/fa";
 import EnrollmentForm from "../components/EnrollmentForm";
+import ExhibitionsService from "../services/exhibitionsService";
+import ImagePreviewModal from "../components/ui/ImagePreviewModal";
+import { useAuth } from "../context/AuthContext";
+import StudentLogin from "../components/auth/StudentLogin";
+import Pagination from "../components/common/Pagination";
 
 const ExhibitionsPage = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
-  const [exhibitions, setExhibitions] = useState([]);
   const [filteredExhibitions, setFilteredExhibitions] = useState([]);
   const [selectedExhibition, setSelectedExhibition] = useState(null);
   const [showEnrollForm, setShowEnrollForm] = useState(false);
+  const [prefilledClassId, setPrefilledClassId] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [exhibitions, setExhibitions] = useState([]);
+  const { isStudent } = useAuth();
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [selectedExhibitionTitle, setSelectedExhibitionTitle] = useState('');
 
-  // Mock exhibition data
-  const exhibitionData = [
-    {
-      id: 1,
-      title: "Spring Colors 2025",
-      category: "watercolor",
-      date: "March 15-30, 2025",
-      location: "Main Gallery Hall",
-      time: "10:00 AM - 6:00 PM",
-      image: "https://www.museumnext.com/wp-content/uploads/2017/06/Designing-an-Exhibition-1.jpg",
-      description: "A vibrant collection of watercolor paintings by our talented students",
-      artists: 12,
-      artworks: 45,
-      featured: true,
-      status: "upcoming"
-    },
-    {
-      id: 2,
-      title: "Digital Dreams",
-      category: "digital",
-      date: "February 20 - March 10, 2025",
-      location: "Innovation Studio",
-      time: "9:00 AM - 7:00 PM",
-      image: "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=800&q=80",
-      description: "Cutting-edge digital artwork and 3D creations from our advanced students",
-      artists: 8,
-      artworks: 32,
-      featured: true,
-      status: "ongoing"
-    },
-    {
-      id: 3,
-      title: "Sculpture Showcase",
-      category: "sculpture",
-      date: "January 25 - February 28, 2025",
-      location: "Outdoor Art Park",
-      time: "8:00 AM - 8:00 PM",
-      image: "https://media.istockphoto.com/id/887680492/photo/visitors-among-the-stands-of-companies.jpg?s=612x612&w=0&k=20&c=xUzFV0iH9HqAkvvRXtktsr4AGoap31t3xEi00h0u56Y=",
-      description: "Beautiful 3D sculptures and installations created by intermediate students",
-      artists: 10,
-      artworks: 28,
-      featured: false,
-      status: "ongoing"
-    },
-    {
-      id: 4,
-      title: "Young Artists Exhibition",
-      category: "mixed",
-      date: "February 1-15, 2025",
-      location: "Community Center",
-      time: "10:00 AM - 5:00 PM",
-      image: "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=800&q=80",
-      description: "A celebration of creativity from our beginner level students",
-      artists: 20,
-      artworks: 60,
-      featured: true,
-      status: "upcoming"
-    },
-    {
-      id: 5,
-      title: "Portrait Masters",
-      category: "drawing",
-      date: "January 10-31, 2025",
-      location: "Heritage Museum",
-      time: "10:00 AM - 6:00 PM",
-      image: "https://media.istockphoto.com/id/1460912043/photo/ethnic-food-drinks-hall.jpg?s=612x612&w=0&k=20&c=HLBmaRvnzcwBjquGqMECQfRRbxj3K15LwDTekTm4AvQ=",
-      description: "Stunning portrait drawings and studies by our advanced drawing students",
-      artists: 6,
-      artworks: 25,
-      featured: false,
-      status: "past"
-    },
-    {
-      id: 6,
-      title: "Nature's Palette",
-      category: "painting",
-      date: "March 1-20, 2025",
-      location: "Botanical Garden",
-      time: "9:00 AM - 5:00 PM",
-      image: "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=800&q=80",
-      description: "Landscape and nature paintings inspired by our field trips",
-      artists: 15,
-      artworks: 50,
-      featured: true,
-      status: "upcoming"
-    }
-  ];
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(9);
 
-  useEffect(() => {
-    setExhibitions(exhibitionData);
-  }, []);
+  // Image Preview State
+  const [previewImage, setPreviewImage] = useState(null);
+  const [previewTitle, setPreviewTitle] = useState('');
 
-  useEffect(() => {
-    if (selectedCategory === "all") {
-      setFilteredExhibitions(exhibitions);
-    } else {
-      setFilteredExhibitions(
-        exhibitions.filter((ex) => ex.category === selectedCategory)
-      );
-    }
-  }, [selectedCategory, exhibitions]);
-
-  const categories = [
+  const [categories, setCategories] = useState([
     { id: "all", name: "All Exhibitions", icon: "🎨" },
     { id: "painting", name: "Painting", icon: "🖌️" },
     { id: "drawing", name: "Drawing", icon: "✏️" },
@@ -119,56 +36,154 @@ const ExhibitionsPage = () => {
     { id: "digital", name: "Digital Art", icon: "💻" },
     { id: "sculpture", name: "Sculpture", icon: "🗿" },
     { id: "mixed", name: "Mixed Media", icon: "✨" }
+  ]);
+
+  // Mock exhibition data as fallback
+  const exhibitionDataFallback = [
+    {
+      id: 1,
+      title: "Spring Colors 2025",
+      name: "Spring Colors 2025",
+      category: "watercolor",
+      startDate: "2025-03-15",
+      endDate: "2025-03-30",
+      location: "Main Gallery Hall",
+      time: "10:00 AM - 6:00 PM",
+      imageUrl: "https://www.museumnext.com/wp-content/uploads/2017/06/Designing-an-Exhibition-1.jpg",
+      description: "A vibrant collection of watercolor paintings by our talented students",
+      artistCount: 12,
+      artworksCount: 45,
+      featured: true,
+      active: true,
+      status: "upcoming"
+    },
+    {
+      id: 2,
+      title: "Digital Dreams",
+      name: "Digital Dreams",
+      category: "digital",
+      startDate: "2025-02-20",
+      endDate: "2025-03-10",
+      location: "Innovation Studio",
+      time: "9:00 AM - 7:00 PM",
+      imageUrl: "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=800&q=80",
+      description: "Cutting-edge digital artwork and 3D creations from our advanced students",
+      artistCount: 8,
+      artworksCount: 32,
+      featured: true,
+      active: true,
+      status: "ongoing"
+    }
   ];
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "ongoing":
-        return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400";
-      case "upcoming":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400";
-      case "past":
-        return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300";
-      default:
-        return "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400";
+  // Fetch exhibitions from API
+  useEffect(() => {
+    const fetchExhibitions = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const result = await ExhibitionsService.getAllExhibitions();
+        if (result && (result.success || Array.isArray(result.data) || result.content)) {
+          const data = result.data || result.content || result;
+          // Ensure it's an array
+          setExhibitions(Array.isArray(data) ? data : (data.content || []));
+        } else {
+          setExhibitions(exhibitionDataFallback);
+        }
+      } catch (err) {
+        console.error('❌ ERROR fetching exhibitions:', err);
+        setError(err.message);
+        setExhibitions(exhibitionDataFallback);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchExhibitions();
+  }, []);
+
+  // Transform API data to match the expected format
+  useEffect(() => {
+    const transformedExhibitions = exhibitions.map(ex => ({
+      ...ex,
+      featured: ex.featured !== undefined ? ex.featured : false,
+      status: ex.status || 'upcoming',
+      artistCount: ex.artistCount || ex.artists || 0,
+      artworksCount: ex.artworksCount || ex.artworks || 0,
+      imageUrl: ex.imageUrl || ex.image,
+      title: ex.title || ex.name
+    }));
+
+    if (selectedCategory === "all") {
+      setFilteredExhibitions(transformedExhibitions);
+    } else {
+      setFilteredExhibitions(
+        transformedExhibitions.filter(
+          (ex) => (ex.category === selectedCategory || ex.categoryId === selectedCategory || (ex.categoryName && ex.categoryName.toLowerCase().includes(selectedCategory)))
+        )
+      );
     }
+    setCurrentPage(1);
+  }, [selectedCategory, exhibitions]);
+
+  const openDetails = (exhibition) => {
+    setSelectedExhibition(exhibition);
   };
 
-  const getStatusText = (status) => {
-    switch (status) {
-      case "ongoing":
-        return "🔴 Currently Ongoing";
-      case "upcoming":
-        return "⏰ Coming Soon";
-      case "past":
-        return "✓ Past Exhibition";
-      default:
-        return status;
+  const handleRegister = (exhibition) => {
+    if (!isStudent) {
+      setShowLoginModal(true);
+      return;
     }
+    const classId = exhibition.id;
+    setPrefilledClassId(classId);
+    setSelectedExhibitionTitle(exhibition.title || exhibition.name);
+    setSelectedExhibition(null);
+    setShowEnrollForm(true);
+  };
+
+  // Pagination Logic
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredExhibitions.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredExhibitions.length / itemsPerPage);
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors duration-300">
-      {/* Hero Section */}
-      <section className="relative h-[70vh] flex items-center justify-center overflow-hidden pt-20">
-        <div className="absolute inset-0">
-          <img
-            src="https://images.unsplash.com/photo-1561070791-2526d30994b5?w=1920&q=80"
-            alt="Art Exhibition Background"
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-linear-to-br from-purple-900/80 via-pink-900/70 to-red-900/60"></div>
+      {/* Loading State */}
+      {loading && (
+        <div className="flex items-center justify-center h-screen">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-600"></div>
         </div>
+      )}
 
-        <div className="container mx-auto px-6 sm:px-8 lg:max-w-7xl relative z-10 text-center space-y-6">
-          <h1 className="text-5xl md:text-7xl font-bold text-white mb-4 leading-tight">
-            Art <span className="text-yellow-300">Exhibitions</span>
-          </h1>
-          <p className="text-xl md:text-2xl text-white/90 max-w-3xl mx-auto leading-relaxed">
-            Celebrate the creativity and talent of our young artists across diverse art forms and styles
-          </p>
-        </div>
-      </section>
+      {/* Hero Section */}
+      {!loading && (
+        <section className="relative h-[60vh] flex items-center justify-center overflow-hidden pt-20">
+          <div className="absolute inset-0">
+            <img
+              src="https://images.unsplash.com/photo-1561070791-2526d30994b5?w=1920&q=80"
+              alt="Art Exhibition Background"
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-linear-to-br from-purple-900/80 via-pink-900/70 to-red-900/60"></div>
+          </div>
+
+          <div className="container mx-auto px-6 sm:px-8 lg:max-w-7xl relative z-10 text-center space-y-6">
+            <h1 className="text-5xl md:text-7xl font-bold text-white mb-4 leading-tight">
+              Art <span className="text-yellow-300">Exhibitions</span>
+            </h1>
+            <p className="text-xl md:text-2xl text-white/90 max-w-3xl mx-auto leading-relaxed">
+              Celebrate the creativity and talent of our young artists across diverse art forms and styles
+            </p>
+          </div>
+        </section>
+      )}
 
       {/* Filter Section */}
       <section className="py-12 bg-linear-to-b from-white dark:from-gray-900 to-gray-50 dark:to-gray-800">
@@ -185,11 +200,10 @@ const ExhibitionsPage = () => {
               <button
                 key={category.id}
                 onClick={() => setSelectedCategory(category.id)}
-                className={`px-4 py-2 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 ${
-                  selectedCategory === category.id
-                    ? "bg-linear-to-r from-purple-600 to-pink-600 text-white shadow-lg scale-105"
-                    : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 shadow-md hover:shadow-lg border-2 border-gray-200 dark:border-gray-700"
-                }`}
+                className={`px-4 py-2 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 ${selectedCategory === category.id
+                  ? "bg-linear-to-r from-purple-600 to-pink-600 text-white shadow-lg scale-105"
+                  : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 shadow-md hover:shadow-lg border-2 border-gray-200 dark:border-gray-700"
+                  }`}
               >
                 <span className="mr-2">{category.icon}</span>
                 {category.name}
@@ -199,311 +213,187 @@ const ExhibitionsPage = () => {
         </div>
       </section>
 
-      {/* Featured Exhibitions */}
-      {filteredExhibitions.some((ex) => ex.featured) && selectedCategory !== "all" && (
-        <section className=" bg-white dark:bg-gray-900">
-          <div className="container mx-auto px-6 sm:px-8 lg:max-w-7xl">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filteredExhibitions
-                .filter((ex) => ex.featured)
-                .map((exhibition) => (
-                  <div
-                    key={exhibition.id}
-                    className="group bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105 border-2 border-purple-200 dark:border-purple-900"
-                  >
-                    {/* Image Container */}
-                    <div className="relative h-40 overflow-hidden">
+      {/* Exhibitions Grid (Admin Design Port) */}
+      <section className="py-12 bg-gray-50 dark:bg-gray-900">
+        <div className="container mx-auto px-6 sm:px-8 lg:max-w-7xl">
+          {!loading && filteredExhibitions.length > 0 ? (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {currentItems.map((item) => (
+                  <div key={item.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-shadow overflow-hidden group">
+                    {/* Image Header */}
+                    <div className="relative h-48 overflow-hidden">
                       <img
-                        src={exhibition.image}
-                        alt={exhibition.title}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        src={item.imageUrl || item.image || 'https://via.placeholder.com/300?text=Exhibition'}
+                        alt={item.title || item.name}
+                        className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300 cursor-pointer"
+                        onClick={() => {
+                          setPreviewImage(item.imageUrl || item.image || 'https://via.placeholder.com/300?text=Exhibition');
+                          setPreviewTitle(item.title || item.name);
+                        }}
                       />
-                      <div className="absolute inset-0 bg-linear-to-t from-black/50 to-transparent"></div>
+                      <div className="absolute top-2 right-2 bg-white/90 dark:bg-gray-900/90 px-2 py-1 rounded-full text-xs font-semibold shadow-sm text-gray-800 dark:text-gray-200">
+                        {item.categoryName || item.category || 'General'}
+                      </div>
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
+                        <div className="flex items-center text-white text-sm font-medium">
+                          <FaMapMarkerAlt className="mr-2 text-red-400" />
+                          {item.location}
+                        </div>
+                      </div>
+                      <div className={`absolute top-2 left-2 px-2 py-1 rounded-full text-xs font-bold shadow-sm ${item.active ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>
+                        {item.active ? 'Active' : 'Past'}
+                      </div>
                     </div>
 
-                    {/* Content */}
-                    <div className="p-4 space-y-3">
-                      <h3 className="text-lg font-bold text-gray-800 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
-                        {exhibition.title}
+                    {/* Content Body */}
+                    <div className="p-5 space-y-3">
+                      <h3 className="text-xl font-bold text-gray-800 dark:text-white line-clamp-1" title={item.title || item.name}>
+                        {item.title || item.name}
                       </h3>
 
-                      <p className="text-gray-600 dark:text-gray-400 line-clamp-1 text-sm">
-                        {exhibition.description}
+                      <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                        <FaCalendar className="mr-2 text-blue-500" />
+                        <span>
+                          {item.startDate ? new Date(item.startDate).toLocaleDateString() : (item.date ? item.date.split('-')[0] : '-')}
+                          {' — '}
+                          {item.endDate ? new Date(item.endDate).toLocaleDateString() : (item.date ? item.date.split('-')[1] : '-')}
+                        </span>
+                      </div>
+
+                      <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 h-10">
+                        {item.description}
                       </p>
 
-                      {/* Info Grid */}
-                      <div className="space-y-2 pt-2 border-t border-gray-200 dark:border-gray-700">
-                        <div className="flex items-center space-x-2 text-xs text-gray-700 dark:text-gray-300">
-                          <FaCalendar className="text-purple-600 dark:text-purple-400 shrink-0" />
-                          <span className="font-semibold line-clamp-1">{exhibition.date}</span>
+                      <div className="flex gap-4 text-sm text-gray-500 pt-2">
+                        <div className="flex items-center gap-1">
+                          <FaUser className="text-purple-500" />
+                          <span className="font-semibold">{item.artistCount || item.artists}</span> Artists
                         </div>
-
-                        <div className="flex items-center space-x-2 text-xs text-gray-700 dark:text-gray-300">
-                          <FaClock className="text-pink-600 dark:text-pink-400 shrink-0" />
-                          <span className="font-semibold">{exhibition.time}</span>
-                        </div>
-
-                        <div className="flex items-center space-x-2 text-xs text-gray-700 dark:text-gray-300">
-                          <FaMapMarkerAlt className="text-red-600 dark:text-red-400 shrink-0" />
-                          <span className="font-semibold line-clamp-1">{exhibition.location}</span>
+                        <div className="flex items-center gap-1">
+                          <FaPalette className="text-orange-500" />
+                          <span className="font-semibold">{item.artworksCount || item.artworks}</span> Artworks
                         </div>
                       </div>
 
-                      {/* CTA Button */}
-                      <button 
-                        onClick={() => setSelectedExhibition(exhibition)}
-                        className="w-full mt-3 bg-linear-to-r from-purple-600 to-pink-600 text-white py-2 rounded-lg font-bold hover:shadow-lg hover:scale-105 transition-all duration-300 flex items-center justify-center space-x-2 group/btn text-sm"
-                      >
-                        <span>View Details</span>
-                        <FaArrowRight className="group-hover/btn:translate-x-1 transition-transform text-xs" />
-                      </button>
+                      <div className="flex justify-end pt-3 gap-2 border-t border-gray-100 dark:border-gray-700">
+                        <button
+                          onClick={() => openDetails(item)}
+                          className="flex-1 px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-white rounded-lg transition-colors text-sm font-semibold"
+                        >
+                          Details
+                        </button>
+                        <button
+                          onClick={() => handleRegister(item)}
+                          className="flex-1 px-4 py-2 bg-linear-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:shadow-lg transition-all text-sm font-semibold"
+                        >
+                          Register
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* All Exhibitions */}
-      {filteredExhibitions.filter((ex) => !ex.featured).length > 0 && selectedCategory !== "all" && (
-      <section className="py-12 bg-gray-50 dark:bg-gray-800">
-        <div className="container mx-auto px-6 sm:px-8 lg:max-w-7xl">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-800 dark:text-white mb-10">
-            Other Exhibitions
-          </h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredExhibitions.filter((ex) => !ex.featured).map((exhibition) => (
-                <div
-                  key={exhibition.id}
-                  className="bg-white dark:bg-gray-900 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
-                >
-                  {/* Image Container */}
-                  <div className="relative h-40 overflow-hidden">
-                    <img
-                      src={exhibition.image}
-                      alt={exhibition.title}
-                      className="w-full h-full object-cover hover:scale-110 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent"></div>
-                  </div>
-
-                  {/* Content */}
-                  <div className="p-4 space-y-3">
-                    <h3 className="text-lg font-bold text-gray-800 dark:text-white">
-                      {exhibition.title}
-                    </h3>
-
-                    <p className="text-gray-600 dark:text-gray-400 text-sm line-clamp-1">
-                      {exhibition.description}
-                    </p>
-
-                    {/* Info */}
-                    <div className="space-y-1.5 text-xs text-gray-700 dark:text-gray-300">
-                      <div className="flex items-center space-x-2">
-                        <FaCalendar className="text-purple-600 dark:text-purple-400 shrink-0" />
-                        <span className="line-clamp-1">{exhibition.date}</span>
-                      </div>
-
-                      <div className="flex items-center space-x-2">
-                        <FaMapMarkerAlt className="text-red-600 dark:text-red-400 shrink-0" />
-                        <span className="line-clamp-1">{exhibition.location}</span>
-                      </div>
-                    </div>
-
-                    {/* CTA Button */}
-                    <button className="w-full mt-3 bg-purple-600 hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-600 text-white py-2 rounded-lg font-semibold transition-all duration-300 text-sm">
-                      View Exhibition
-                    </button>
-                  </div>
+              </div>
+              {/* Pagination */}
+              {filteredExhibitions.length > itemsPerPage && (
+                <div className="mt-8">
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={handlePageChange}
+                  />
                 </div>
-              ))}
+              )}
+            </>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-xl text-gray-600 dark:text-gray-400">
+                No exhibitions found in this category.
+              </p>
             </div>
+          )}
         </div>
-      </section>
-      )}
+      </section >
 
-      {filteredExhibitions.filter((ex) => !ex.featured).length === 0 && filteredExhibitions.filter((ex) => ex.featured).length === 0 && (
-        <section className="py-12 bg-gray-50 dark:bg-gray-800">
-          <div className="container mx-auto px-6 sm:px-8 lg:max-w-7xl text-center py-6">
-            <p className="text-xl text-gray-600 dark:text-gray-400">
-              No exhibitions found in this category. Try another filter!
-            </p>
-          </div>
-        </section>
-      )}
-
-      {/* Show all exhibitions in one section when "All" is selected */}
-      {selectedCategory === "all" && filteredExhibitions.length > 0 && (
-        <section className="pb-12 bg-gray-50 dark:bg-gray-800">
-          <div className="container mx-auto px-6 sm:px-8 lg:max-w-7xl">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filteredExhibitions.map((exhibition) => (
-                <div
-                  key={exhibition.id}
-                  className="bg-white dark:bg-gray-900 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
-                >
-                  {/* Image Container */}
-                  <div className="relative h-40 overflow-hidden">
-                    <img
-                      src={exhibition.image}
-                      alt={exhibition.title}
-                      className="w-full h-full object-cover hover:scale-110 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent"></div>
-                  </div>
-
-                  {/* Content */}
-                  <div className="p-4 space-y-3">
-                    <h3 className="text-lg font-bold text-gray-800 dark:text-white">
-                      {exhibition.title}
-                    </h3>
-
-                    <p className="text-gray-600 dark:text-gray-400 text-sm line-clamp-1">
-                      {exhibition.description}
-                    </p>
-
-                    {/* Info */}
-                    <div className="space-y-1.5 text-xs text-gray-700 dark:text-gray-300">
-                      <div className="flex items-center space-x-2">
-                        <FaCalendar className="text-purple-600 dark:text-purple-400 shrink-0" />
-                        <span className="line-clamp-1">{exhibition.date}</span>
-                      </div>
-
-                      <div className="flex items-center space-x-2">
-                        <FaMapMarkerAlt className="text-red-600 dark:text-red-400 shrink-0" />
-                        <span className="line-clamp-1">{exhibition.location}</span>
-                      </div>
-                    </div>
-
-                    {/* CTA Button */}
-                    <button 
-                      onClick={() => setSelectedExhibition(exhibition)}
-                      className="w-full mt-3 bg-purple-600 hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-600 text-white py-2 rounded-lg font-semibold transition-all duration-300 text-sm"
-                    >
-                      View Exhibition
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {selectedCategory === "all" && filteredExhibitions.length === 0 && (
-        <section className="py-12 bg-gray-50 dark:bg-gray-800">
-          <div className="container mx-auto px-6 sm:px-8 lg:max-w-7xl text-center py-6">
-            <p className="text-xl text-gray-600 dark:text-gray-400">
-              No exhibitions found. Try another filter!
-            </p>
-          </div>
-        </section>
-      )}
-
-      {/* Info Section */}
-      <section className="py-16 bg-linear-to-r from-purple-600 to-pink-600 dark:from-purple-900 dark:to-pink-900">
-        <div className="container mx-auto px-6 sm:px-8 lg:max-w-7xl">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-white text-center space-y-3">
-              <div className="text-5xl">🎯</div>
-              <h3 className="text-2xl font-bold">Learn & Grow</h3>
-              <p className="text-white/90">
-                Exhibitions showcase student progress and celebrate artistic growth
-              </p>
-            </div>
-
-            <div className="text-white text-center space-y-3">
-              <div className="text-5xl">🌟</div>
-              <h3 className="text-2xl font-bold">Share & Connect</h3>
-              <p className="text-white/90">
-                Bring community together through art appreciation and networking
-              </p>
-            </div>
-
-            <div className="text-white text-center space-y-3">
-              <div className="text-5xl">🏆</div>
-              <h3 className="text-2xl font-bold">Inspire & Motivate</h3>
-              <p className="text-white/90">
-                Recognize talent and inspire future generations of artists
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-12 text-center">
-            <h3 className="text-3xl font-bold text-white mb-6">
-              Want to Participate in Our Next Exhibition?
-            </h3>
-            <button 
-              onClick={() => setShowEnrollForm(true)}
-              className="px-8 py-4 bg-white text-purple-600 font-bold rounded-full hover:shadow-xl hover:scale-105 transition-all duration-300 text-lg"
-            >
-              Enroll Your Child Today
-            </button>
-          </div>
-        </div>
-      </section>
 
       {/* Exhibition Detail Modal */}
-      {selectedExhibition && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setSelectedExhibition(null)}>
-          <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="relative">
-              <img
-                src={selectedExhibition.image}
-                alt={selectedExhibition.title}
-                className="w-full h-64 object-cover rounded-t-2xl"
-              />
-              <button
-                onClick={() => setSelectedExhibition(null)}
-                className="absolute top-4 right-4 bg-white dark:bg-gray-800 text-gray-800 dark:text-white p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-all"
-              >
-                <FaTimes size={20} />
-              </button>
-            </div>
-            
-            <div className="p-6 space-y-4">
-              <h2 className="text-3xl font-bold text-gray-800 dark:text-white">{selectedExhibition.title}</h2>
-              
-              <p className="text-gray-600 dark:text-gray-300 text-lg">{selectedExhibition.description}</p>
-              
-              <div className="space-y-3 pt-4 border-t border-gray-200 dark:border-gray-700">
-                <div className="flex items-center space-x-3 text-gray-700 dark:text-gray-300">
-                  <FaCalendar className="text-purple-600 dark:text-purple-400" size={20} />
-                  <span className="font-semibold">{selectedExhibition.date}</span>
-                </div>
-                
-                <div className="flex items-center space-x-3 text-gray-700 dark:text-gray-300">
-                  <FaClock className="text-pink-600 dark:text-pink-400" size={20} />
-                  <span className="font-semibold">{selectedExhibition.time}</span>
-                </div>
-                
-                <div className="flex items-center space-x-3 text-gray-700 dark:text-gray-300">
-                  <FaMapMarkerAlt className="text-red-600 dark:text-red-400" size={20} />
-                  <span className="font-semibold">{selectedExhibition.location}</span>
-                </div>
-              </div>
-              
-              <div className="pt-4">
+      {
+        selectedExhibition && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setSelectedExhibition(null)}>
+            <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
+              <div className="relative">
+                <img
+                  src={selectedExhibition.imageUrl || selectedExhibition.image}
+                  alt={selectedExhibition.title || selectedExhibition.name}
+                  className="w-full h-64 object-cover rounded-t-2xl"
+                />
                 <button
-                  onClick={() => {
-                    setSelectedExhibition(null);
-                    setShowEnrollForm(true);
-                  }}
-                  className="w-full py-3 bg-linear-to-r from-purple-600 to-pink-600 text-white font-bold rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-300"
+                  onClick={() => setSelectedExhibition(null)}
+                  className="absolute top-4 right-4 bg-white dark:bg-gray-800 text-gray-800 dark:text-white p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-all"
                 >
-                  Register for This Exhibition
+                  <FaTimes size={20} />
                 </button>
+              </div>
+
+              <div className="p-6 space-y-4">
+                <h2 className="text-3xl font-bold text-gray-800 dark:text-white">{selectedExhibition.title || selectedExhibition.name}</h2>
+
+                <p className="text-gray-600 dark:text-gray-300 text-lg">{selectedExhibition.description}</p>
+
+                <div className="space-y-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center space-x-3 text-gray-700 dark:text-gray-300">
+                    <FaCalendar className="text-purple-600 dark:text-purple-400" size={20} />
+                    <span className="font-semibold">
+                      {selectedExhibition.startDate ? new Date(selectedExhibition.startDate).toLocaleDateString() : (selectedExhibition.date ? selectedExhibition.date : '-')}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center space-x-3 text-gray-700 dark:text-gray-300">
+                    <FaClock className="text-pink-600 dark:text-pink-400" size={20} />
+                    <span className="font-semibold">{selectedExhibition.time || 'All Day'}</span>
+                  </div>
+
+                  <div className="flex items-center space-x-3 text-gray-700 dark:text-gray-300">
+                    <FaMapMarkerAlt className="text-red-600 dark:text-red-400" size={20} />
+                    <span className="font-semibold">{selectedExhibition.location}</span>
+                  </div>
+                </div>
+
+                <div className="pt-4">
+                  <button
+                    onClick={() => handleRegister(selectedExhibition)}
+                    className="w-full py-3 bg-linear-to-r from-purple-600 to-pink-600 text-white font-bold rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-300"
+                  >
+                    Register for This Exhibition
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
       {/* Enrollment Form Modal */}
-      <EnrollmentForm isOpen={showEnrollForm} onClose={() => setShowEnrollForm(false)} />
-    </div>
+      <EnrollmentForm
+        isOpen={showEnrollForm}
+        onClose={() => setShowEnrollForm(false)}
+        selectedClassId={prefilledClassId}
+        selectedClassName={selectedExhibitionTitle}
+      />
+
+      <StudentLogin
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+      />
+
+      {/* Image Preview Modal */}
+      <ImagePreviewModal
+        isOpen={!!previewImage}
+        onClose={() => setPreviewImage(null)}
+        imageUrl={previewImage}
+        title={previewTitle}
+      />
+    </div >
   );
 };
 

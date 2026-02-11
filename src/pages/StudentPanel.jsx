@@ -1,10 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate, Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { 
-  FaHome, FaCalendar, FaCertificate, 
+import {
+  FaHome, FaCalendar, FaCertificate,
   FaSignOutAlt, FaPalette, FaBell, FaUser, FaBars, FaTimes,
-  FaClipboardList, FaCog, FaChalkboardTeacher, FaVideo
+  FaClipboardList, FaCog, FaChalkboardTeacher, FaVideo, FaMoneyBillWave, FaImage
 } from 'react-icons/fa';
 
 const StudentPanel = () => {
@@ -56,9 +56,10 @@ const StudentPanel = () => {
     { name: 'Regular Classes', path: '/student/classes', icon: FaChalkboardTeacher },
     { name: 'Online Classes', path: '/student/online-classes', icon: FaVideo },
     { name: 'Attendance', path: '/student/attendance', icon: FaCalendar },
-    { name: 'Certificates', path: '/student/certificates', icon: FaCertificate },
+    { name: 'Subscriptions', path: '/student/subscriptions', icon: FaMoneyBillWave },
     { name: 'My Orders', path: '/student/orders', icon: FaClipboardList },
     { name: 'Events', path: '/student/events', icon: FaCalendar },
+    { name: 'My Uploads', path: '/student/my-gallery', icon: FaImage },
   ];
 
   return (
@@ -86,13 +87,13 @@ const StudentPanel = () => {
           </div>
 
           <div className="flex items-center space-x-4">
-            <button 
+            <button
               onClick={handleNotificationClick}
               className="relative p-2 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all">
               <FaBell size={20} />
               <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
             </button>
-            
+
             <div className="flex items-center space-x-3 pl-4 border-l border-gray-200 dark:border-gray-700" ref={profileDropdownRef}>
               <button
                 onClick={handleStudentProfileClick}
@@ -156,9 +157,8 @@ const StudentPanel = () => {
       <div className={`flex flex-1 mt-16 overflow-hidden ${sidebarOpen ? 'lg:ml-64' : 'lg:ml-20'}`}>
         {/* Sidebar - Always Fixed */}
         <aside
-          className={`fixed left-0 top-16 h-[calc(100vh-4rem)] bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 shadow-lg transition-all duration-300 z-30 overflow-y-auto ${
-            sidebarOpen ? 'w-64' : 'w-0 lg:w-20'
-          }`}
+          className={`fixed left-0 top-16 h-[calc(100vh-4rem)] bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 shadow-lg transition-all duration-300 z-30 overflow-y-auto ${sidebarOpen ? 'w-64' : 'w-0 lg:w-20'
+            }`}
         >
           <nav className="p-4 space-y-2">
             {menuItems.map((item) => {
@@ -166,18 +166,17 @@ const StudentPanel = () => {
               const isActive = location.pathname === item.path;
               const isDropdownOpen = openDropdown === item.name;
               const hasSubmenu = item.submenu;
-              
+
               return (
                 <div key={item.name || item.path}>
                   {hasSubmenu ? (
                     // Dropdown Menu Item
                     <button
                       onClick={() => setOpenDropdown(isDropdownOpen ? null : item.name)}
-                      className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all font-medium ${
-                        isDropdownOpen
-                          ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
-                          : 'text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-700'
-                      } ${!sidebarOpen && 'lg:justify-center'}`}
+                      className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all font-medium ${isDropdownOpen
+                        ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                        : 'text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-700'
+                        } ${!sidebarOpen && 'lg:justify-center'}`}
                     >
                       <Icon size={20} className="shrink-0" />
                       {sidebarOpen && (
@@ -193,11 +192,10 @@ const StudentPanel = () => {
                     // Regular Menu Item
                     <Link
                       to={item.path}
-                      className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-all font-medium ${
-                        isActive
-                          ? 'bg-blue-600 text-white shadow-lg'
-                          : 'text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-700'
-                      } ${!sidebarOpen && 'lg:justify-center'}`}
+                      className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-all font-medium ${isActive
+                        ? 'bg-blue-600 text-white shadow-lg'
+                        : 'text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-700'
+                        } ${!sidebarOpen && 'lg:justify-center'}`}
                     >
                       <Icon size={20} className="shrink-0" />
                       {sidebarOpen && (
@@ -212,16 +210,15 @@ const StudentPanel = () => {
                       {item.submenu.map((subitem) => {
                         const SubIcon = subitem.icon;
                         const isSubActive = location.pathname === subitem.path;
-                        
+
                         return (
                           <Link
                             key={subitem.path}
                             to={subitem.path}
-                            className={`flex items-center space-x-3 px-4 py-2 rounded-lg transition-all text-sm font-medium ${
-                              isSubActive
-                                ? 'bg-blue-600 text-white shadow-lg'
-                                : 'text-gray-600 dark:text-gray-400 hover:bg-blue-50 dark:hover:bg-gray-700'
-                            }`}
+                            className={`flex items-center space-x-3 px-4 py-2 rounded-lg transition-all text-sm font-medium ${isSubActive
+                              ? 'bg-blue-600 text-white shadow-lg'
+                              : 'text-gray-600 dark:text-gray-400 hover:bg-blue-50 dark:hover:bg-gray-700'
+                              }`}
                           >
                             <SubIcon size={18} />
                             <span>{subitem.name}</span>
@@ -229,7 +226,7 @@ const StudentPanel = () => {
                         );
                       })}
 
-                      
+
                     </div>
                   )}
                 </div>

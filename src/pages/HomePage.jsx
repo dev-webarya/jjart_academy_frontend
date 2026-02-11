@@ -6,6 +6,8 @@ import WhatWeOffer from "../components/WhatWeOffer";
 import Benefits from "../components/Benefits";
 import FollowUsOnInstagram from "../components/FollowUsOnInstagram";
 import CallToAction from "../components/CallToAction";
+import GalleryHome from "../components/GalleryHome";
+import EventsPopup from "../components/events/EventsPopup";
 
 const HomePage = () => {
   return (
@@ -14,9 +16,18 @@ const HomePage = () => {
       <Features />
       <PopularActivities />
       <WhatWeOffer />
+      <GalleryHome />
       <Benefits />
       <FollowUsOnInstagram />
       <CallToAction />
+
+      {/* Events Popup - shows after 2 seconds */}
+      <EventsPopup
+        autoShow={true}
+        delay={2000}
+        maxEvents={3}
+        dismissHours={24}
+      />
     </div>
   );
 };

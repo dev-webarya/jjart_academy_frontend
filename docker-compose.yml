@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  art-academy-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - VITE_CLOUDINARY_CLOUD_NAME=${VITE_CLOUDINARY_CLOUD_NAME}
+        - VITE_CLOUDINARY_UPLOAD_PRESET=${VITE_CLOUDINARY_UPLOAD_PRESET}
+    container_name: art-academy-frontend
+    ports:
+      - "8022:8022"
+    environment:
+      - VITE_CLOUDINARY_CLOUD_NAME=${VITE_CLOUDINARY_CLOUD_NAME}
+      - VITE_CLOUDINARY_UPLOAD_PRESET=${VITE_CLOUDINARY_UPLOAD_PRESET}
+    env_file:
+      - .env
+    restart: unless-stopped
+    networks:
+      - art-academy-network
+    healthcheck:
+      test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8022" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  art-academy-network:
+    driver: bridge

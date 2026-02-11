@@ -1,11 +1,11 @@
 import { Link } from 'react-router-dom';
-import { FaTrash, FaPlus, FaMinus, FaShoppingBag, FaArrowRight } from 'react-icons/fa';
+import { FaTrash, FaPlus, FaMinus, FaShoppingBag, FaArrowRight, FaSpinner } from 'react-icons/fa';
 import { useCart } from '../../context/CartContext';
 import { useNotification } from '../../context/NotificationContext';
 
 const Cart = () => {
-  const { cartItems, cartTotal, removeFromCart, updateQuantity, clearCart } = useCart();
-  const { success, info } = useNotification();
+  const { cartItems, cartTotal, removeFromCart, updateQuantity, clearCart, isLoading } = useCart();
+  const { info } = useNotification();
 
   const handleRemove = (item) => {
     removeFromCart(item.id);
@@ -23,6 +23,18 @@ const Cart = () => {
       info('Cart cleared');
     }
   };
+
+  if (isLoading) {
+
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <FaSpinner className="animate-spin mx-auto text-purple-600 mb-4" size={50} />
+          <p className="text-gray-600 dark:text-gray-400 text-lg">Loading your cart...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (cartItems.length === 0) {
     return (
@@ -233,7 +245,7 @@ const Cart = () => {
                     <span className="font-medium">Tax (GST 18%)</span>
                     <span className="font-semibold text-gray-800 dark:text-white">₹{tax.toLocaleString()}</span>
                   </div>
-                  
+
                   {cartTotal < 2000 && (
                     <div className="text-sm text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20 p-3 rounded-lg border border-orange-200 dark:border-orange-800">
                       <p className="font-semibold mb-1">Free Shipping Available!</p>
@@ -269,7 +281,7 @@ const Cart = () => {
                 <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 font-semibold">Secure Payments:</p>
                   <div className="flex gap-2 flex-wrap">
-                    {['VISA', 'Mastercard', 'UPI', 'Paytm'].map((method) => (
+                    {['VISA', 'Mastercard', 'UPI', 'Razorpay'].map((method) => (
                       <span
                         key={method}
                         className="px-3 py-2 bg-gray-100 dark:bg-gray-700 text-xs text-gray-700 dark:text-gray-300 rounded-lg font-medium"

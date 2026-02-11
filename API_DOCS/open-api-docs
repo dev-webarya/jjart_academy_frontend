@@ -1,0 +1,7863 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Art Academy API",
+    "description": "Backend API for the Art Academy e-commerce service.",
+    "version": "v1.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8095",
+      "description": "Generated server url"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Art Materials",
+      "description": "Endpoints for managing art materials"
+    },
+    {
+      "name": "Art Works Categories",
+      "description": "Endpoints for managing art works categories"
+    },
+    {
+      "name": "LMS - Attendance",
+      "description": "Attendance management"
+    },
+    {
+      "name": "Art Materials Categories",
+      "description": "Endpoints for managing art materials categories"
+    },
+    {
+      "name": "Art Galleries",
+      "description": "Endpoints for managing art galleries"
+    },
+    {
+      "name": "Art Galleries Categories",
+      "description": "Endpoints for managing art galleries categories"
+    },
+    {
+      "name": "LMS - Gallery",
+      "description": "Gallery management with verification"
+    },
+    {
+      "name": "Art Exhibitions",
+      "description": "Endpoints for managing art exhibitions"
+    },
+    {
+      "name": "Art Classes Categories",
+      "description": "Endpoints for managing art classes categories"
+    },
+    {
+      "name": "Class Enrollments",
+      "description": "Operations for enrolling in art classes"
+    },
+    {
+      "name": "LMS - Events",
+      "description": "Event management"
+    },
+    {
+      "name": "Art Exhibitions Categories",
+      "description": "Endpoints for managing art exhibitions categories"
+    },
+    {
+      "name": "Art Orders",
+      "description": "Order management endpoints"
+    },
+    {
+      "name": "LMS - Subscriptions",
+      "description": "Monthly subscription management"
+    },
+    {
+      "name": "Art Classes",
+      "description": "Endpoints for managing art classes"
+    },
+    {
+      "name": "LMS - Class Sessions",
+      "description": "Class session management"
+    },
+    {
+      "name": "Art Works",
+      "description": "Endpoints for managing art works"
+    }
+  ],
+  "paths": {
+    "/api/v1/users/{id}": {
+      "get": {
+        "tags": [
+          "user-controller"
+        ],
+        "operationId": "getUserById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "user-controller"
+        ],
+        "operationId": "updateUser",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "user-controller"
+        ],
+        "operationId": "deleteUser",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/users/me": {
+      "get": {
+        "tags": [
+          "user-controller"
+        ],
+        "operationId": "getCurrentUser",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "user-controller"
+        ],
+        "operationId": "updateCurrentUser",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/lms/subscriptions/{id}": {
+      "get": {
+        "tags": [
+          "LMS - Subscriptions"
+        ],
+        "summary": "Get subscription by ID (Admin)",
+        "operationId": "getById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Subscription ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/LmsSubscriptionResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "LMS - Subscriptions"
+        ],
+        "summary": "Update a subscription (Admin)",
+        "operationId": "update",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Subscription ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LmsSubscriptionRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/LmsSubscriptionResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "LMS - Subscriptions"
+        ],
+        "summary": "Delete a subscription (Admin)",
+        "operationId": "delete",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Subscription ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/lms/sessions/{id}": {
+      "get": {
+        "tags": [
+          "LMS - Class Sessions"
+        ],
+        "summary": "Get session by ID (Admin)",
+        "operationId": "getById_1",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/LmsClassSessionResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "LMS - Class Sessions"
+        ],
+        "summary": "Update a session (Admin)",
+        "operationId": "update_1",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LmsClassSessionRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/LmsClassSessionResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "LMS - Class Sessions"
+        ],
+        "summary": "Delete a session (Admin)",
+        "operationId": "delete_1",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/lms/gallery/{id}": {
+      "get": {
+        "tags": [
+          "LMS - Gallery"
+        ],
+        "summary": "Get gallery item by ID (Admin)",
+        "operationId": "getById_2",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/LmsGalleryItemResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "LMS - Gallery"
+        ],
+        "summary": "Update a gallery item (Admin)",
+        "operationId": "update_2",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LmsGalleryItemRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/LmsGalleryItemResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "LMS - Gallery"
+        ],
+        "summary": "Delete a gallery item (Admin)",
+        "operationId": "delete_2",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/lms/events/{id}": {
+      "get": {
+        "tags": [
+          "LMS - Events"
+        ],
+        "summary": "Get event by ID (Admin)",
+        "operationId": "getById_3",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/LmsEventResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "LMS - Events"
+        ],
+        "summary": "Update an event (Admin)",
+        "operationId": "update_3",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LmsEventRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/LmsEventResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "LMS - Events"
+        ],
+        "summary": "Delete an event (Admin)",
+        "operationId": "delete_3",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/enrollments/{enrollmentId}/status": {
+      "put": {
+        "tags": [
+          "Class Enrollments"
+        ],
+        "summary": "Update enrollment status (Admin)",
+        "operationId": "updateStatus",
+        "parameters": [
+          {
+            "name": "enrollmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EnrollmentStatusUpdateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassEnrollmentResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/enrollments/{enrollmentId}/cancel": {
+      "put": {
+        "tags": [
+          "Class Enrollments"
+        ],
+        "summary": "Cancel an enrollment (Student)",
+        "operationId": "cancelEnrollment",
+        "parameters": [
+          {
+            "name": "enrollmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassEnrollmentResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/art-works/{id}": {
+      "get": {
+        "tags": [
+          "Art Works"
+        ],
+        "summary": "Get ArtWork by ID",
+        "operationId": "getById_4",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtWorksResponseDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Art Works"
+        ],
+        "summary": "Update ArtWork",
+        "operationId": "update_4",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArtWorksRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtWorksResponseDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Art Works"
+        ],
+        "summary": "Delete ArtWork",
+        "operationId": "delete_4",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/api/v1/art-works-categories/{id}": {
+      "get": {
+        "tags": [
+          "Art Works Categories"
+        ],
+        "summary": "Get Category by ID",
+        "operationId": "getById_5",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtWorksCategoryResponseDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Art Works Categories"
+        ],
+        "summary": "Update Category",
+        "operationId": "update_5",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArtWorksCategoryRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtWorksCategoryResponseDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Art Works Categories"
+        ],
+        "summary": "Delete Category",
+        "operationId": "delete_5",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/api/v1/art-orders/{id}/status": {
+      "put": {
+        "tags": [
+          "Art Orders"
+        ],
+        "summary": "Update order status (Admin/Manager)",
+        "operationId": "updateStatus_1",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PAYMENT_PENDING",
+                "PROCESSING",
+                "SHIPPED",
+                "DELIVERED",
+                "CANCELLED",
+                "RETURN_REQUESTED",
+                "RETURNED"
+              ]
+            }
+          },
+          {
+            "name": "notes",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtOrderResponseDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/art-materials/{id}": {
+      "get": {
+        "tags": [
+          "Art Materials"
+        ],
+        "summary": "Get ArtMaterial by ID",
+        "operationId": "getById_6",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtMaterialsResponseDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Art Materials"
+        ],
+        "summary": "Update ArtMaterial",
+        "operationId": "update_6",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArtMaterialsRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtMaterialsResponseDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Art Materials"
+        ],
+        "summary": "Delete ArtMaterial",
+        "operationId": "delete_6",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/api/v1/art-materials-categories/{id}": {
+      "get": {
+        "tags": [
+          "Art Materials Categories"
+        ],
+        "summary": "Get Category by ID",
+        "operationId": "getById_7",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtMaterialsCategoryResponseDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Art Materials Categories"
+        ],
+        "summary": "Update Category",
+        "operationId": "update_7",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArtMaterialsCategoryRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtMaterialsCategoryResponseDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Art Materials Categories"
+        ],
+        "summary": "Delete Category",
+        "operationId": "delete_7",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/api/v1/art-galleries/{id}": {
+      "get": {
+        "tags": [
+          "Art Galleries"
+        ],
+        "summary": "Get ArtGallery by ID",
+        "operationId": "getById_8",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtGalleryResponseDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Art Galleries"
+        ],
+        "summary": "Update ArtGallery",
+        "operationId": "update_8",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArtGalleryRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtGalleryResponseDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Art Galleries"
+        ],
+        "summary": "Delete ArtGallery",
+        "operationId": "delete_8",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/api/v1/art-galleries-categories/{id}": {
+      "get": {
+        "tags": [
+          "Art Galleries Categories"
+        ],
+        "summary": "Get Category by ID",
+        "operationId": "getById_9",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtGalleryCategoryResponseDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Art Galleries Categories"
+        ],
+        "summary": "Update Category",
+        "operationId": "update_9",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArtGalleryCategoryRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtGalleryCategoryResponseDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Art Galleries Categories"
+        ],
+        "summary": "Delete Category",
+        "operationId": "delete_9",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/api/v1/art-exhibitions/{id}": {
+      "get": {
+        "tags": [
+          "Art Exhibitions"
+        ],
+        "summary": "Get ArtExhibition by ID",
+        "operationId": "getById_10",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtExhibitionResponseDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Art Exhibitions"
+        ],
+        "summary": "Update ArtExhibition",
+        "operationId": "update_10",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArtExhibitionRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtExhibitionResponseDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Art Exhibitions"
+        ],
+        "summary": "Delete ArtExhibition",
+        "operationId": "delete_10",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/api/v1/art-exhibitions-categories/{id}": {
+      "get": {
+        "tags": [
+          "Art Exhibitions Categories"
+        ],
+        "summary": "Get Category by ID",
+        "operationId": "getById_11",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtExhibitionCategoryResponseDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Art Exhibitions Categories"
+        ],
+        "summary": "Update Category",
+        "operationId": "update_11",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArtExhibitionCategoryRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtExhibitionCategoryResponseDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Art Exhibitions Categories"
+        ],
+        "summary": "Delete Category",
+        "operationId": "delete_11",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/api/v1/art-classes/{id}": {
+      "get": {
+        "tags": [
+          "Art Classes"
+        ],
+        "summary": "Get ArtClass by ID",
+        "operationId": "getById_12",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtClassesResponseDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Art Classes"
+        ],
+        "summary": "Update ArtClass",
+        "operationId": "update_12",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArtClassesRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtClassesResponseDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Art Classes"
+        ],
+        "summary": "Delete ArtClass",
+        "operationId": "delete_12",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/api/v1/art-classes-categories/{id}": {
+      "get": {
+        "tags": [
+          "Art Classes Categories"
+        ],
+        "summary": "Get Category by ID",
+        "operationId": "getById_13",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtClassesCategoryResponseDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Art Classes Categories"
+        ],
+        "summary": "Update Category",
+        "operationId": "update_13",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArtClassesCategoryRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtClassesCategoryResponseDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Art Classes Categories"
+        ],
+        "summary": "Delete Category",
+        "operationId": "delete_13",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/api/v1/art-cart/items/{itemId}": {
+      "put": {
+        "tags": [
+          "art-cart-controller"
+        ],
+        "operationId": "updateQuantity",
+        "parameters": [
+          {
+            "name": "itemId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "quantity",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtCartResponseDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "art-cart-controller"
+        ],
+        "operationId": "removeItem",
+        "parameters": [
+          {
+            "name": "itemId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtCartResponseDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users": {
+      "get": {
+        "tags": [
+          "user-controller"
+        ],
+        "operationId": "getAllUsers",
+        "parameters": [
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "pageable",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageUserResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "user-controller"
+        ],
+        "operationId": "createUser",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/lms/subscriptions": {
+      "get": {
+        "tags": [
+          "LMS - Subscriptions"
+        ],
+        "summary": "Get all subscriptions (Admin)",
+        "operationId": "getAll",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageLmsSubscriptionResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "LMS - Subscriptions"
+        ],
+        "summary": "Create a new monthly subscription (Admin)",
+        "operationId": "create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LmsSubscriptionRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/LmsSubscriptionResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/lms/subscriptions/{id}/cancel": {
+      "post": {
+        "tags": [
+          "LMS - Subscriptions"
+        ],
+        "summary": "Cancel a subscription (Admin)",
+        "operationId": "cancel",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/LmsSubscriptionResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/lms/subscriptions/enrollment/{enrollmentId}/renew": {
+      "post": {
+        "tags": [
+          "LMS - Subscriptions"
+        ],
+        "summary": "Renew subscription for next month (Admin)",
+        "operationId": "renew",
+        "parameters": [
+          {
+            "name": "enrollmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/LmsSubscriptionResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/lms/sessions": {
+      "get": {
+        "tags": [
+          "LMS - Class Sessions"
+        ],
+        "summary": "Get all sessions (Admin)",
+        "operationId": "getAll_1",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageLmsClassSessionResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "LMS - Class Sessions"
+        ],
+        "summary": "Create a new class session (Admin)",
+        "operationId": "create_1",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LmsClassSessionRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/LmsClassSessionResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/lms/gallery": {
+      "get": {
+        "tags": [
+          "LMS - Gallery"
+        ],
+        "summary": "Get all gallery items (Admin)",
+        "operationId": "getAll_2",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageLmsGalleryItemResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "LMS - Gallery"
+        ],
+        "summary": "Upload a new gallery item (auto PENDING status)",
+        "operationId": "create_2",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LmsGalleryItemRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/LmsGalleryItemResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/lms/gallery/{id}/verify": {
+      "post": {
+        "tags": [
+          "LMS - Gallery"
+        ],
+        "summary": "Verify a gallery item (Admin)",
+        "operationId": "verify",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LmsGalleryVerifyRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/LmsGalleryItemResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/lms/events": {
+      "get": {
+        "tags": [
+          "LMS - Events"
+        ],
+        "summary": "Get all events (Admin)",
+        "operationId": "getAll_3",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageLmsEventResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "LMS - Events"
+        ],
+        "summary": "Create a new event (Admin)",
+        "operationId": "create_3",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LmsEventRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/LmsEventResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/lms/attendance": {
+      "post": {
+        "tags": [
+          "LMS - Attendance"
+        ],
+        "summary": "Mark attendance for a session (Admin)",
+        "operationId": "markAttendance",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LmsAttendanceRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/LmsClassSessionResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/enrollments": {
+      "get": {
+        "tags": [
+          "Class Enrollments"
+        ],
+        "summary": "Get all enrollments (Admin)",
+        "operationId": "getAllEnrollments",
+        "parameters": [
+          {
+            "name": "pageable",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageClassEnrollmentResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Class Enrollments"
+        ],
+        "summary": "Enroll in a class",
+        "operationId": "enroll",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClassEnrollmentRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassEnrollmentResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/verify-otp": {
+      "post": {
+        "tags": [
+          "auth-controller"
+        ],
+        "operationId": "verifyOtp",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyOtpRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthenticationResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/verify-login-otp": {
+      "post": {
+        "tags": [
+          "auth-controller"
+        ],
+        "operationId": "verifyLoginOtp",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginOtpRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthenticationResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/reset-password": {
+      "post": {
+        "tags": [
+          "auth-controller"
+        ],
+        "operationId": "resetPassword",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PasswordResetRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistrationResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/request-otp": {
+      "post": {
+        "tags": [
+          "auth-controller"
+        ],
+        "operationId": "requestOtp",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OtpRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistrationResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/register": {
+      "post": {
+        "tags": [
+          "auth-controller"
+        ],
+        "operationId": "register",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistrationResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/refresh": {
+      "post": {
+        "tags": [
+          "auth-controller"
+        ],
+        "operationId": "refreshToken",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshTokenRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthenticationResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "tags": [
+          "auth-controller"
+        ],
+        "operationId": "login",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthenticationResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/dev-register": {
+      "post": {
+        "tags": [
+          "auth-controller"
+        ],
+        "operationId": "devRegister",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthenticationResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/art-works": {
+      "get": {
+        "tags": [
+          "Art Works"
+        ],
+        "summary": "Get all ArtWorks",
+        "operationId": "getAll_4",
+        "parameters": [
+          {
+            "name": "pageable",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageArtWorksResponseDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Art Works"
+        ],
+        "summary": "Create ArtWork",
+        "operationId": "create_4",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArtWorksRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtWorksResponseDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/art-works-categories": {
+      "get": {
+        "tags": [
+          "Art Works Categories"
+        ],
+        "summary": "Get all Categories (Paginated)",
+        "operationId": "getAll_5",
+        "parameters": [
+          {
+            "name": "pageable",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageArtWorksCategoryResponseDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Art Works Categories"
+        ],
+        "summary": "Create Category",
+        "operationId": "create_5",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArtWorksCategoryRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtWorksCategoryResponseDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/art-payments/verify": {
+      "post": {
+        "tags": [
+          "art-payment-controller"
+        ],
+        "operationId": "verifyPayment",
+        "parameters": [
+          {
+            "name": "razorpayOrderId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "razorpayPaymentId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "razorpaySignature",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtPaymentResponseDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/art-payments/initiate": {
+      "post": {
+        "tags": [
+          "art-payment-controller"
+        ],
+        "operationId": "initiatePayment",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArtPaymentRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtPaymentResponseDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/art-orders": {
+      "get": {
+        "tags": [
+          "Art Orders"
+        ],
+        "summary": "Get all orders (Admin/Manager)",
+        "operationId": "getAll_6",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PAYMENT_PENDING",
+                "PROCESSING",
+                "SHIPPED",
+                "DELIVERED",
+                "CANCELLED",
+                "RETURN_REQUESTED",
+                "RETURNED"
+              ]
+            }
+          },
+          {
+            "name": "orderNumber",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "pageable",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageArtOrderResponseDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Art Orders"
+        ],
+        "summary": "Create an order directly",
+        "operationId": "createOrder",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArtOrderRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtOrderResponseDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/art-orders/{id}/ship": {
+      "post": {
+        "tags": [
+          "Art Orders"
+        ],
+        "summary": "Ship an order with tracking info (Admin/Manager)",
+        "operationId": "shipOrder",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtOrderResponseDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/art-orders/{id}/deliver": {
+      "post": {
+        "tags": [
+          "Art Orders"
+        ],
+        "summary": "Mark order as delivered (Admin/Manager)",
+        "operationId": "markDelivered",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtOrderResponseDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/art-orders/checkout": {
+      "post": {
+        "tags": [
+          "Art Orders"
+        ],
+        "summary": "Checkout cart to create an order",
+        "operationId": "checkoutCart",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArtCartCheckoutRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtOrderResponseDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/art-materials": {
+      "get": {
+        "tags": [
+          "Art Materials"
+        ],
+        "summary": "Get all ArtMaterials",
+        "operationId": "getAll_7",
+        "parameters": [
+          {
+            "name": "pageable",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageArtMaterialsResponseDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Art Materials"
+        ],
+        "summary": "Create ArtMaterial",
+        "operationId": "create_6",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArtMaterialsRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtMaterialsResponseDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/art-materials-categories": {
+      "get": {
+        "tags": [
+          "Art Materials Categories"
+        ],
+        "summary": "Get all Categories",
+        "operationId": "getAll_8",
+        "parameters": [
+          {
+            "name": "pageable",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageArtMaterialsCategoryResponseDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Art Materials Categories"
+        ],
+        "summary": "Create Category",
+        "operationId": "create_7",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArtMaterialsCategoryRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtMaterialsCategoryResponseDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/art-galleries": {
+      "get": {
+        "tags": [
+          "Art Galleries"
+        ],
+        "summary": "Get all ArtGalleries",
+        "operationId": "getAll_9",
+        "parameters": [
+          {
+            "name": "pageable",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageArtGalleryResponseDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Art Galleries"
+        ],
+        "summary": "Create ArtGallery",
+        "operationId": "create_8",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArtGalleryRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtGalleryResponseDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/art-galleries-categories": {
+      "get": {
+        "tags": [
+          "Art Galleries Categories"
+        ],
+        "summary": "Get all Categories",
+        "operationId": "getAll_10",
+        "parameters": [
+          {
+            "name": "pageable",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageArtGalleryCategoryResponseDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Art Galleries Categories"
+        ],
+        "summary": "Create Category",
+        "operationId": "create_9",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArtGalleryCategoryRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtGalleryCategoryResponseDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/art-exhibitions": {
+      "get": {
+        "tags": [
+          "Art Exhibitions"
+        ],
+        "summary": "Get all ArtExhibitions",
+        "operationId": "getAll_11",
+        "parameters": [
+          {
+            "name": "pageable",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageArtExhibitionResponseDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Art Exhibitions"
+        ],
+        "summary": "Create ArtExhibition",
+        "operationId": "create_10",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArtExhibitionRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtExhibitionResponseDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/art-exhibitions-categories": {
+      "get": {
+        "tags": [
+          "Art Exhibitions Categories"
+        ],
+        "summary": "Get all Categories",
+        "operationId": "getAll_12",
+        "parameters": [
+          {
+            "name": "pageable",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageArtExhibitionCategoryResponseDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Art Exhibitions Categories"
+        ],
+        "summary": "Create Category",
+        "operationId": "create_11",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArtExhibitionCategoryRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtExhibitionCategoryResponseDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/art-classes": {
+      "get": {
+        "tags": [
+          "Art Classes"
+        ],
+        "summary": "Get all ArtClasses",
+        "operationId": "getAll_13",
+        "parameters": [
+          {
+            "name": "pageable",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageArtClassesResponseDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Art Classes"
+        ],
+        "summary": "Create ArtClass",
+        "operationId": "create_12",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArtClassesRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtClassesResponseDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/art-classes-categories": {
+      "get": {
+        "tags": [
+          "Art Classes Categories"
+        ],
+        "summary": "Get all Categories",
+        "operationId": "getAll_14",
+        "parameters": [
+          {
+            "name": "pageable",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageArtClassesCategoryResponseDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Art Classes Categories"
+        ],
+        "summary": "Create Category",
+        "operationId": "create_13",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArtClassesCategoryRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtClassesCategoryResponseDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/art-cart/items": {
+      "post": {
+        "tags": [
+          "art-cart-controller"
+        ],
+        "operationId": "addItem",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArtCartItemRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtCartResponseDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/lms/sessions/{id}/status": {
+      "patch": {
+        "tags": [
+          "LMS - Class Sessions"
+        ],
+        "summary": "Update session status (Admin)",
+        "operationId": "updateStatus_2",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "SCHEDULED",
+                "IN_PROGRESS",
+                "COMPLETED",
+                "CANCELLED"
+              ]
+            }
+          },
+          {
+            "name": "reason",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/LmsClassSessionResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/lms/subscriptions/student/{studentId}": {
+      "get": {
+        "tags": [
+          "LMS - Subscriptions"
+        ],
+        "summary": "Get subscriptions for a student (Admin)",
+        "operationId": "getByStudent",
+        "parameters": [
+          {
+            "name": "studentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LmsSubscriptionResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/lms/subscriptions/over-limit": {
+      "get": {
+        "tags": [
+          "LMS - Subscriptions"
+        ],
+        "summary": "Get students over session limit (Admin)",
+        "operationId": "getOverLimit",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LmsSubscriptionResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/lms/subscriptions/my": {
+      "get": {
+        "tags": [
+          "LMS - Subscriptions"
+        ],
+        "summary": "Get current user's subscriptions",
+        "operationId": "getMySubscriptions",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LmsSubscriptionResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/lms/subscriptions/my/active": {
+      "get": {
+        "tags": [
+          "LMS - Subscriptions"
+        ],
+        "summary": "Get current user's active subscription",
+        "operationId": "getMyActiveSubscription",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/LmsSubscriptionResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/lms/subscriptions/active": {
+      "get": {
+        "tags": [
+          "LMS - Subscriptions"
+        ],
+        "summary": "Get all active subscriptions (Admin)",
+        "operationId": "getActive",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageLmsSubscriptionResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/lms/sessions/{id}/attendance": {
+      "get": {
+        "tags": [
+          "LMS - Class Sessions"
+        ],
+        "summary": "Get session with attendance records (Admin)",
+        "operationId": "getSessionWithAttendance",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/LmsClassSessionResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/lms/sessions/upcoming": {
+      "get": {
+        "tags": [
+          "LMS - Class Sessions"
+        ],
+        "summary": "Get upcoming sessions",
+        "operationId": "getUpcoming",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageLmsClassSessionResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/lms/sessions/range": {
+      "get": {
+        "tags": [
+          "LMS - Class Sessions"
+        ],
+        "summary": "Get sessions by date range (Admin)",
+        "operationId": "getByDateRange",
+        "parameters": [
+          {
+            "name": "startDate",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LmsClassSessionResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/lms/sessions/date/{date}": {
+      "get": {
+        "tags": [
+          "LMS - Class Sessions"
+        ],
+        "summary": "Get sessions by date",
+        "operationId": "getByDate",
+        "parameters": [
+          {
+            "name": "date",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LmsClassSessionResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/lms/gallery/status/{status}": {
+      "get": {
+        "tags": [
+          "LMS - Gallery"
+        ],
+        "summary": "Get gallery items by status (Admin)",
+        "operationId": "getByStatus",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PENDING",
+                "APPROVED",
+                "REJECTED"
+              ]
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageLmsGalleryItemResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/lms/gallery/public": {
+      "get": {
+        "tags": [
+          "LMS - Gallery"
+        ],
+        "summary": "Get public gallery items",
+        "operationId": "getPublicItems",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageLmsGalleryItemResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/lms/gallery/pending/count": {
+      "get": {
+        "tags": [
+          "LMS - Gallery"
+        ],
+        "summary": "Count pending items (Admin)",
+        "operationId": "countPending",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/lms/gallery/my": {
+      "get": {
+        "tags": [
+          "LMS - Gallery"
+        ],
+        "summary": "Get current user's gallery uploads",
+        "operationId": "getMyUploads",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageLmsGalleryItemResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/lms/gallery/featured": {
+      "get": {
+        "tags": [
+          "LMS - Gallery"
+        ],
+        "summary": "Get featured gallery items",
+        "operationId": "getFeaturedItems",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageLmsGalleryItemResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/lms/events/upcoming": {
+      "get": {
+        "tags": [
+          "LMS - Events"
+        ],
+        "summary": "Get upcoming events",
+        "operationId": "getUpcoming_1",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageLmsEventResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/lms/events/type/{eventType}": {
+      "get": {
+        "tags": [
+          "LMS - Events"
+        ],
+        "summary": "Get events by type (Admin)",
+        "operationId": "getByType",
+        "parameters": [
+          {
+            "name": "eventType",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "WORKSHOP",
+                "EXHIBITION",
+                "COMPETITION",
+                "SEMINAR"
+              ]
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageLmsEventResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/lms/events/public": {
+      "get": {
+        "tags": [
+          "LMS - Events"
+        ],
+        "summary": "Get public events",
+        "operationId": "getPublicEvents",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageLmsEventResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/lms/attendance/student/{studentId}": {
+      "get": {
+        "tags": [
+          "LMS - Attendance"
+        ],
+        "summary": "Get attendance history for a student (Admin)",
+        "operationId": "getByStudent_1",
+        "parameters": [
+          {
+            "name": "studentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageLmsAttendanceResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/lms/attendance/session/{sessionId}": {
+      "get": {
+        "tags": [
+          "LMS - Attendance"
+        ],
+        "summary": "Get attendance records for a session (Admin)",
+        "operationId": "getBySession",
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LmsAttendanceResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/lms/attendance/over-limit/{year}/{month}": {
+      "get": {
+        "tags": [
+          "LMS - Attendance"
+        ],
+        "summary": "Get students over session limit (Admin)",
+        "operationId": "getOverLimitStudents",
+        "parameters": [
+          {
+            "name": "year",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "month",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LmsAttendanceResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/lms/attendance/my": {
+      "get": {
+        "tags": [
+          "LMS - Attendance"
+        ],
+        "summary": "Get current user's attendance history",
+        "operationId": "getMyAttendance",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageLmsAttendanceResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/lms/attendance/eligible-students": {
+      "get": {
+        "tags": [
+          "LMS - Attendance"
+        ],
+        "summary": "Get students eligible for attendance (Admin)",
+        "operationId": "getEligibleStudents",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EligibleStudentDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/enrollments/{enrollmentId}": {
+      "get": {
+        "tags": [
+          "Class Enrollments"
+        ],
+        "summary": "Get enrollment by ID (Admin)",
+        "operationId": "getEnrollmentById",
+        "parameters": [
+          {
+            "name": "enrollmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassEnrollmentResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Class Enrollments"
+        ],
+        "summary": "Delete enrollment (Admin)",
+        "operationId": "deleteEnrollment",
+        "parameters": [
+          {
+            "name": "enrollmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/enrollments/stats/pending-count": {
+      "get": {
+        "tags": [
+          "Class Enrollments"
+        ],
+        "summary": "Get count of pending enrollments (Admin)",
+        "operationId": "countPendingEnrollments",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/enrollments/pending": {
+      "get": {
+        "tags": [
+          "Class Enrollments"
+        ],
+        "summary": "Get pending enrollments (Admin)",
+        "operationId": "getPendingEnrollments",
+        "parameters": [
+          {
+            "name": "pageable",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageClassEnrollmentResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/enrollments/my-enrollments": {
+      "get": {
+        "tags": [
+          "Class Enrollments"
+        ],
+        "summary": "Get current user's enrollments",
+        "operationId": "getMyEnrollments",
+        "parameters": [
+          {
+            "name": "pageable",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageClassEnrollmentResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/art-payments/order/{orderId}": {
+      "get": {
+        "tags": [
+          "art-payment-controller"
+        ],
+        "operationId": "getPaymentByOrderId",
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtPaymentResponseDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/art-orders/{id}": {
+      "get": {
+        "tags": [
+          "Art Orders"
+        ],
+        "summary": "Get order by ID",
+        "operationId": "getById_14",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtOrderResponseDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/art-orders/my-orders": {
+      "get": {
+        "tags": [
+          "Art Orders"
+        ],
+        "summary": "Get current user's orders",
+        "operationId": "getMyOrders",
+        "parameters": [
+          {
+            "name": "pageable",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageArtOrderResponseDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/art-cart": {
+      "get": {
+        "tags": [
+          "art-cart-controller"
+        ],
+        "operationId": "getMyCart",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtCartResponseDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "art-cart-controller"
+        ],
+        "operationId": "clearCart",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "UserRequest": {
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "phoneNumber": {
+            "type": "string",
+            "pattern": "^\\+?\\d{10,15}$"
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 2147483647,
+            "minLength": 6
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "email",
+          "firstName",
+          "lastName"
+        ]
+      },
+      "UserResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "phoneNumber": {
+            "type": "string"
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "uniqueItems": true
+          },
+          "deleted": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "enabled": {
+            "type": "boolean"
+          }
+        }
+      },
+      "LmsSubscriptionRequestDto": {
+        "type": "object",
+        "description": "Request to create a monthly subscription for an approved student",
+        "properties": {
+          "enrollmentId": {
+            "type": "string",
+            "description": "ID of the APPROVED enrollment",
+            "example": "enrollment123abc"
+          },
+          "subscriptionMonth": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Month of subscription (1-12)",
+            "example": 2,
+            "maximum": 12,
+            "minimum": 1
+          },
+          "subscriptionYear": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Year of subscription",
+            "example": 2026,
+            "minimum": 2020
+          },
+          "allowedSessions": {
+            "type": "integer",
+            "format": "int32",
+            "default": "8",
+            "description": "Number of sessions allowed per month",
+            "example": 8
+          },
+          "notes": {
+            "type": "string",
+            "description": "Optional notes",
+            "example": "First month subscription"
+          }
+        },
+        "required": [
+          "enrollmentId",
+          "subscriptionMonth",
+          "subscriptionYear"
+        ]
+      },
+      "LmsSubscriptionResponseDto": {
+        "type": "object",
+        "description": "Monthly subscription details for a student",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Subscription ID",
+            "example": "sub123abc"
+          },
+          "enrollmentId": {
+            "type": "string",
+            "description": "Enrollment ID",
+            "example": "enrollment123abc"
+          },
+          "rollNo": {
+            "type": "string",
+            "description": "Student's roll number",
+            "example": "AA-0001"
+          },
+          "studentId": {
+            "type": "string",
+            "description": "User ID",
+            "example": "user123abc"
+          },
+          "studentName": {
+            "type": "string",
+            "description": "Student's full name",
+            "example": "Alice Artist"
+          },
+          "studentEmail": {
+            "type": "string",
+            "description": "Student's email",
+            "example": "alice@test.com"
+          },
+          "studentPhone": {
+            "type": "string",
+            "description": "Student's phone",
+            "example": "+911231231234"
+          },
+          "subscriptionMonth": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Subscription month (1-12)",
+            "example": 2
+          },
+          "subscriptionYear": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Subscription year",
+            "example": 2026
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date",
+            "description": "Start date of subscription period",
+            "example": "2026-02-01"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date",
+            "description": "End date of subscription period",
+            "example": "2026-02-28"
+          },
+          "allowedSessions": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Maximum sessions allowed",
+            "example": 8
+          },
+          "attendedSessions": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Sessions attended so far",
+            "example": 3
+          },
+          "remainingSessions": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Remaining sessions",
+            "example": 5
+          },
+          "isOverLimit": {
+            "type": "boolean",
+            "description": "Has student exceeded limit?",
+            "example": false
+          },
+          "status": {
+            "type": "string",
+            "description": "Subscription status",
+            "enum": [
+              "ACTIVE",
+              "EXPIRED",
+              "CANCELLED",
+              "PAUSED"
+            ],
+            "example": "ACTIVE"
+          },
+          "notes": {
+            "type": "string",
+            "description": "Notes",
+            "example": "First month subscription"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Created timestamp"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last updated timestamp"
+          }
+        }
+      },
+      "LmsClassSessionRequestDto": {
+        "type": "object",
+        "properties": {
+          "sessionDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "startTime": {
+            "$ref": "#/components/schemas/LocalTime"
+          },
+          "endTime": {
+            "$ref": "#/components/schemas/LocalTime"
+          },
+          "topic": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "meetingLink": {
+            "type": "string"
+          },
+          "meetingPassword": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "sessionDate",
+          "startTime",
+          "topic"
+        ]
+      },
+      "LocalTime": {
+        "type": "object",
+        "properties": {
+          "hour": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "minute": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "second": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "nano": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "AttendanceRecordDto": {
+        "type": "object",
+        "properties": {
+          "studentId": {
+            "type": "string"
+          },
+          "studentName": {
+            "type": "string"
+          },
+          "studentEmail": {
+            "type": "string"
+          },
+          "subscriptionId": {
+            "type": "string"
+          },
+          "isPresent": {
+            "type": "boolean"
+          },
+          "sessionCountThisMonth": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "isOverLimit": {
+            "type": "boolean"
+          },
+          "remarks": {
+            "type": "string"
+          },
+          "markedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "LmsClassSessionResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "sessionDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "startTime": {
+            "$ref": "#/components/schemas/LocalTime"
+          },
+          "endTime": {
+            "$ref": "#/components/schemas/LocalTime"
+          },
+          "topic": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "meetingLink": {
+            "type": "string"
+          },
+          "meetingPassword": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "SCHEDULED",
+              "IN_PROGRESS",
+              "COMPLETED",
+              "CANCELLED"
+            ]
+          },
+          "cancellationReason": {
+            "type": "string"
+          },
+          "totalStudents": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "presentCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "absentCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "attendanceTaken": {
+            "type": "boolean"
+          },
+          "attendanceTakenAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "attendanceRecords": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AttendanceRecordDto"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "LmsGalleryItemRequestDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "mediaUrl": {
+            "type": "string"
+          },
+          "mediaType": {
+            "type": "string",
+            "enum": [
+              "IMAGE",
+              "VIDEO"
+            ]
+          },
+          "thumbnailUrl": {
+            "type": "string"
+          },
+          "classId": {
+            "type": "string"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "mediaUrl",
+          "title"
+        ]
+      },
+      "LmsGalleryItemResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uploadedBy": {
+            "type": "string"
+          },
+          "uploaderName": {
+            "type": "string"
+          },
+          "uploaderRole": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "mediaUrl": {
+            "type": "string"
+          },
+          "mediaType": {
+            "type": "string",
+            "enum": [
+              "IMAGE",
+              "VIDEO"
+            ]
+          },
+          "thumbnailUrl": {
+            "type": "string"
+          },
+          "classId": {
+            "type": "string"
+          },
+          "className": {
+            "type": "string"
+          },
+          "batchId": {
+            "type": "string"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "verificationStatus": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "APPROVED",
+              "REJECTED"
+            ]
+          },
+          "verifiedBy": {
+            "type": "string"
+          },
+          "verifiedByName": {
+            "type": "string"
+          },
+          "verifiedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "rejectionReason": {
+            "type": "string"
+          },
+          "isPublic": {
+            "type": "boolean"
+          },
+          "isFeatured": {
+            "type": "boolean"
+          },
+          "viewCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "likeCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "LmsEventRequestDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "eventType": {
+            "type": "string",
+            "enum": [
+              "WORKSHOP",
+              "EXHIBITION",
+              "COMPETITION",
+              "SEMINAR"
+            ]
+          },
+          "startDateTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endDateTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "location": {
+            "type": "string"
+          },
+          "isOnline": {
+            "type": "boolean"
+          },
+          "meetingLink": {
+            "type": "string"
+          },
+          "meetingPassword": {
+            "type": "string"
+          },
+          "imageUrl": {
+            "type": "string"
+          },
+          "bannerUrl": {
+            "type": "string"
+          },
+          "maxParticipants": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "isPublic": {
+            "type": "boolean"
+          },
+          "isRegistrationOpen": {
+            "type": "boolean"
+          },
+          "fee": {
+            "type": "number",
+            "format": "double"
+          }
+        },
+        "required": [
+          "eventType",
+          "startDateTime",
+          "title"
+        ]
+      },
+      "LmsEventResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "eventType": {
+            "type": "string",
+            "enum": [
+              "WORKSHOP",
+              "EXHIBITION",
+              "COMPETITION",
+              "SEMINAR"
+            ]
+          },
+          "startDateTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endDateTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "location": {
+            "type": "string"
+          },
+          "isOnline": {
+            "type": "boolean"
+          },
+          "meetingLink": {
+            "type": "string"
+          },
+          "meetingPassword": {
+            "type": "string"
+          },
+          "imageUrl": {
+            "type": "string"
+          },
+          "bannerUrl": {
+            "type": "string"
+          },
+          "maxParticipants": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "currentParticipants": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "availableSlots": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "isPublic": {
+            "type": "boolean"
+          },
+          "isRegistrationOpen": {
+            "type": "boolean"
+          },
+          "hasAvailableSlots": {
+            "type": "boolean"
+          },
+          "fee": {
+            "type": "number",
+            "format": "double"
+          },
+          "createdBy": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "EnrollmentStatusUpdateDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "APPROVED",
+              "REJECTED",
+              "ASSIGNED",
+              "COMPLETED",
+              "CANCELLED"
+            ]
+          },
+          "adminNotes": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "ClassEnrollmentResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "rollNo": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "studentName": {
+            "type": "string"
+          },
+          "studentEmail": {
+            "type": "string"
+          },
+          "studentPhone": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "classId": {
+            "type": "string"
+          },
+          "className": {
+            "type": "string"
+          },
+          "classDescription": {
+            "type": "string"
+          },
+          "parentGuardianName": {
+            "type": "string"
+          },
+          "studentAge": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "schedule": {
+            "type": "string"
+          },
+          "additionalMessage": {
+            "type": "string"
+          },
+          "emergencyContactName": {
+            "type": "string"
+          },
+          "emergencyContactPhone": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "APPROVED",
+              "REJECTED",
+              "ASSIGNED",
+              "COMPLETED",
+              "CANCELLED"
+            ]
+          },
+          "adminNotes": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ArtWorksRequestDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "basePrice": {
+            "type": "number",
+            "minimum": 0
+          },
+          "discountPrice": {
+            "type": "number"
+          },
+          "artistName": {
+            "type": "string"
+          },
+          "artMedium": {
+            "type": "string"
+          },
+          "size": {
+            "type": "string"
+          },
+          "categoryId": {
+            "type": "string"
+          },
+          "imageUrl": {
+            "type": "string"
+          },
+          "active": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "artMedium",
+          "artistName",
+          "basePrice",
+          "categoryId",
+          "imageUrl",
+          "name",
+          "size"
+        ]
+      },
+      "ArtWorksResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "basePrice": {
+            "type": "number"
+          },
+          "discountPrice": {
+            "type": "number"
+          },
+          "artistName": {
+            "type": "string"
+          },
+          "artMedium": {
+            "type": "string"
+          },
+          "size": {
+            "type": "string"
+          },
+          "categoryId": {
+            "type": "string"
+          },
+          "categoryName": {
+            "type": "string"
+          },
+          "imageUrl": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "active": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ArtWorksCategoryRequestDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "ArtWorksCategoryResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ArtOrderItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "itemId": {
+            "type": "string"
+          },
+          "itemType": {
+            "type": "string",
+            "enum": [
+              "ARTWORK",
+              "MATERIAL"
+            ]
+          },
+          "itemName": {
+            "type": "string"
+          },
+          "imageUrl": {
+            "type": "string"
+          },
+          "unitPrice": {
+            "type": "number"
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "subtotal": {
+            "type": "number"
+          }
+        }
+      },
+      "ArtOrderResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "orderNumber": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "userEmail": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PAYMENT_PENDING",
+              "PROCESSING",
+              "SHIPPED",
+              "DELIVERED",
+              "CANCELLED",
+              "RETURN_REQUESTED",
+              "RETURNED"
+            ]
+          },
+          "totalPrice": {
+            "type": "number"
+          },
+          "shippingAddress": {
+            "type": "string"
+          },
+          "billingAddress": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ArtOrderItemDto"
+            }
+          },
+          "statusHistory": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ArtOrderStatusHistoryDto"
+            }
+          },
+          "trackingNumber": {
+            "type": "string"
+          },
+          "carrier": {
+            "type": "string"
+          },
+          "trackingUrl": {
+            "type": "string"
+          },
+          "shippedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "estimatedDelivery": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "deliveredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ArtOrderStatusHistoryDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "PAYMENT_PENDING",
+              "PROCESSING",
+              "SHIPPED",
+              "DELIVERED",
+              "CANCELLED",
+              "RETURN_REQUESTED",
+              "RETURNED"
+            ]
+          },
+          "notes": {
+            "type": "string"
+          },
+          "changedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ArtMaterialsRequestDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "basePrice": {
+            "type": "number"
+          },
+          "discount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "stock": {
+            "type": "number"
+          },
+          "variants": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MaterialVariantRequestDto"
+            }
+          },
+          "categoryId": {
+            "type": "string"
+          },
+          "imageUrl": {
+            "type": "string"
+          },
+          "active": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "categoryId",
+          "imageUrl",
+          "name"
+        ]
+      },
+      "MaterialVariantRequestDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "size": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number"
+          },
+          "discountPrice": {
+            "type": "number"
+          },
+          "stock": {
+            "type": "number"
+          }
+        }
+      },
+      "ArtMaterialsResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "basePrice": {
+            "type": "number"
+          },
+          "discount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "stock": {
+            "type": "number"
+          },
+          "variants": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MaterialVariantResponseDto"
+            }
+          },
+          "categoryId": {
+            "type": "string"
+          },
+          "categoryName": {
+            "type": "string"
+          },
+          "imageUrl": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "active": {
+            "type": "boolean"
+          }
+        }
+      },
+      "MaterialVariantResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "size": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number"
+          },
+          "discountPrice": {
+            "type": "number"
+          },
+          "stock": {
+            "type": "number"
+          }
+        }
+      },
+      "ArtMaterialsCategoryRequestDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "ArtMaterialsCategoryResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ArtGalleryRequestDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "categoryId": {
+            "type": "string"
+          },
+          "imageUrl": {
+            "type": "string"
+          },
+          "active": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "categoryId",
+          "imageUrl",
+          "name"
+        ]
+      },
+      "ArtGalleryResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "categoryId": {
+            "type": "string"
+          },
+          "categoryName": {
+            "type": "string"
+          },
+          "imageUrl": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "active": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ArtGalleryCategoryRequestDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "ArtGalleryCategoryResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ArtExhibitionRequestDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "categoryId": {
+            "type": "string"
+          },
+          "imageUrl": {
+            "type": "string"
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "location": {
+            "type": "string"
+          },
+          "artistCount": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1
+          },
+          "artworksCount": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1
+          },
+          "active": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "artistCount",
+          "artworksCount",
+          "categoryId",
+          "endDate",
+          "imageUrl",
+          "location",
+          "name",
+          "startDate"
+        ]
+      },
+      "ArtExhibitionResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "categoryId": {
+            "type": "string"
+          },
+          "categoryName": {
+            "type": "string"
+          },
+          "imageUrl": {
+            "type": "string"
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "location": {
+            "type": "string"
+          },
+          "artistCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "artworksCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "active": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ArtExhibitionCategoryRequestDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "ArtExhibitionCategoryResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ArtClassesRequestDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "basePrice": {
+            "type": "number",
+            "minimum": 0
+          },
+          "discountPrice": {
+            "type": "number"
+          },
+          "durationWeeks": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "proficiency": {
+            "type": "string"
+          },
+          "categoryId": {
+            "type": "string"
+          },
+          "imageUrl": {
+            "type": "string"
+          },
+          "active": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "basePrice",
+          "categoryId",
+          "imageUrl",
+          "name",
+          "proficiency"
+        ]
+      },
+      "ArtClassesResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "basePrice": {
+            "type": "number"
+          },
+          "discountPrice": {
+            "type": "number"
+          },
+          "durationWeeks": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "proficiency": {
+            "type": "string"
+          },
+          "categoryId": {
+            "type": "string"
+          },
+          "categoryName": {
+            "type": "string"
+          },
+          "imageUrl": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "active": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ArtClassesCategoryRequestDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "ArtClassesCategoryResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ArtCartItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "itemId": {
+            "type": "string"
+          },
+          "itemType": {
+            "type": "string",
+            "enum": [
+              "ARTWORK",
+              "MATERIAL"
+            ]
+          },
+          "itemName": {
+            "type": "string"
+          },
+          "imageUrl": {
+            "type": "string"
+          },
+          "unitPrice": {
+            "type": "number"
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "subtotal": {
+            "type": "number"
+          }
+        }
+      },
+      "ArtCartResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ArtCartItemDto"
+            }
+          },
+          "totalPrice": {
+            "type": "number"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "LmsGalleryVerifyRequestDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "APPROVED",
+              "REJECTED"
+            ]
+          },
+          "rejectionReason": {
+            "type": "string"
+          },
+          "isFeatured": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "LmsAttendanceRequestDto": {
+        "type": "object",
+        "properties": {
+          "sessionId": {
+            "type": "string"
+          },
+          "attendanceList": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StudentAttendanceDto"
+            }
+          }
+        },
+        "required": [
+          "attendanceList",
+          "sessionId"
+        ]
+      },
+      "StudentAttendanceDto": {
+        "type": "object",
+        "properties": {
+          "studentId": {
+            "type": "string"
+          },
+          "isPresent": {
+            "type": "boolean"
+          },
+          "remarks": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "isPresent",
+          "studentId"
+        ]
+      },
+      "ClassEnrollmentRequestDto": {
+        "type": "object",
+        "properties": {
+          "classId": {
+            "type": "string"
+          },
+          "studentName": {
+            "type": "string"
+          },
+          "studentEmail": {
+            "type": "string"
+          },
+          "studentPhone": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "parentGuardianName": {
+            "type": "string"
+          },
+          "studentAge": {
+            "type": "integer",
+            "format": "int32",
+            "maximum": 100,
+            "minimum": 3
+          },
+          "schedule": {
+            "type": "string"
+          },
+          "additionalMessage": {
+            "type": "string"
+          },
+          "emergencyContactName": {
+            "type": "string"
+          },
+          "emergencyContactPhone": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "address",
+          "classId",
+          "emergencyContactName",
+          "emergencyContactPhone",
+          "parentGuardianName",
+          "schedule",
+          "studentAge",
+          "studentEmail",
+          "studentName",
+          "studentPhone"
+        ]
+      },
+      "VerifyOtpRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "otp": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "otp"
+        ]
+      },
+      "AuthenticationResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "uniqueItems": true
+          },
+          "accessToken": {
+            "type": "string"
+          },
+          "refreshToken": {
+            "type": "string"
+          },
+          "accessTokenExpiresAt": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "LoginOtpRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "otp": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "otp"
+        ]
+      },
+      "PasswordResetRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "otp": {
+            "type": "string"
+          },
+          "newPassword": {
+            "type": "string",
+            "maxLength": 2147483647,
+            "minLength": 6,
+            "pattern": "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z\\d]).+$"
+          }
+        },
+        "required": [
+          "email",
+          "newPassword",
+          "otp"
+        ]
+      },
+      "RegistrationResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "OtpRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "RegisterRequest": {
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "phoneNumber": {
+            "type": "string",
+            "pattern": "^\\d{10}$"
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 2147483647,
+            "minLength": 6,
+            "pattern": "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z\\d]).+$"
+          }
+        },
+        "required": [
+          "email",
+          "firstName",
+          "lastName",
+          "password",
+          "phoneNumber"
+        ]
+      },
+      "RefreshTokenRequest": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string"
+          }
+        }
+      },
+      "LoginRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "ArtPaymentResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "orderId": {
+            "type": "string"
+          },
+          "orderNumber": {
+            "type": "string"
+          },
+          "razorpayOrderId": {
+            "type": "string"
+          },
+          "razorpayPaymentId": {
+            "type": "string"
+          },
+          "razorpayKeyId": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "SUCCESS",
+              "FAILED",
+              "REFUNDED"
+            ]
+          },
+          "processedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ArtPaymentRequestDto": {
+        "type": "object",
+        "properties": {
+          "orderId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "orderId"
+        ]
+      },
+      "ArtOrderRequestDto": {
+        "type": "object",
+        "properties": {
+          "shippingAddress": {
+            "type": "string"
+          },
+          "billingAddress": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ArtOrderItemDto"
+            }
+          }
+        },
+        "required": [
+          "items",
+          "shippingAddress"
+        ]
+      },
+      "ShipmentRequestDto": {
+        "type": "object",
+        "properties": {
+          "trackingNumber": {
+            "type": "string"
+          },
+          "carrier": {
+            "type": "string"
+          },
+          "trackingUrl": {
+            "type": "string"
+          },
+          "estimatedDelivery": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "carrier",
+          "trackingNumber"
+        ]
+      },
+      "ArtCartCheckoutRequestDto": {
+        "type": "object",
+        "properties": {
+          "shippingAddress": {
+            "type": "string"
+          },
+          "billingAddress": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "shippingAddress"
+        ]
+      },
+      "ArtCartItemRequestDto": {
+        "type": "object",
+        "properties": {
+          "itemId": {
+            "type": "string"
+          },
+          "itemType": {
+            "type": "string",
+            "enum": [
+              "ARTWORK",
+              "MATERIAL"
+            ]
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1
+          },
+          "itemVariantId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "itemId",
+          "itemType",
+          "quantity"
+        ]
+      },
+      "Pageable": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1
+          },
+          "sort": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "PageUserResponse": {
+        "type": "object",
+        "properties": {
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserResponse"
+            }
+          },
+          "number": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/Sortnull"
+          },
+          "numberOfElements": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/Pageablenull"
+          },
+          "empty": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Pageablenull": {
+        "type": "object",
+        "properties": {
+          "offset": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/Sortnull"
+          },
+          "unpaged": {
+            "type": "boolean"
+          },
+          "paged": {
+            "type": "boolean"
+          },
+          "pageNumber": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "Sortnull": {
+        "type": "object",
+        "properties": {
+          "empty": {
+            "type": "boolean"
+          },
+          "unsorted": {
+            "type": "boolean"
+          },
+          "sorted": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PageLmsSubscriptionResponseDto": {
+        "type": "object",
+        "properties": {
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LmsSubscriptionResponseDto"
+            }
+          },
+          "number": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/Sortnull"
+          },
+          "numberOfElements": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/Pageablenull"
+          },
+          "empty": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PageLmsClassSessionResponseDto": {
+        "type": "object",
+        "properties": {
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LmsClassSessionResponseDto"
+            }
+          },
+          "number": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/Sortnull"
+          },
+          "numberOfElements": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/Pageablenull"
+          },
+          "empty": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PageLmsGalleryItemResponseDto": {
+        "type": "object",
+        "properties": {
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LmsGalleryItemResponseDto"
+            }
+          },
+          "number": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/Sortnull"
+          },
+          "numberOfElements": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/Pageablenull"
+          },
+          "empty": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PageLmsEventResponseDto": {
+        "type": "object",
+        "properties": {
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LmsEventResponseDto"
+            }
+          },
+          "number": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/Sortnull"
+          },
+          "numberOfElements": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/Pageablenull"
+          },
+          "empty": {
+            "type": "boolean"
+          }
+        }
+      },
+      "LmsAttendanceResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "sessionId": {
+            "type": "string"
+          },
+          "studentId": {
+            "type": "string"
+          },
+          "studentName": {
+            "type": "string"
+          },
+          "studentEmail": {
+            "type": "string"
+          },
+          "subscriptionId": {
+            "type": "string"
+          },
+          "sessionDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "sessionMonth": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sessionYear": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sessionCountThisMonth": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "isOverLimit": {
+            "type": "boolean"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PRESENT",
+              "ABSENT"
+            ]
+          },
+          "markedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "remarks": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "PageLmsAttendanceResponseDto": {
+        "type": "object",
+        "properties": {
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LmsAttendanceResponseDto"
+            }
+          },
+          "number": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/Sortnull"
+          },
+          "numberOfElements": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/Pageablenull"
+          },
+          "empty": {
+            "type": "boolean"
+          }
+        }
+      },
+      "EligibleStudentDto": {
+        "type": "object",
+        "description": "Student eligible for attendance marking",
+        "properties": {
+          "studentId": {
+            "type": "string",
+            "description": "User ID",
+            "example": "user123abc"
+          },
+          "enrollmentId": {
+            "type": "string",
+            "description": "Enrollment ID",
+            "example": "enrollment123abc"
+          },
+          "subscriptionId": {
+            "type": "string",
+            "description": "Subscription ID",
+            "example": "sub123abc"
+          },
+          "rollNo": {
+            "type": "string",
+            "description": "Roll number",
+            "example": "AA-0001"
+          },
+          "studentName": {
+            "type": "string",
+            "description": "Student's full name",
+            "example": "Alice Artist"
+          },
+          "studentEmail": {
+            "type": "string",
+            "description": "Student's email",
+            "example": "alice@test.com"
+          },
+          "studentPhone": {
+            "type": "string",
+            "description": "Student's phone",
+            "example": "+911231231234"
+          },
+          "attendedSessions": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Sessions attended this month",
+            "example": 3
+          },
+          "allowedSessions": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Allowed sessions per month",
+            "example": 8
+          },
+          "remainingSessions": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Remaining sessions",
+            "example": 5
+          },
+          "isOverLimit": {
+            "type": "boolean",
+            "description": "Has exceeded session limit?",
+            "example": false
+          }
+        }
+      },
+      "PageClassEnrollmentResponseDto": {
+        "type": "object",
+        "properties": {
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ClassEnrollmentResponseDto"
+            }
+          },
+          "number": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/Sortnull"
+          },
+          "numberOfElements": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/Pageablenull"
+          },
+          "empty": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PageArtWorksResponseDto": {
+        "type": "object",
+        "properties": {
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ArtWorksResponseDto"
+            }
+          },
+          "number": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/Sortnull"
+          },
+          "numberOfElements": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/Pageablenull"
+          },
+          "empty": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PageArtWorksCategoryResponseDto": {
+        "type": "object",
+        "properties": {
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ArtWorksCategoryResponseDto"
+            }
+          },
+          "number": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/Sortnull"
+          },
+          "numberOfElements": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/Pageablenull"
+          },
+          "empty": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PageArtOrderResponseDto": {
+        "type": "object",
+        "properties": {
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ArtOrderResponseDto"
+            }
+          },
+          "number": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/Sortnull"
+          },
+          "numberOfElements": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/Pageablenull"
+          },
+          "empty": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PageArtMaterialsResponseDto": {
+        "type": "object",
+        "properties": {
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ArtMaterialsResponseDto"
+            }
+          },
+          "number": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/Sortnull"
+          },
+          "numberOfElements": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/Pageablenull"
+          },
+          "empty": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PageArtMaterialsCategoryResponseDto": {
+        "type": "object",
+        "properties": {
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ArtMaterialsCategoryResponseDto"
+            }
+          },
+          "number": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/Sortnull"
+          },
+          "numberOfElements": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/Pageablenull"
+          },
+          "empty": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PageArtGalleryResponseDto": {
+        "type": "object",
+        "properties": {
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ArtGalleryResponseDto"
+            }
+          },
+          "number": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/Sortnull"
+          },
+          "numberOfElements": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/Pageablenull"
+          },
+          "empty": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PageArtGalleryCategoryResponseDto": {
+        "type": "object",
+        "properties": {
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ArtGalleryCategoryResponseDto"
+            }
+          },
+          "number": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/Sortnull"
+          },
+          "numberOfElements": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/Pageablenull"
+          },
+          "empty": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PageArtExhibitionResponseDto": {
+        "type": "object",
+        "properties": {
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ArtExhibitionResponseDto"
+            }
+          },
+          "number": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/Sortnull"
+          },
+          "numberOfElements": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/Pageablenull"
+          },
+          "empty": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PageArtExhibitionCategoryResponseDto": {
+        "type": "object",
+        "properties": {
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ArtExhibitionCategoryResponseDto"
+            }
+          },
+          "number": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/Sortnull"
+          },
+          "numberOfElements": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/Pageablenull"
+          },
+          "empty": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PageArtClassesResponseDto": {
+        "type": "object",
+        "properties": {
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ArtClassesResponseDto"
+            }
+          },
+          "number": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/Sortnull"
+          },
+          "numberOfElements": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/Pageablenull"
+          },
+          "empty": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PageArtClassesCategoryResponseDto": {
+        "type": "object",
+        "properties": {
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ArtClassesCategoryResponseDto"
+            }
+          },
+          "number": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/Sortnull"
+          },
+          "numberOfElements": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/Pageablenull"
+          },
+          "empty": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "description": "Enter the JWT token obtained from the login endpoint.",
+        "name": "bearerAuth",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}

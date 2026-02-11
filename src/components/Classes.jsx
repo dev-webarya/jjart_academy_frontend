@@ -1,46 +1,149 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   FaClock,
-  FaDollarSign,
-  FaStar,
-  FaUsers,
+  FaUserGraduate,
   FaSearch,
   FaFilter,
+  FaSpinner,
+  FaExclamationTriangle,
+  FaTimes
 } from "react-icons/fa";
 import { classesData } from "../data/classesData";
+import classesService from "../services/classesService";
 import EnrollmentForm from "./EnrollmentForm";
+import ImagePreviewModal from "./ui/ImagePreviewModal";
+import { useAuth } from "../context/AuthContext";
+import StudentLogin from "./auth/StudentLogin";
+import Pagination from "./common/Pagination";
 
 const Classes = () => {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedLevel, setSelectedLevel] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
-  const [showFilters, setShowFilters] = useState(false);
   const [showEnrollmentForm, setShowEnrollmentForm] = useState(false);
   const [selectedClass, setSelectedClass] = useState(null);
+  const [classes, setClasses] = useState([]);
+  const [categories, setCategories] = useState(["All"]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const { isStudent } = useAuth();
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(9); // 9 items per page (3x3 grid)
+
+  // Image Preview State
+  const [previewImage, setPreviewImage] = useState(null);
+  const [previewTitle, setPreviewTitle] = useState('');
+
+  // Fetch data from API on component mount
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        // Fetch classes and categories in parallel
+        const [classesResult, categoriesResult] = await Promise.all([
+          classesService.getAllClasses(),
+          classesService.getAllCategories()
+        ]);
+
+        // Handle classes response
+        // Admin API returns { content: [...] } for paginated, but here keeping consistent with service
+        // Assuming service normalizes it or public API returns array. 
+        // Based on ClassesPage.jsx `getPaginated` returns content. 
+        // But `classesService.getAllClasses()` usually returns the full response object.
+        // Let's assume the service handles specific extraction or we use fallback.
+        if (classesResult.success || Array.isArray(classesResult.data) || classesResult.content) {
+          // Adapt for paginated response structure if needed
+          const data = classesResult.data || classesResult.content || classesResult;
+          // Ensure it's an array
+          setClasses(Array.isArray(data) ? data : (data.content || []));
+        } else {
+          setClasses(classesData);
+        }
+
+        // Handle categories response
+        if (categoriesResult.success || Array.isArray(categoriesResult.data) || categoriesResult.content) {
+          const data = categoriesResult.data || categoriesResult.content || categoriesResult;
+          const categoryList = Array.isArray(data) ? data : (data.content || []);
+          const categoryNames = ["All", ...categoryList.map(cat => cat.name || cat.title)];
+          setCategories(categoryNames);
+        } else {
+          const uniqueCategories = ["All", ...new Set(classesData.map(c => c.category))];
+          setCategories(uniqueCategories);
+        }
+
+        setLoading(false);
+      } catch (err) {
+        console.error('❌ Error fetching data:', err);
+        setError('Error loading classes. Using fallback data.');
+        setClasses(classesData);
+        const uniqueCategories = ["All", ...new Set(classesData.map(c => c.category))];
+        setCategories(uniqueCategories);
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const handleEnrollNow = (classItem) => {
+    if (!isStudent) {
+      setShowLoginModal(true);
+      return;
+    }
+    console.log("Enroll request for:", classItem);
+    // Map the selected class to the format expected by EnrollmentForm if needed
+    // The form expects just an object, it mainly uses the ID for the form field
     setSelectedClass(classItem);
     setShowEnrollmentForm(true);
   };
-  const categories = [
-    "All",
-    "Drawing",
-    "Painting",
-  ];
+
   const levels = ["All", "Beginner", "Intermediate", "Advanced", "All Levels"];
-  const filteredClasses = classesData.filter((classItem) => {
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedCategory, selectedLevel, searchQuery]);
+
+  // Filter classes based on selected criteria
+  const filteredClasses = classes.filter((classItem) => {
     const matchesCategory =
-      selectedCategory === "All" || classItem.category === selectedCategory;
+      selectedCategory === "All" ||
+      (classItem.categoryName || classItem.category) === selectedCategory;
+
     const matchesLevel =
-      selectedLevel === "All" || classItem.level === selectedLevel;
+      selectedLevel === "All" ||
+      (classItem.proficiency || classItem.level) === selectedLevel;
+
     const matchesSearch =
       searchQuery === "" ||
-      classItem.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      classItem.description.toLowerCase().includes(searchQuery.toLowerCase());
+      ((classItem.name || classItem.title) && (classItem.name || classItem.title).toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (classItem.description && classItem.description.toLowerCase().includes(searchQuery.toLowerCase()));
+
     return matchesCategory && matchesLevel && matchesSearch;
   });
+
+  // Calculate Pagination Logic
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredClasses.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredClasses.length / itemsPerPage);
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+    // Scroll to top of grid
+    const gridElement = document.getElementById('classes-grid');
+    if (gridElement) {
+      gridElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   return (
-    <section id="classes" className="bg-gray-50 dark:bg-gray-900 py-6 sm:py-8 md:py-8">
+    <section id="classes" className="bg-gray-50 dark:bg-gray-900 py-6 sm:py-8 md:py-8 min-h-screen">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 lg:max-w-7xl">
         <div className="space-y-8 sm:space-y-10 md:space-y-12">
           {/* Section Header */}
@@ -55,125 +158,196 @@ const Classes = () => {
               </span>
             </h2>
             <p className="text-base sm:text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto px-4">
-              Choose from our diverse range of art classes designed for all
-              skill levels
+              Choose from our diverse range of art classes designed for all skill levels
             </p>
           </div>
+
+          {/* Error Banner */}
+          {error && (
+            <div className="max-w-5xl mx-auto bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3 sm:p-4 flex items-start gap-3">
+              <FaExclamationTriangle className="text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm sm:text-base text-amber-800 dark:text-amber-300">{error}</p>
+              </div>
+            </div>
+          )}
+
           {/* Search and Filters */}
-          <div className="max-w-5xl mx-auto">
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-center">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm">
               {/* Search Bar */}
-              <div className="relative flex-1 w-full">
-                <FaSearch className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm sm:text-base" />
+              <div className="relative flex-1 w-full md:max-w-md">
+                <FaSearch className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
                 <input
                   type="text"
                   placeholder="Search classes..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-9 sm:pl-12 pr-3 sm:pr-4 py-2.5 sm:py-3 rounded-lg border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm sm:text-base focus:border-purple-600 focus:outline-none transition-all"
+                  className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                  disabled={loading}
                 />
               </div>
 
-              {/* Category Dropdown */}
-              <div className="w-full sm:w-40 md:w-48">
+              {/* Filters */}
+              <div className="flex gap-3 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
                 <select
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm sm:text-base focus:border-purple-600 focus:outline-none transition-all cursor-pointer font-semibold"
+                  className="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 cursor-pointer text-sm font-medium whitespace-nowrap"
+                  disabled={loading}
                 >
                   {categories.map((category) => (
-                    <option key={category} value={category}>
-                      {category}
-                    </option>
+                    <option key={category} value={category}>{category}</option>
                   ))}
                 </select>
-              </div>
-              {/* Skill Level Dropdown */}
-              <div className="w-full sm:w-40 md:w-48">
+
                 <select
                   value={selectedLevel}
                   onChange={(e) => setSelectedLevel(e.target.value)}
-                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm sm:text-base focus:border-blue-600 focus:outline-none transition-all cursor-pointer font-semibold"
+                  className="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 cursor-pointer text-sm font-medium whitespace-nowrap"
+                  disabled={loading}
                 >
                   {levels.map((level) => (
-                    <option key={level} value={level}>
-                      {level}
-                    </option>
+                    <option key={level} value={level}>{level}</option>
                   ))}
                 </select>
               </div>
             </div>
           </div>
-          {/* Classes Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
-            {filteredClasses.map((classItem) => (
-              <div
-                key={classItem.id}
-                className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 group hover:-translate-y-2"
-              >
-                {/* Image */}
-                <div className="relative h-44 sm:h-48 md:h-56 overflow-hidden">
-                  <img
-                    src={classItem.image}
-                    alt={classItem.title}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                  />
-                  <div className="absolute top-3 right-3 sm:top-4 sm:right-4 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full">
-                    <span className="text-xs sm:text-sm font-bold text-purple-600">
-                      {classItem.price}
-                    </span>
+
+          {/* Loading State */}
+          {loading && (
+            <div className="flex flex-col items-center justify-center py-20">
+              <FaSpinner className="text-4xl text-purple-600 animate-spin mb-4" />
+              <p className="text-lg text-gray-600 dark:text-gray-400">Loading classes...</p>
+            </div>
+          )}
+
+          {/* Classes Grid - Ported from Admin Design */}
+          {!loading && (
+            <div id="classes-grid" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {currentItems.map((item) => (
+                <div key={item.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group border border-gray-100 dark:border-gray-700">
+                  {/* Image Header */}
+                  <div className="relative h-48 overflow-hidden">
+                    <img
+                      src={item.imageUrl || item.image || 'https://via.placeholder.com/300?text=No+Image'}
+                      alt={item.name || item.title}
+                      className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300 cursor-pointer"
+                      onClick={() => {
+                        setPreviewImage(item.imageUrl || item.image || 'https://via.placeholder.com/300?text=No+Image');
+                        setPreviewTitle(item.name || item.title);
+                      }}
+                    />
+                    <div className="absolute top-2 right-2 bg-white/90 dark:bg-gray-900/90 px-2 py-1 rounded-full text-xs font-semibold shadow-sm text-gray-800 dark:text-gray-200">
+                      {item.categoryName || item.category || 'Uncategorized'}
+                    </div>
+                    {item.discountPrice && item.discountPrice < item.basePrice && (
+                      <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-bold shadow-sm">
+                        Save ₹{(item.basePrice - item.discountPrice).toFixed(0)}
+                      </div>
+                    )}
                   </div>
-                  <div className="absolute top-3 left-3 sm:top-4 sm:left-4 bg-purple-600 text-white px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs font-semibold">
-                    {classItem.level}
-                  </div>
-                </div>
-                {/* Content */}
-                <div className="p-4 sm:p-5 md:p-6 space-y-2.5 sm:space-y-3 md:space-y-4">
-                  <div>
-                    <span className="text-xs font-semibold text-purple-600 dark:text-purple-400 uppercase tracking-wide">
-                      {classItem.category}
-                    </span>
-                    <h3 className="text-base sm:text-lg md:text-xl font-bold text-gray-900 dark:text-white line-clamp-2 mt-1">
-                      {classItem.title}
-                    </h3>
-                  </div>
-                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 line-clamp-2 leading-relaxed">
-                    {classItem.description}
-                  </p>
-                  <div className="border-t border-gray-200 dark:border-gray-700 pt-2.5 sm:pt-3 md:pt-4 space-y-2.5 sm:space-y-3">
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      Instructor:{" "}
-                      <span className="font-semibold text-gray-700 dark:text-gray-300">
-                        {classItem.instructor}
-                      </span>
+
+                  {/* Content Body */}
+                  <div className="p-5 space-y-3">
+                    <div className="flex justify-between items-start">
+                      <h3 className="text-xl font-bold text-gray-800 dark:text-white line-clamp-1" title={item.name || item.title}>
+                        {item.name || item.title}
+                      </h3>
+                      {/* Determine active status if available, else default to true as they are public */}
+                      {/* For public view, we generally show only active, but if data has it, we can use it or just ignore */}
+                    </div>
+
+                    <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 h-10">
+                      {item.description}
                     </p>
-                    <button 
-                      onClick={() => handleEnrollNow(classItem)}
-                      className="w-full bg-linear-to-r from-purple-600 to-pink-600 text-white py-2 sm:py-2.5 md:py-3 rounded-lg sm:rounded-xl font-semibold text-sm sm:text-base shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
-                    >
-                      Enroll Now
-                    </button>
+
+                    <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+                      {(item.durationWeeks || item.weeks) && (
+                        <span className="flex items-center gap-1">
+                          <FaClock className="text-purple-500" /> {item.durationWeeks || item.weeks} Weeks
+                        </span>
+                      )}
+                      {(item.proficiency || item.level) && (
+                        <span className="flex items-center gap-1">
+                          <FaUserGraduate className="text-blue-500" /> {item.proficiency || item.level}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex items-end justify-between pt-2 border-t border-gray-100 dark:border-gray-700">
+                      <div>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">Price</span>
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-lg font-bold text-gray-900 dark:text-white">
+                            ₹{(Number(item.discountPrice) > 0 ? item.discountPrice : (Number(item.price) > 0 ? item.price : item.basePrice || 0)).toLocaleString()}
+                          </span>
+                          {(item.discountPrice || item.originalPrice) && (
+                            <span className="text-sm text-gray-400 line-through">
+                              ₹{item.basePrice || item.originalPrice}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={() => handleEnrollNow(item)}
+                        className="bg-linear-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-lg font-semibold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all duration-300"
+                      >
+                        Enroll Now
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
+
+          {/* Pagination */}
+          {!loading && filteredClasses.length > itemsPerPage && (
+            <div className="mt-8">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+              />
+            </div>
+          )}
+
           {/* No Results */}
-          {filteredClasses.length === 0 && (
-            <div className="text-center py-8 sm:py-6">
-              <p className="text-lg sm:text-xl md:text-2xl text-gray-500 dark:text-gray-400 px-4">
-                No classes found. Try adjusting your filters.
+          {!loading && filteredClasses.length === 0 && (
+            <div className="text-center py-12">
+              <p className="text-xl text-gray-500 dark:text-gray-400">
+                No classes found matching your criteria.
               </p>
             </div>
           )}
         </div>
       </div>
+
       {/* Enrollment Form Modal */}
-      <EnrollmentForm 
-        isOpen={showEnrollmentForm} 
+      <EnrollmentForm
+        isOpen={showEnrollmentForm}
         onClose={() => setShowEnrollmentForm(false)}
+        selectedClassId={selectedClass?.id}
+        selectedClassName={selectedClass?.title || selectedClass?.name}
+      />
+
+      <StudentLogin
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+      />
+
+      {/* Image Preview Modal */}
+      <ImagePreviewModal
+        isOpen={!!previewImage}
+        onClose={() => setPreviewImage(null)}
+        imageUrl={previewImage}
+        title={previewTitle}
       />
     </section>
   );
-}
+};
+
 export default Classes;

@@ -1,17 +1,31 @@
-import { useState } from 'react';
-import { FaTimes, FaUser, FaEnvelope, FaPhone, FaCalendar, FaChild } from 'react-icons/fa';
+import { useState, useEffect } from 'react';
+import { FaTimes, FaUser, FaEnvelope, FaPhone, FaCalendar, FaChild, FaMapMarkerAlt, FaExclamationCircle } from 'react-icons/fa';
+import enrollmentService from '../services/enrollmentService';
 
-const EnrollmentForm = ({ isOpen, onClose, onSuccess }) => {
+const EnrollmentForm = ({ isOpen, onClose, onSuccess, selectedClassId, selectedClassName }) => {
   const [formData, setFormData] = useState({
+    classId: '',
     studentName: '',
-    parentName: '',
-    email: '',
-    phone: '',
-    age: '',
-    selectedClass: '',
-    preferredSchedule: '',
-    message: ''
+    studentEmail: '',
+    studentPhone: '',
+    address: '',
+    parentGuardianName: '',
+    studentAge: '',
+    schedule: '',
+    additionalMessage: '',
+    emergencyContactName: '',
+    emergencyContactPhone: ''
   });
+
+  // Pre-fill class ID when provided
+  useEffect(() => {
+    if (isOpen && selectedClassId) {
+      setFormData(prev => ({
+        ...prev,
+        classId: selectedClassId.toString()
+      }));
+    }
+  }, [isOpen, selectedClassId]);
 
   const [submitted, setSubmitted] = useState(false);
 
@@ -22,43 +36,64 @@ const EnrollmentForm = ({ isOpen, onClose, onSuccess }) => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Store enrollment in localStorage
-    const enrollments = JSON.parse(localStorage.getItem('enrollments') || '[]');
-    const newEnrollment = {
-      id: Date.now(),
-      ...formData,
-      status: 'pending',
-      enrollmentDate: new Date().toISOString()
+
+    // Store enrollment in localStorage (simulating backend call for now or prepping for it)
+    // The user mentioned this matches the backend fields, so ideally we would POST this to the backend.
+    // However, the existing code was just saving to localStorage. I will keep the localStorage logic 
+    // but update the object structure.
+
+    // Prepare payload matching user requirement
+    const payload = {
+      classId: formData.classId,
+      studentName: formData.studentName,
+      studentEmail: formData.studentEmail,
+      studentPhone: formData.studentPhone,
+      address: formData.address,
+      parentGuardianName: formData.parentGuardianName,
+      studentAge: parseInt(formData.studentAge, 10), // Ensure integer
+      schedule: formData.schedule,
+      additionalMessage: formData.additionalMessage,
+      emergencyContactName: formData.emergencyContactName,
+      emergencyContactPhone: formData.emergencyContactPhone
     };
-    enrollments.push(newEnrollment);
-    localStorage.setItem('enrollments', JSON.stringify(enrollments));
-    
-    setSubmitted(true);
-    
-    // Call onSuccess callback if provided
-    if (onSuccess) {
-      onSuccess();
+
+    try {
+      await enrollmentService.createEnrollment(payload);
+      setSubmitted(true);
+
+      // Call onSuccess callback if provided
+      if (onSuccess) {
+        onSuccess();
+      }
+
+      // Reset form after 3 seconds
+      setTimeout(() => {
+        setFormData({
+          classId: '',
+          studentName: '',
+          studentEmail: '',
+          studentPhone: '',
+          address: '',
+          parentGuardianName: '',
+          studentAge: '',
+          schedule: '',
+          additionalMessage: '',
+          emergencyContactName: '',
+          emergencyContactPhone: ''
+        });
+        setSubmitted(false);
+        onClose();
+      }, 3000);
+
+    } catch (error) {
+      console.error("Enrollment failed:", error);
+      alert(`Enrollment failed: ${error.message || "Unknown error"}`);
     }
-    
-    // Reset form after 3 seconds
-    setTimeout(() => {
-      setFormData({
-        studentName: '',
-        parentName: '',
-        email: '',
-        phone: '',
-        age: '',
-        selectedClass: '',
-        preferredSchedule: '',
-        message: ''
-      });
-      setSubmitted(false);
-      onClose();
-    }, 3000);
   };
+
+
 
   if (!isOpen) return null;
 
@@ -109,6 +144,41 @@ const EnrollmentForm = ({ isOpen, onClose, onSuccess }) => {
                   placeholder="Enter student's full name"
                 />
               </div>
+
+              {/* Student Phone */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                  <FaPhone className="inline mr-2" />
+                  Student Phone *
+                </label>
+                <input
+                  type="tel"
+                  name="studentPhone"
+                  value={formData.studentPhone}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-800 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  placeholder="+91 1234567890"
+                />
+              </div>
+
+              {/* Student Email */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                  <FaEnvelope className="inline mr-2" />
+                  Student Email *
+                </label>
+                <input
+                  type="email"
+                  name="studentEmail"
+                  value={formData.studentEmail}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-800 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  placeholder="student@example.com"
+                />
+              </div>
+
               {/* Parent Name */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
@@ -117,47 +187,13 @@ const EnrollmentForm = ({ isOpen, onClose, onSuccess }) => {
                 </label>
                 <input
                   type="text"
-                  name="parentName"
-                  value={formData.parentName}
+                  name="parentGuardianName"
+                  value={formData.parentGuardianName}
                   onChange={handleChange}
                   required
                   className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-800 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   placeholder="Enter parent/guardian name"
                 />
-              </div>
-
-              {/* Email and Phone */}
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                    <FaEnvelope className="inline mr-2" />
-                    Email *
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-800 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    placeholder="your@email.com"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                    <FaPhone className="inline mr-2" />
-                    Phone *
-                  </label>
-                  <input
-                    type="tel"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-800 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    placeholder="+91 1234567890"
-                  />
-                </div>
               </div>
 
               {/* Age */}
@@ -168,8 +204,8 @@ const EnrollmentForm = ({ isOpen, onClose, onSuccess }) => {
                 </label>
                 <input
                   type="number"
-                  name="age"
-                  value={formData.age}
+                  name="studentAge"
+                  value={formData.studentAge}
                   onChange={handleChange}
                   required
                   min="3"
@@ -179,31 +215,52 @@ const EnrollmentForm = ({ isOpen, onClose, onSuccess }) => {
                 />
               </div>
 
-              {/* Class Selection */}
+              {/* Class Selection - Mapped to classId */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                  Class *
+                  Class / Event *
                 </label>
                 <input
                   type="text"
-                  name="selectedClass"
-                  value={formData.selectedClass}
+                  name="classDisplayName"
+                  value={selectedClassName || formData.classId}
+                  readOnly={!!selectedClassId}
+                  onChange={!selectedClassId ? handleChange : undefined}
+                  className={`w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-800 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent ${selectedClassId ? 'opacity-70 cursor-not-allowed bg-gray-100 dark:bg-gray-800' : ''}`}
+                  placeholder="Enter class name or ID"
+                />
+                {/* Hidden input to ensure classId is submitted */}
+                {selectedClassId && (
+                  <input type="hidden" name="classId" value={formData.classId} />
+                )}
+              </div>
+
+              {/* Address - New Field */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                  <FaMapMarkerAlt className="inline mr-2" />
+                  Address *
+                </label>
+                <input
+                  type="text"
+                  name="address"
+                  value={formData.address}
                   onChange={handleChange}
                   required
                   className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-800 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  placeholder="Enter class name"
+                  placeholder="Enter full address"
                 />
               </div>
 
-              {/* Preferred Schedule */}
+              {/* Schedule - Mapped to schedule */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
                   Preferred Schedule *
                 </label>
                 <input
                   type="text"
-                  name="preferredSchedule"
-                  value={formData.preferredSchedule}
+                  name="schedule"
+                  value={formData.schedule}
                   onChange={handleChange}
                   required
                   className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-800 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
@@ -211,14 +268,48 @@ const EnrollmentForm = ({ isOpen, onClose, onSuccess }) => {
                 />
               </div>
 
-              {/* Message */}
+              {/* Emergency Contact Name - New Field */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                  <FaExclamationCircle className="inline mr-2" />
+                  Emergency Contact Name *
+                </label>
+                <input
+                  type="text"
+                  name="emergencyContactName"
+                  value={formData.emergencyContactName}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-800 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  placeholder="Name of emergency contact"
+                />
+              </div>
+
+              {/* Emergency Contact Phone - New Field */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                  <FaPhone className="inline mr-2" />
+                  Emergency Contact Phone *
+                </label>
+                <input
+                  type="tel"
+                  name="emergencyContactPhone"
+                  value={formData.emergencyContactPhone}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-800 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  placeholder="Emergency contact phone"
+                />
+              </div>
+
+              {/* Message - Mapped to additionalMessage */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
                   Additional Message (Optional)
                 </label>
                 <textarea
-                  name="message"
-                  value={formData.message}
+                  name="additionalMessage"
+                  value={formData.additionalMessage}
                   onChange={handleChange}
                   rows="3"
                   className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-800 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"

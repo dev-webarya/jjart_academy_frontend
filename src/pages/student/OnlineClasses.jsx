@@ -1,273 +1,232 @@
 import { useState, useEffect } from 'react';
-import { FaVideo, FaClock, FaCalendar, FaUser, FaBook, FaExternalLinkAlt, FaSearch, FaFilter } from 'react-icons/fa';
-import { onlineClassesAPI } from '../../services/api';
+import { FaVideo, FaClock, FaCalendar, FaBook, FaExternalLinkAlt, FaSearch, FaFilter, FaSpinner } from 'react-icons/fa';
+import lmsService from '../../services/lmsService';
 import { useAuth } from '../../context/AuthContext';
 
 const OnlineClasses = () => {
   const { user } = useAuth();
-  const [classes, setClasses] = useState([]);
+  const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('all'); // all, upcoming, past
+  const [filter, setFilter] = useState('upcoming'); // upcoming, today, all
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedClass, setSelectedClass] = useState(null);
 
   useEffect(() => {
-    loadClasses();
-  }, []);
+    loadSessions();
+  }, [filter]);
 
-  const loadClasses = async () => {
+  const loadSessions = async () => {
     setLoading(true);
     try {
-      // Fetch all online classes created by admin
-      const response = await onlineClassesAPI.getAll();
+      let response;
+      if (filter === 'upcoming') {
+        response = await lmsService.getUpcomingSessions();
+      } else if (filter === 'today') {
+        const today = new Date().toISOString().split('T')[0];
+        response = await lmsService.getSessionsByDate(today);
+      } else {
+        // Fallback to upcoming if 'all' is selected but user has no access to getAllSessions
+        // Or if getAllSessions returns 403, we should probably handle it.
+        // For now, let's keep it but catch the error gracefully, or just use upcoming as default.
+        response = await lmsService.getUpcomingSessions(); // Defaulting to upcoming for students for now
+      }
+
       if (response.success) {
-        setClasses(response.data);
+        // Handle both pagination response and array response
+        const data = response.data?.content || response.data || [];
+        setSessions(Array.isArray(data) ? data : []);
       }
     } catch (error) {
-      console.error('Error loading online classes:', error);
+      console.error('Error loading sessions:', error);
+      setSessions([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const getFilteredClasses = () => {
-    const today = new Date().toISOString().split('T')[0];
-    let filtered = classes;
-
-    // Apply search
-    if (searchTerm) {
-      filtered = filtered.filter(c =>
-        c.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        c.instructor.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        c.className.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'SCHEDULED': return 'bg-blue-100 text-blue-800';
+      case 'IN_PROGRESS': return 'bg-green-100 text-green-800';
+      case 'COMPLETED': return 'bg-gray-100 text-gray-800';
+      case 'CANCELLED': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
-
-    // Apply date filter
-    if (filter === 'upcoming') {
-      filtered = filtered.filter(c => c.date >= today);
-    } else if (filter === 'past') {
-      filtered = filtered.filter(c => c.date < today);
-    }
-
-    // Sort by date
-    return filtered.sort((a, b) => new Date(a.date) - new Date(b.date));
   };
 
   const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      weekday: 'long', 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
+    if (!dateString) return '';
+    return new Date(dateString).toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
     });
   };
 
-  const isUpcoming = (dateString) => {
-    return dateString >= new Date().toISOString().split('T')[0];
+  const formatTime = (timeData) => {
+    if (!timeData) return '';
+
+    // Handle array format [H, M, S, n]
+    if (Array.isArray(timeData)) {
+      const [hours, minutes] = timeData;
+      return new Date(0, 0, 0, hours, minutes).toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      });
+    }
+
+    // Handle string format "HH:MM:SS"
+    if (typeof timeData === 'string') {
+      const [hours, minutes] = timeData.split(':');
+      return new Date(0, 0, 0, hours, minutes).toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      });
+    }
+
+    // Handle object format {hour: 10, minute: 30, ...}
+    if (typeof timeData === 'object' && timeData.hour !== undefined) {
+      return new Date(0, 0, 0, timeData.hour, timeData.minute).toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      });
+    }
+
+    return '';
   };
 
-  const handleJoinClass = (classItem) => {
-    window.open(classItem.meetingLink, '_blank');
-  };
-
-  const filteredClasses = getFilteredClasses();
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Loading online classes...</p>
-        </div>
-      </div>
-    );
-  }
+  const filteredSessions = sessions.filter(session =>
+    session.topic?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    session.description?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
-    <div className="space-y-4">
-      {/* Header */}
-      <div className="bg-linear-to-r from-blue-600 to-purple-600 rounded-xl p-6 text-white">
-        <div className="flex items-center space-x-3 mb-3">
-         
-          <div>
-            <h1 className="text-3xl font-bold">Online Classes</h1>
-            <p className="text-blue-100 mt-1">Join live sessions and learn from anywhere</p>
-          </div>
+    <div className="p-6 space-y-6">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Online Classes</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">Join your scheduled online art sessions</p>
         </div>
-        <div className="grid grid-cols-3 gap-3 mt-4">
-          <div className="bg-white/10 rounded-lg p-3 backdrop-blur-sm">
-            <p className="text-blue-100 text-sm">Total Classes</p>
-            <p className="text-2xl font-bold">{classes.length}</p>
-          </div>
-          <div className="bg-white/10 rounded-lg p-3 backdrop-blur-sm">
-            <p className="text-blue-100 text-sm">Upcoming</p>
-            <p className="text-2xl font-bold">
-              {classes.filter(c => isUpcoming(c.date)).length}
-            </p>
-          </div>
-          <div className="bg-white/10 rounded-lg p-3 backdrop-blur-sm">
-            <p className="text-blue-100 text-sm">Completed</p>
-            <p className="text-2xl font-bold">
-              {classes.filter(c => !isUpcoming(c.date)).length}
-            </p>
-          </div>
-        </div>
-      </div>
 
-      {/* Filters */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-lg">
-        <div className="flex flex-col md:flex-row gap-3">
-          {/* Search */}
-          <div className="flex-1">
-            <div className="relative">
-              <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search classes..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
+        <div className="flex gap-4 w-full md:w-auto">
+          <div className="relative flex-1 md:w-64">
+            <FaSearch className="absolute left-3 top-3 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search topics..."
+              className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
           </div>
 
-          {/* Filter Buttons */}
-          <div className="flex gap-2">
-            <button
-              onClick={() => setFilter('all')}
-              className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                filter === 'all'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-              }`}
+          <div className="relative">
+            <select
+              className="pl-4 pr-8 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white appearance-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
             >
-              All
-            </button>
-            <button
-              onClick={() => setFilter('upcoming')}
-              className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                filter === 'upcoming'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-              }`}
-            >
-              Upcoming
-            </button>
-            <button
-              onClick={() => setFilter('past')}
-              className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                filter === 'past'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-              }`}
-            >
-              Past
-            </button>
+              <option value="upcoming">Upcoming Sessions</option>
+              <option value="today">Today's Sessions</option>
+              {/* <option value="past">Past History</option> */}
+            </select>
+            <FaFilter className="absolute right-3 top-3 text-gray-400 pointer-events-none" />
           </div>
         </div>
       </div>
 
-      {/* Classes List */}
-      {filteredClasses.length === 0 ? (
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-8 text-center shadow-lg">
-          <FaVideo className="text-6xl text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">
-            No classes found
-          </h3>
-          <p className="text-gray-600 dark:text-gray-400">
-            {searchTerm ? 'Try adjusting your search criteria' : 'No online classes scheduled yet'}
-          </p>
+      {loading ? (
+        <div className="flex justify-center items-center h-64">
+          <FaSpinner className="animate-spin text-4xl text-indigo-600" />
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {filteredClasses.map((classItem) => (
-            <div
-              key={classItem.id}
-              className="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all overflow-hidden border border-gray-200 dark:border-gray-700"
-            >
-              {/* Header */}
-              <div className={`p-4 ${isUpcoming(classItem.date) ? 'bg-linear-to-r from-blue-50 to-purple-50 dark:from-gray-700 dark:to-gray-700' : 'bg-gray-50 dark:bg-gray-700'}`}>
-                <div className="flex justify-between items-start mb-2">
-                  <div className="flex items-center space-x-2">
-                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                      isUpcoming(classItem.date)
-                        ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
-                        : 'bg-gray-200 text-gray-600 dark:bg-gray-600 dark:text-gray-300'
-                    }`}>
-                      {isUpcoming(classItem.date) ? 'Upcoming' : 'Completed'}
-                    </span>
-                    <span className="px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
-                      {classItem.platform}
-                    </span>
-                  </div>
-                </div>
-                <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-1">
-                  {classItem.title}
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400 text-sm line-clamp-2">
-                  {classItem.description}
-                </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredSessions.map((session) => (
+            <div key={session.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-shadow duration-300">
+              <div className="h-32 bg-gradient-to-r from-indigo-500 to-purple-600 p-6 flex items-center justify-center">
+                <FaVideo className="text-5xl text-white/90" />
               </div>
-              {/* Details */}
-              <div className="p-4 space-y-2">
-                <div className="flex items-center text-gray-600 dark:text-gray-400">
-                  <FaBook className="mr-3 text-blue-500" />
-                  <span className="font-medium">{classItem.className}</span>
-                </div>
-                <div className="flex items-center text-gray-600 dark:text-gray-400">
-                  <FaUser className="mr-3 text-purple-500" />
-                  <span>{classItem.instructor}</span>
-                </div>
-                <div className="flex items-center text-gray-600 dark:text-gray-400">
-                  <FaCalendar className="mr-3 text-green-500" />
-                  <span>{formatDate(classItem.date)}</span>
-                </div>
-                <div className="flex items-center text-gray-600 dark:text-gray-400">
-                  <FaClock className="mr-3 text-orange-500" />
-                  <span>{classItem.time} ({classItem.duration})</span>
+
+              <div className="p-5">
+                <div className="flex justify-between items-start mb-3">
+                  <div>
+                    <h3 className="font-bold text-gray-800 dark:text-white text-lg line-clamp-1" title={session.topic}>
+                      {session.topic || 'Untitled Session'}
+                    </h3>
+                    <div className="flex items-center gap-2 mt-1">
+                      <FaCalendar className="text-gray-400 text-xs" />
+                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                        {formatDate(session.sessionDate)}
+                      </span>
+                    </div>
+                  </div>
+                  <span className={`px-2 py-1 rounded text-xs font-semibold ${getStatusColor(session.status)}`}>
+                    {session.status}
+                  </span>
                 </div>
 
-                {/* Materials */}
-                {classItem.materials && classItem.materials.length > 0 && (
-                  <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-                    <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                      Required Materials:
-                    </p>
-                    <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
-                      {classItem.materials.map((material, index) => (
-                        <li key={index} className="flex items-start">
-                          <span className="mr-2">•</span>
-                          <span>{material}</span>
-                        </li>
-                      ))}
-                    </ul>
+                <div className="space-y-2 mb-4">
+                  <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                    <FaClock className="text-indigo-500" />
+                    <span>
+                      {formatTime(session.startTime)} - {formatTime(session.endTime)}
+                    </span>
+                  </div>
+
+                  {session.description && (
+                    <div className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-400">
+                      <FaBook className="text-indigo-500 mt-1" />
+                      <span className="line-clamp-2" title={session.description}>{session.description}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Topic Tag */}
+                {session.topic && (
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    <span className="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-xs px-2 py-1 rounded">
+                      {session.topic}
+                    </span>
                   </div>
                 )}
 
-                {/* Action Button */}
-                <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-                  {isUpcoming(classItem.date) ? (
-                    <button
-                      onClick={() => handleJoinClass(classItem)}
-                      className="w-full bg-linear-to-r from-blue-600 to-purple-600 text-white py-2 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all flex items-center justify-center space-x-2"
-                    >
-                      <FaExternalLinkAlt />
-                      <span>Join Class</span>
-                    </button>
-                  ) : (
-                    <button
-                      disabled
-                      className="w-full bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 py-2 rounded-lg font-semibold cursor-not-allowed"
-                    >
-                      Class Completed
-                    </button>
-                  )}
-                </div>
+                {session.status === 'IN_PROGRESS' || session.status === 'SCHEDULED' ? (
+                  <a
+                    href={session.meetingLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`block w-full text-center py-2 rounded-lg font-semibold transition-colors duration-200 flex items-center justify-center gap-2
+                      ${!session.meetingLink
+                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                        : 'bg-indigo-600 hover:bg-indigo-700 text-white'}`}
+                    onClick={(e) => !session.meetingLink && e.preventDefault()}
+                  >
+                    <FaExternalLinkAlt />
+                    {session.status === 'IN_PROGRESS' ? 'Join Now' : 'Join Class'}
+                  </a>
+                ) : (
+                  <div className="w-full py-2 bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 rounded-lg text-center text-sm font-medium">
+                    Class {session.status.toLowerCase()}
+                  </div>
+                )}
               </div>
             </div>
           ))}
+
+          {filteredSessions.length === 0 && (
+            <div className="col-span-full text-center py-12">
+              <div className="bg-gray-50 dark:bg-gray-800 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                <FaVideo className="text-gray-400 text-2xl" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white">No sessions found</h3>
+              <p className="text-gray-500 dark:text-gray-400 mt-1">
+                Try adjusting your search or filter criteria
+              </p>
+            </div>
+          )}
         </div>
       )}
     </div>
