@@ -27,6 +27,7 @@ class ArtWorksService {
             const data = await response.json();
             console.log('✅ Art Works API response:', data);
 
+            // Extract the content array from paginated response
             let artworks = [];
             if (Array.isArray(data)) {
                 artworks = data;
@@ -38,49 +39,13 @@ class ArtWorksService {
                 artworks = data.artWorks;
             }
 
-            // Map backend fields to frontend structure
-            const mappedArtworks = artworks.map(item => ({
-                id: item.id,
-                title: item.name || item.title || 'Untitled',
-                description: item.description || '',
-                longDescription: item.description || '',
-                artist: {
-                    id: item.artistId || 'unknown',
-                    name: item.artistName || 'Unknown Artist',
-                    avatar: item.artistAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(item.artistName || 'Backend')}`
-                },
-                images: item.imageUrl ? [item.imageUrl] : (item.images || []),
-                category: item.categoryName || item.category || 'Art',
-                medium: item.medium || 'Mixed Media',
-                price: (() => {
-                    const check = (val) => val !== undefined && val !== null && Number(val) > 0 ? Number(val) : 0;
-                    // Prioritize unitPrice/amount as selling price, then base fields
-                    return check(item.unitPrice) || check(item.amount) || check(item.price) || check(item.basePrice) ||
-                        (item.variants && item.variants.length > 0 ?
-                            (check(item.variants[0].unitPrice) || check(item.variants[0].amount) || check(item.variants[0].price) || check(item.variants[0].basePrice)) : 0);
-                })(),
-                discountPrice: item.discountPrice || item.salePrice || (item.variants?.[0]?.discountPrice) || null,
-                sizeOptions: item.variants ? item.variants.map(v => {
-                    const vPrice = v.price || v.unitPrice || v.basePrice || v.amount || item.price || 0;
-                    return {
-                        id: v.id || v.size || v.label,
-                        label: v.size || v.label || 'Standard',
-                        price: Number(vPrice) > 0 ? Number(vPrice) : 0,
-                        discountPrice: v.discountPrice || v.salePrice,
-                        stock: v.stock !== undefined ? v.stock : 10,
-                        isDefault: !!v.isDefault
-                    };
-                }) : [],
-                isAvailable: item.active !== false, // Default to true if undefined, false if explicitly false
-                createdAt: item.createdAt,
-                likes: item.likes || 0,
-                views: item.views || 0,
-                features: ['Original Art', 'Certified'] // Mock features if not in backend
-            }));
+            console.log('🎨 Extracted artworks array:', artworks);
 
+            // Return raw API data without transformation
+            // Component will use: imageUrl, name, categoryName, artistName, basePrice, discountPrice, artMedium, size
             return {
                 success: true,
-                data: mappedArtworks,
+                data: artworks,
                 message: 'Art works fetched successfully'
             };
         } catch (error) {
@@ -88,6 +53,7 @@ class ArtWorksService {
             return {
                 success: false,
                 message: error.message,
+                data: [],
                 error
             };
         }

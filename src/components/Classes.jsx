@@ -229,7 +229,7 @@ const Classes = () => {
               {currentItems.map((item) => (
                 <div key={item.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group border border-gray-100 dark:border-gray-700">
                   {/* Image Header */}
-                  <div className="relative h-48 overflow-hidden">
+                  <div className="relative h-40 overflow-hidden">
                     <img
                       src={item.imageUrl || item.image || 'https://via.placeholder.com/300?text=No+Image'}
                       alt={item.name || item.title}
@@ -250,7 +250,7 @@ const Classes = () => {
                   </div>
 
                   {/* Content Body */}
-                  <div className="p-5 space-y-3">
+                  <div className="p-4 space-y-2">
                     <div className="flex justify-between items-start">
                       <h3 className="text-xl font-bold text-gray-800 dark:text-white line-clamp-1" title={item.name || item.title}>
                         {item.name || item.title}

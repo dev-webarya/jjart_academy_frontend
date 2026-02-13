@@ -24,7 +24,7 @@ const Instructors = () => {
               dedicated to your success
             </p>
           </div>
-          
+
           {/* Instructors Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto">
             {instructorsData.map((instructor) => (
@@ -33,7 +33,7 @@ const Instructors = () => {
                 className="bg-white dark:bg-gray-800 rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 group hover:-translate-y-2"
               >
                 {/* Image with Overlay */}
-                <div className="relative h-72 md:h-80 overflow-hidden">
+                <div className="relative h-48 md:h-56 overflow-hidden">
                   <img
                     src={instructor.image}
                     alt={instructor.name}
@@ -41,12 +41,12 @@ const Instructors = () => {
                   />
                   {/* Gradient Overlay */}
                   <div className="absolute inset-0 bg-linear-to-t from-purple-900/80 via-purple-900/40 to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
-                  
+
                   {/* Experience Badge */}
                   <div className="absolute top-4 right-4 bg-yellow-400 text-purple-900 px-4 py-2 rounded-full font-bold shadow-lg flex items-center gap-2">
                     <FaAward /> {instructor.experience}
                   </div>
-                  
+
                   {/* Social Links - Show on Hover */}
                   <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-3 opacity-0 group-hover:opacity-100 transition-all">
                     {[
@@ -65,7 +65,7 @@ const Instructors = () => {
                   </div>
                 </div>
                 {/* Content */}
-                <div className="p-5 md:p-6 space-y-3 md:space-y-4">
+                <div className="p-4 md:p-5 space-y-2 md:space-y-3">
                   <div>
                     <h3 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">
                       {instructor.name}

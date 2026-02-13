@@ -168,7 +168,7 @@ const Gallery = () => {
                     onClick={() => setSelectedImage(image)}
                   >
                     {/* Image Header */}
-                    <div className="relative h-64 overflow-hidden cursor-pointer">
+                    <div className="relative h-40 overflow-hidden cursor-pointer">
                       <img
                         src={image.src || image.imageUrl || image.image}
                         alt={image.name || image.title}
@@ -183,7 +183,7 @@ const Gallery = () => {
                     </div>
 
                     {/* Content Body */}
-                    <div className="p-5 flex-1 flex flex-col space-y-3">
+                    <div className="p-4 flex-1 flex flex-col space-y-2">
                       <div className="flex justify-between items-start">
                         <h3 className="text-xl font-bold text-gray-800 dark:text-white line-clamp-1" title={image.name || image.title}>
                           {image.name || image.title}

@@ -4,7 +4,7 @@ const GalleryPage = () => {
   return (
     <div>
       {/* Hero Section */}
-      <section className="relative h-[65vh] md:h-[70vh] flex items-center justify-center overflow-hidden pt-20">
+      <section className="relative h-[50vh] flex items-center justify-center overflow-hidden pt-20">
         {/* Background Image with Overlay */}
         <div className="absolute inset-0">
           <img
@@ -14,7 +14,7 @@ const GalleryPage = () => {
           />
           <div className="absolute inset-0 bg-linear-to-br from-pink-900/70 via-purple-900/60 to-blue-900/50"></div>
         </div>
-        
+
         {/* Content */}
         <div className="container mx-auto px-6 sm:px-8 lg:max-w-7xl relative z-10 text-center space-y-6">
           <h1 className="text-5xl md:text-7xl font-bold text-white mb-4 leading-tight">
@@ -33,7 +33,7 @@ const GalleryPage = () => {
           </div>
         </div>
       </section>
-      
+
       <Gallery />
     </div>
   );
