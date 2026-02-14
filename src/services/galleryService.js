@@ -293,15 +293,21 @@ class GalleryService {
    * Transform gallery data to match frontend format
    */
   transformGalleryData(gallery) {
+    // Handle imageUrl from backend response
+    const imageSource = gallery.imageUrl || gallery.image || gallery.src || gallery.thumbnail;
     return {
       id: gallery.id || gallery._id,
       name: gallery.name || gallery.title,
       description: gallery.description,
-      image: gallery.image || gallery.src || gallery.thumbnail,
-      category: gallery.category || 'Art',
-      artist: gallery.artist || gallery.createdBy || 'Unknown',
-      src: gallery.image || gallery.src || gallery.thumbnail,
+      image: imageSource,
+      imageUrl: imageSource,
+      category: gallery.categoryName || gallery.category || 'Art',
+      categoryName: gallery.categoryName || gallery.category,
+      artist: gallery.userName || gallery.artist || gallery.createdBy || 'Unknown',
+      src: imageSource,
       title: gallery.name || gallery.title,
+      createdAt: gallery.createdAt,
+      status: gallery.status,
       ...gallery
     };
   }

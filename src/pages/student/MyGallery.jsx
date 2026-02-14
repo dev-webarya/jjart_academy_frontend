@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import {
     FaImage, FaUpload, FaCheckCircle, FaClock, FaTimesCircle,
@@ -23,6 +23,12 @@ const MyGallery = () => {
         categoryId: '',
     });
     const [categories, setCategories] = useState([]);
+    
+    // Result popup state
+    const [uploadResult, setUploadResult] = useState({ show: false, success: false, message: '' });
+    
+    // Ref to block duplicate submissions
+    const isSubmittingRef = useRef(false);
 
     // Fetch user's gallery uploads and categories
     useEffect(() => {
@@ -67,13 +73,19 @@ const MyGallery = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        // Block duplicate submissions
+        if (isSubmittingRef.current) return;
+        isSubmittingRef.current = true;
+
         if (!formData.name || !formData.imageUrl) {
             showNotification('Please provide a name and image', 'error');
+            isSubmittingRef.current = false;
             return;
         }
 
         if (!formData.categoryId) {
             showNotification('Please select a category', 'error');
+            isSubmittingRef.current = false;
             return;
         }
 
@@ -88,20 +100,40 @@ const MyGallery = () => {
 
             const response = await galleryService.createGalleryItem(galleryData);
 
+            // Close upload modal and reset form
+            setShowUploadModal(false);
+            setFormData({ name: '', description: '', imageUrl: '', categoryId: '' });
+            setUploading(false);
+            isSubmittingRef.current = false;
+
             if (response.success) {
-                showNotification('Gallery item submitted successfully! Pending admin approval.', 'success');
-                setShowUploadModal(false);
-                setFormData({ name: '', description: '', imageUrl: '', categoryId: '' });
-                setUploadType('file');
-                fetchMyGallery(); // Refresh the list
+                // Show success popup
+                setUploadResult({
+                    show: true,
+                    success: true,
+                    message: 'Your artwork has been submitted for review! You will be notified once it is approved.'
+                });
+                fetchMyGallery();
             } else {
-                showNotification(response.message || 'Failed to upload item', 'error');
+                // Show failure popup
+                setUploadResult({
+                    show: true,
+                    success: false,
+                    message: response.message || 'Failed to upload item. Please try again.'
+                });
             }
         } catch (error) {
             console.error('Upload error:', error);
-            showNotification('Failed to upload artwork', 'error');
-        } finally {
+            setShowUploadModal(false);
+            setFormData({ name: '', description: '', imageUrl: '', categoryId: '' });
             setUploading(false);
+            isSubmittingRef.current = false;
+            // Show failure popup
+            setUploadResult({
+                show: true,
+                success: false,
+                message: 'Failed to upload artwork. Please try again.'
+            });
         }
     };
 
@@ -406,6 +438,40 @@ const MyGallery = () => {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Upload Result Popup */}
+            {uploadResult.show && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-md w-full shadow-2xl text-center">
+                        {/* Icon */}
+                        <div className={`w-20 h-20 mx-auto mb-6 rounded-full flex items-center justify-center ${uploadResult.success ? 'bg-green-100 dark:bg-green-900/30' : 'bg-red-100 dark:bg-red-900/30'}`}>
+                            {uploadResult.success ? (
+                                <FaCheckCircle className="text-5xl text-green-500" />
+                            ) : (
+                                <FaTimesCircle className="text-5xl text-red-500" />
+                            )}
+                        </div>
+                        
+                        {/* Title */}
+                        <h3 className={`text-2xl font-bold mb-3 ${uploadResult.success ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                            {uploadResult.success ? 'Success! 🎉' : 'Upload Failed'}
+                        </h3>
+                        
+                        {/* Message */}
+                        <p className="text-gray-600 dark:text-gray-400 mb-6">
+                            {uploadResult.message}
+                        </p>
+                        
+                        {/* Close Button */}
+                        <button
+                            onClick={() => setUploadResult({ show: false, success: false, message: '' })}
+                            className={`px-8 py-3 rounded-xl font-semibold text-white transition-all ${uploadResult.success ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'}`}
+                        >
+                            {uploadResult.success ? 'Great!' : 'Try Again'}
+                        </button>
                     </div>
                 </div>
             )}
