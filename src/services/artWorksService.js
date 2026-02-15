@@ -41,11 +41,17 @@ class ArtWorksService {
 
             console.log('🎨 Extracted artworks array:', artworks);
 
-            // Return raw API data without transformation
-            // Component will use: imageUrl, name, categoryName, artistName, basePrice, discountPrice, artMedium, size
+            // Map backend isActive to frontend isAvailable for consistency
+            const processedArtworks = artworks.map(artwork => ({
+                ...artwork,
+                isAvailable: artwork.isActive !== false // default to true if not present
+            }));
+
+            // Return processed API data
+            // Component will use: imageUrl, name, categoryName, artistName, basePrice, discountPrice, artMedium, size, isAvailable
             return {
                 success: true,
-                data: artworks,
+                data: processedArtworks,
                 message: 'Art works fetched successfully'
             };
         } catch (error) {

@@ -27,6 +27,7 @@ const HomePage = () => {
         delay={2000}
         maxEvents={3}
         dismissHours={24}
+        
       />
     </div>
   );

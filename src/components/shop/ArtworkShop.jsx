@@ -118,7 +118,7 @@ const ArtworkShop = () => {
       price: price,
       image: artwork.imageUrl,
       type: 'artwork',
-      productType: 'ART_WORK',
+      productType: 'ARTWORK',  // Backend enum value (not ART_WORK)
       artist: artwork.artistName || 'Unknown',
       size: artwork.size || 'Standard',
       quantity: quantity,
@@ -344,15 +344,15 @@ const ArtworkCard = ({ artwork, onView, onAddToCart, onBuyNow, isStudent, naviga
           <div className="flex gap-2 mt-4">
             <button
               onClick={() => onAddToCart(artwork)}
-              disabled={!artwork.isAvailable}
-              className="flex-1 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 font-semibold text-sm transition"
+              disabled={artwork.isAvailable === false}
+              className="flex-1 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 font-semibold text-sm transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Add to Cart
             </button>
             <button
               onClick={() => onBuyNow(artwork)}
-              disabled={!artwork.isAvailable}
-              className="flex-1 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold text-sm transition shadow-md shadow-blue-500/20"
+              disabled={artwork.isAvailable === false}
+              className="flex-1 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold text-sm transition shadow-md shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Buy Now
             </button>
@@ -460,8 +460,8 @@ const ArtworkDetailModal = ({ artwork, onClose, onAddToCart, onBuyNow, isStudent
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className={`text-sm font-bold ${artwork.isAvailable ? 'text-green-500' : 'text-red-500'}`}>
-                    {artwork.isAvailable ? 'In Stock' : 'Sold Out'}
+                  <p className={`text-sm font-bold ${artwork.isAvailable !== false ? 'text-green-500' : 'text-red-500'}`}>
+                    {artwork.isAvailable !== false ? 'In Stock' : 'Sold Out'}
                   </p>
                 </div>
               </div>
@@ -470,15 +470,15 @@ const ArtworkDetailModal = ({ artwork, onClose, onAddToCart, onBuyNow, isStudent
                 <div className="flex gap-4">
                   <button
                     onClick={() => onAddToCart(artwork)}
-                    disabled={!artwork.isAvailable}
-                    className="flex-1 py-3.5 bg-white dark:bg-gray-700 border-2 border-blue-600 text-blue-600 dark:text-blue-400 rounded-xl font-bold hover:bg-blue-50 dark:hover:bg-blue-900/20 transition disabled:opacity-50"
+                    disabled={artwork.isAvailable === false}
+                    className="flex-1 py-3.5 bg-white dark:bg-gray-700 border-2 border-blue-600 text-blue-600 dark:text-blue-400 rounded-xl font-bold hover:bg-blue-50 dark:hover:bg-blue-900/20 transition disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Add to Cart
                   </button>
                   <button
                     onClick={() => onBuyNow(artwork)}
-                    disabled={!artwork.isAvailable}
-                    className="flex-1 py-3.5 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-500/30 disabled:opacity-50"
+                    disabled={artwork.isAvailable === false}
+                    className="flex-1 py-3.5 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Buy Now
                   </button>

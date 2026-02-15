@@ -19,21 +19,21 @@ const Contact = () => {
       title: 'Phone',
       details: '+91 7337880767',
       link: 'tel:+917337880767',
-      color: 'from-blue-500 to-cyan-500',
+      color: 'from-violet-500 to-pink-500',
     },
     {
       icon: FaEnvelope,
       title: 'Email',
       details: 'info@jjartacademy.com',
       link: 'mailto:info@jjartacademy.com',
-      color: 'from-purple-500 to-pink-500',
+      color: 'from-violet-500 to-pink-500',
     },
     {
       icon: FaMapMarkerAlt,
       title: 'Location',
       details: 'Borewell Road, Whitefield, Bangalore 560066',
       link: '#',
-      color: 'from-orange-500 to-red-500',
+      color: 'from-violet-500 to-pink-500',
     },
   ];
 
@@ -108,22 +108,22 @@ const Contact = () => {
   return (
     <section
       id="contact"
-      className="bg-linear-to-b from-white to-purple-50 dark:from-gray-900 dark:to-gray-800 py-6 sm:py-8 md:py-8"
+      className="bg-linear-to-b from-white via-violet-50/30 to-white dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-6 sm:py-8 md:py-8"
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 lg:max-w-7xl">
         <div className="space-y-10 sm:space-y-12 md:space-y-16">
           {/* Section Header */}
           <div className="text-center space-y-3 sm:space-y-4">
-            <span className="inline-block bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300 px-4 sm:px-6 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-semibold">
+            <span className="inline-block bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-300 px-4 sm:px-6 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-semibold">
               Get In Touch
             </span>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 dark:text-white px-4">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 dark:text-white px-4">
               Start Your{' '}
-              <span className="bg-clip-text text-transparent bg-linear-to-r from-purple-600 to-pink-600">
+              <span className="bg-clip-text text-transparent bg-linear-to-r from-violet-600 to-pink-500">
                 Creative Journey
               </span>
             </h2>
-            <p className="text-base sm:text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto px-4">
+            <p className="text-base sm:text-lg md:text-xl text-slate-600 dark:text-gray-300 max-w-3xl mx-auto px-4">
               Have questions? We'd love to hear from you. Send us a message and we'll respond as soon as possible.
             </p>
           </div>
@@ -134,15 +134,15 @@ const Contact = () => {
               <a
                 key={index}
                 href={info.link}
-                className="bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-xl sm:rounded-2xl shadow-xl hover:shadow-2xl transition-all group"
+                className="bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-xl sm:rounded-2xl shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-violet-200/50 ring-1 ring-slate-200/50 dark:ring-gray-700/50 transition-all group hover:-translate-y-1"
               >
-                <div className={`w-14 h-14 sm:w-16 sm:h-16 bg-linear-to-br ${info.color} rounded-xl sm:rounded-2xl flex items-center justify-center mb-3 sm:mb-4 shadow-lg group-hover:shadow-xl transition-all`}>
+                <div className={`w-14 h-14 sm:w-16 sm:h-16 bg-linear-to-br ${info.color} rounded-xl sm:rounded-2xl flex items-center justify-center mb-3 sm:mb-4 shadow-lg shadow-violet-200/50 group-hover:shadow-xl group-hover:shadow-violet-300/50 transition-all`}>
                   <info.icon className="text-2xl sm:text-3xl text-white" />
                 </div>
-                <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-1 sm:mb-2">
+                <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white mb-1 sm:mb-2">
                   {info.title}
                 </h3>
-                <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300">
+                <p className="text-sm sm:text-base text-slate-600 dark:text-gray-300">
                   {info.details}
                 </p>
               </a>
@@ -150,7 +150,7 @@ const Contact = () => {
           </div>
 
           {/* Follow Us Section */}
-          <div className="bg-linear-to-r from-purple-600 to-pink-600 rounded-2xl sm:rounded-3xl p-8 sm:p-12 text-center text-white shadow-2xl">
+          <div className="bg-linear-to-r from-violet-600 to-pink-500 rounded-2xl sm:rounded-3xl p-8 sm:p-12 text-center text-white shadow-xl shadow-violet-200/50">
             <h3 className="text-2xl sm:text-3xl font-bold mb-4">Follow Us On Social Media</h3>
             <p className="text-base sm:text-lg mb-8 opacity-90">Connect with us for daily art inspiration and updates</p>
             <div className="flex gap-4 sm:gap-6 justify-center flex-wrap">
@@ -188,13 +188,13 @@ const Contact = () => {
           <div className="grid lg:grid-cols-2 gap-6 sm:gap-8 items-start">
             {/* Left - Form */}
             <div>
-              <div className="bg-white dark:bg-gray-800 p-5 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl shadow-2xl">
+              <div className="bg-white dark:bg-gray-800 p-5 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl shadow-lg shadow-slate-200/50 ring-1 ring-slate-200/50 dark:ring-gray-700/50">
                 <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
                   {/* Name */}
                   <div>
                     <label
                       htmlFor="name"
-                      className="block text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5 sm:mb-2"
+                      className="block text-xs sm:text-sm font-semibold text-slate-700 dark:text-gray-300 mb-1.5 sm:mb-2"
                     >
                       Full Name *
                     </label>
@@ -204,11 +204,11 @@ const Contact = () => {
                       name="name"
                       value={formData.name}
                       onChange={handleChange}
-                      className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl border-2 text-sm sm:text-base ${
+                      className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl text-sm sm:text-base ${
                         errors.name
-                          ? 'border-red-500'
-                          : 'border-gray-200 dark:border-gray-700'
-                      } bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:border-purple-600 focus:outline-none transition-all`}
+                          ? 'ring-2 ring-red-500'
+                          : 'ring-1 ring-slate-200 dark:ring-gray-700'
+                      } bg-slate-50 dark:bg-gray-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-violet-500 focus:outline-none transition-all`}
                       placeholder="John Doe"
                     />
                     {errors.name && (
@@ -220,7 +220,7 @@ const Contact = () => {
                   <div>
                     <label
                       htmlFor="email"
-                      className="block text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5 sm:mb-2"
+                      className="block text-xs sm:text-sm font-semibold text-slate-700 dark:text-gray-300 mb-1.5 sm:mb-2"
                     >
                       Email Address *
                     </label>
@@ -230,11 +230,11 @@ const Contact = () => {
                       name="email"
                       value={formData.email}
                       onChange={handleChange}
-                      className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl border-2 text-sm sm:text-base ${
+                      className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl text-sm sm:text-base ${
                         errors.email
-                          ? 'border-red-500'
-                          : 'border-gray-200 dark:border-gray-700'
-                      } bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:border-purple-600 focus:outline-none transition-all`}
+                          ? 'ring-2 ring-red-500'
+                          : 'ring-1 ring-slate-200 dark:ring-gray-700'
+                      } bg-slate-50 dark:bg-gray-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-violet-500 focus:outline-none transition-all`}
                       placeholder="john@example.com"
                     />
                     {errors.email && (
@@ -246,7 +246,7 @@ const Contact = () => {
                   <div>
                     <label
                       htmlFor="phone"
-                      className="block text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5 sm:mb-2"
+                      className="block text-xs sm:text-sm font-semibold text-slate-700 dark:text-gray-300 mb-1.5 sm:mb-2"
                     >
                       Phone Number
                     </label>
@@ -256,7 +256,7 @@ const Contact = () => {
                       name="phone"
                       value={formData.phone}
                       onChange={handleChange}
-                      className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl border-2 text-sm sm:text-base border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:border-purple-600 focus:outline-none transition-all"
+                      className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl text-sm sm:text-base ring-1 ring-slate-200 dark:ring-gray-700 bg-slate-50 dark:bg-gray-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-violet-500 focus:outline-none transition-all"
                       placeholder="+1 (555) 123-4567"
                     />
                   </div>
@@ -265,7 +265,7 @@ const Contact = () => {
                   <div>
                     <label
                       htmlFor="subject"
-                      className="block text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5 sm:mb-2"
+                      className="block text-xs sm:text-sm font-semibold text-slate-700 dark:text-gray-300 mb-1.5 sm:mb-2"
                     >
                       Subject
                     </label>
@@ -275,7 +275,7 @@ const Contact = () => {
                       name="subject"
                       value={formData.subject}
                       onChange={handleChange}
-                      className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl border-2 text-sm sm:text-base border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:border-purple-600 focus:outline-none transition-all"
+                      className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl text-sm sm:text-base ring-1 ring-slate-200 dark:ring-gray-700 bg-slate-50 dark:bg-gray-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-violet-500 focus:outline-none transition-all"
                       placeholder="Class Inquiry"
                     />
                   </div>
@@ -284,7 +284,7 @@ const Contact = () => {
                   <div>
                     <label
                       htmlFor="message"
-                      className="block text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5 sm:mb-2"
+                      className="block text-xs sm:text-sm font-semibold text-slate-700 dark:text-gray-300 mb-1.5 sm:mb-2"
                     >
                       Message *
                     </label>
@@ -294,11 +294,11 @@ const Contact = () => {
                       value={formData.message}
                       onChange={handleChange}
                       rows="5"
-                      className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl border-2 text-sm sm:text-base ${
+                      className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl text-sm sm:text-base ${
                         errors.message
-                          ? 'border-red-500'
-                          : 'border-gray-200 dark:border-gray-700'
-                      } bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:border-purple-600 focus:outline-none transition-all resize-none`}
+                          ? 'ring-2 ring-red-500'
+                          : 'ring-1 ring-slate-200 dark:ring-gray-700'
+                      } bg-slate-50 dark:bg-gray-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-violet-500 focus:outline-none transition-all resize-none`}
                       placeholder="Tell us about your interest in our classes..."
                     />
                     {errors.message && (
@@ -309,7 +309,7 @@ const Contact = () => {
                   {/* Submit Button */}
                   <button
                     type="submit"
-                    className="w-full bg-linear-to-r from-purple-600 to-pink-600 text-white py-3 sm:py-4 rounded-lg sm:rounded-xl font-bold text-base sm:text-lg shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2"
+                    className="w-full bg-linear-to-r from-violet-600 to-pink-500 text-white py-3 sm:py-4 rounded-lg sm:rounded-xl font-bold text-base sm:text-lg shadow-lg shadow-violet-200/50 hover:shadow-xl hover:shadow-violet-300/50 hover:scale-[1.02] transition-all flex items-center justify-center gap-2"
                   >
                     {submitted ? (
                       <>
@@ -330,7 +330,7 @@ const Contact = () => {
             {/* Right - Map & Info */}
             <div className="space-y-6 sm:space-y-8">
               {/* Map Placeholder */}
-              <div className="bg-white dark:bg-gray-800 rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl h-64 sm:h-80 md:h-96">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl sm:rounded-3xl overflow-hidden shadow-lg shadow-slate-200/50 ring-1 ring-slate-200/50 dark:ring-gray-700/50 h-64 sm:h-80 md:h-96">
                 <iframe
                   src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3022.9663095919355!2d-74.00425878428698!3d40.74076794379132!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c259bf5c1654f3%3A0xc80f9cfce5383d5d!2sGoogle!5e0!3m2!1sen!2sus!4v1234567890"
                   width="100%"
@@ -344,8 +344,8 @@ const Contact = () => {
               </div>
 
               {/* Opening Hours */}
-              <div className="bg-white dark:bg-gray-800 p-5 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl shadow-2xl">
-                <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-6">
+              <div className="bg-white dark:bg-gray-800 p-5 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl shadow-lg shadow-slate-200/50 ring-1 ring-slate-200/50 dark:ring-gray-700/50">
+                <h3 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white mb-4 sm:mb-6">
                   Opening Hours
                 </h3>
                 <div className="space-y-3 sm:space-y-4">
@@ -356,12 +356,12 @@ const Contact = () => {
                   ].map((schedule, index) => (
                     <div
                       key={index}
-                      className="flex flex-col xs:flex-row justify-between xs:items-center py-2.5 sm:py-3 border-b border-gray-200 dark:border-gray-700 last:border-0 gap-1 xs:gap-0"
+                      className="flex flex-col xs:flex-row justify-between xs:items-center py-2.5 sm:py-3 border-b border-slate-200 dark:border-gray-700 last:border-0 gap-1 xs:gap-0"
                     >
-                      <span className="font-semibold text-sm sm:text-base text-gray-700 dark:text-gray-300">
+                      <span className="font-semibold text-sm sm:text-base text-slate-700 dark:text-gray-300">
                         {schedule.day}
                       </span>
-                      <span className="text-sm sm:text-base text-purple-600 dark:text-purple-400 font-bold">
+                      <span className="text-sm sm:text-base text-violet-600 dark:text-violet-400 font-bold">
                         {schedule.hours}
                       </span>
                     </div>

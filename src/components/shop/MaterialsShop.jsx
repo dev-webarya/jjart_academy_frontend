@@ -117,18 +117,21 @@ const MaterialsShop = () => {
 
     if (stock === 0) return;
 
-    // Add to cart with specific variant ID if available
-    const itemToAddId = variant?.id || product.id;
+    // Get the variant ID for the backend
+    const variantId = variant?.id || null;
 
     addToCart({
-      id: itemToAddId,
-      productId: product.id,
+      id: product.id,          // Main product ID
+      productId: product.id,   // Main product ID for backend
+      variantId: variantId,    // Variant ID for backend (required for materials)
       name: product.name,
       price: price,
       image: product.imageUrl || product.image,
       size: sizeLabel,
       quantity: quantity,
-      stock: stock
+      stock: stock,
+      type: 'material',        // Mark as material type
+      productType: 'MATERIAL'  // Backend enum value
     });
 
     success(`${quantity} × "${product.name}" (${sizeLabel}) added to cart!`);

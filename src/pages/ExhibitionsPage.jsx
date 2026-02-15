@@ -283,12 +283,12 @@ const ExhibitionsPage = () => {
                         >
                           Details
                         </button>
-                        <button
+                        {/* <button
                           onClick={() => handleRegister(item)}
                           className="flex-1 px-4 py-2 bg-linear-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:shadow-lg transition-all text-sm font-semibold"
                         >
                           Register
-                        </button>
+                        </button> */}
                       </div>
                     </div>
                   </div>
@@ -360,12 +360,12 @@ const ExhibitionsPage = () => {
                 </div>
 
                 <div className="pt-4">
-                  <button
+                  {/* <button
                     onClick={() => handleRegister(selectedExhibition)}
                     className="w-full py-3 bg-linear-to-r from-purple-600 to-pink-600 text-white font-bold rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-300"
                   >
                     Register for This Exhibition
-                  </button>
+                  </button> */}
                 </div>
               </div>
             </div>
