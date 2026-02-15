@@ -7,7 +7,7 @@ import galleryService from '../galleryService';
 
 // Test configuration
 const testConfig = {
-  apiUrl: 'http://93.127.194.118:8095',
+  apiUrl: 'https://api.jjartacademy.com',
   apiPrefix: '/api/v1',
   endpoints: {
     galleries: '/art-galleries',
