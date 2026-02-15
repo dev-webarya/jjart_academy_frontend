@@ -60,7 +60,7 @@ const Navbar = () => {
     { name: "Classes", path: "/classes" },
     { name: "Exhibitions", path: "/exhibitions" },
     { name: "Gallery", path: "/gallery" },
-    { name: "Fee Payment", path: "/fee-payment" },
+    // { name: "Fee Payment", path: "/fee-payment" },
     { name: "Contact", path: "/contact" },
   ];
   return (
@@ -152,19 +152,21 @@ const Navbar = () => {
               )}
             </div>
             {/* Cart Icon */}
-            <Link to="/cart" className="relative group">
-              <div className={`p-2.5 rounded-xl transition-all duration-200 ${scrolled
-                ? "text-slate-600 dark:text-slate-300 hover:text-violet-600 hover:bg-violet-50 dark:hover:bg-slate-800"
-                : "text-white hover:text-violet-300 hover:bg-white/15"
-                }`}>
-                <FaShoppingCart size={18} className="transition-transform duration-200 group-hover:scale-110" />
-                {cartCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-pink-500 text-white text-xs rounded-full flex items-center justify-center font-bold shadow-lg shadow-pink-500/30 animate-pulse">
-                    {cartCount}
-                  </span>
-                )}
-              </div>
-            </Link>
+            {isStudent && (
+              <Link to="/cart" className="relative group">
+                <div className={`p-2.5 rounded-xl transition-all duration-200 ${scrolled
+                  ? "text-slate-600 dark:text-slate-300 hover:text-violet-600 hover:bg-violet-50 dark:hover:bg-slate-800"
+                  : "text-white hover:text-violet-300 hover:bg-white/15"
+                  }`}>
+                  <FaShoppingCart size={18} className="transition-transform duration-200 group-hover:scale-110" />
+                  {cartCount > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-pink-500 text-white text-xs rounded-full flex items-center justify-center font-bold shadow-lg shadow-pink-500/30 animate-pulse">
+                      {cartCount}
+                    </span>
+                  )}
+                </div>
+              </Link>
+            )}
             {/* CTA Buttons */}
             {/* CTA Buttons */}
             <div className="flex items-center space-x-2 xl:space-x-3">
@@ -173,7 +175,7 @@ const Navbar = () => {
                 <div className="relative" ref={dropdownRef}>
                   <button
                     onClick={() => setShowLoginDropdown(!showLoginDropdown)}
-                    className={`flex items-center space-x-2 px-3 py-2 rounded-xl transition-all duration-200 border ${scrolled 
+                    className={`flex items-center space-x-2 px-3 py-2 rounded-xl transition-all duration-200 border ${scrolled
                       ? 'bg-slate-50 hover:bg-slate-100 border-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 dark:border-slate-700'
                       : 'bg-white/10 hover:bg-white/20 border-white/20'}`}
                   >
@@ -268,8 +270,8 @@ const Navbar = () => {
           <div className="lg:hidden">
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className={`text-xl sm:text-2xl p-2.5 rounded-lg transition-all duration-200 ${scrolled 
-                ? "text-slate-700 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-800" 
+              className={`text-xl sm:text-2xl p-2.5 rounded-lg transition-all duration-200 ${scrolled
+                ? "text-slate-700 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-800"
                 : "text-white hover:bg-white/15"
                 }`}
               aria-label="Toggle menu"
@@ -319,16 +321,18 @@ const Navbar = () => {
                 )}
               </div>
               {/* Cart in Mobile */}
-              <Link to="/cart" onClick={handleNavClick}>
-                <div className="px-4 py-2.5 text-left text-sm font-medium rounded-xl transition-all duration-150 text-slate-700 dark:text-slate-300 hover:text-violet-600 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center justify-between">
-                  <span>Shopping Cart</span>
-                  {cartCount > 0 && (
-                    <span className="bg-pink-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">
-                      {cartCount}
-                    </span>
-                  )}
-                </div>
-              </Link>
+              {isStudent && (
+                <Link to="/cart" onClick={handleNavClick}>
+                  <div className="px-4 py-2.5 text-left text-sm font-medium rounded-xl transition-all duration-150 text-slate-700 dark:text-slate-300 hover:text-violet-600 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center justify-between">
+                    <span>Shopping Cart</span>
+                    {cartCount > 0 && (
+                      <span className="bg-pink-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">
+                        {cartCount}
+                      </span>
+                    )}
+                  </div>
+                </Link>
+              )}
               <div className="pt-2 mt-2 border-t border-slate-200 dark:border-slate-700 space-y-2">
                 <button
                   onClick={() => { setShowRegisterModal(true); setIsOpen(false); }}
