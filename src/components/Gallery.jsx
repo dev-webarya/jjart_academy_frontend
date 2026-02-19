@@ -168,9 +168,9 @@ const Gallery = () => {
                     onClick={() => setSelectedImage(image)}
                   >
                     {/* Image Header */}
-                    <div className="relative h-64 overflow-hidden cursor-pointer">
+                    <div className="relative h-48 overflow-hidden cursor-pointer bg-gray-100 dark:bg-gray-700">
                       <img
-                        src={image.src || image.imageUrl || image.image}
+                        src={image.imageUrl || image.src || image.image}
                         alt={image.name || image.title}
                         className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
                         onError={(e) => {
@@ -183,20 +183,25 @@ const Gallery = () => {
                     </div>
 
                     {/* Content Body */}
-                    <div className="p-5 flex-1 flex flex-col space-y-3">
-                      <div className="flex justify-between items-start">
-                        <h3 className="text-xl font-bold text-gray-800 dark:text-white line-clamp-1" title={image.name || image.title}>
-                          {image.name || image.title}
-                        </h3>
-                      </div>
+                    <div className="p-4 flex-1 flex flex-col">
+                      <h3 className="text-lg font-bold text-gray-800 dark:text-white line-clamp-1 mb-1" title={image.name || image.title}>
+                        {image.name || image.title}
+                      </h3>
 
-                      <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-3">
+                      <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-2">
                         {image.description || 'No description provided.'}
                       </p>
 
-                      <div className="mt-auto pt-4 flex items-center justify-between text-xs text-gray-500 dark:text-gray-500 border-t border-gray-100 dark:border-gray-700">
-                        <span>📅 {new Date(image.createdAt).toLocaleDateString()}</span>
-                        <span className="text-purple-500 dark:text-purple-400 font-medium">View Details</span>
+                      {/* Artist Info */}
+                      {image.userName && (
+                        <p className="text-xs text-purple-600 dark:text-purple-400 mb-2">
+                          🎨 Author: {image.userName.split('@')[0]}
+                        </p>
+                      )}
+
+                      <div className="mt-auto pt-3 flex items-center justify-between text-xs text-gray-500 dark:text-gray-500 border-t border-gray-100 dark:border-gray-700">
+                        <span>📅 {image.createdAt ? new Date(image.createdAt).toLocaleDateString() : 'Recent'}</span>
+                        <span className="text-purple-500 dark:text-purple-400 font-medium cursor-pointer hover:underline">View Details</span>
                       </div>
                     </div>
                   </div>

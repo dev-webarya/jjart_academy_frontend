@@ -27,6 +27,7 @@ class ArtMaterialsService {
             const data = await response.json();
             console.log('✅ Art Materials API response:', data);
 
+            // Extract the content array from paginated response
             let materials = [];
             if (Array.isArray(data)) {
                 materials = data;
@@ -38,34 +39,13 @@ class ArtMaterialsService {
                 materials = data.artMaterials;
             }
 
-            // Map backend fields to frontend structure
-            const mappedMaterials = materials.map(item => ({
-                id: item.id,
-                name: item.name || 'Untitled Material',
-                description: item.description || '',
-                brand: item.brand || 'Generic',
-                images: item.imageUrl ? [item.imageUrl] : (item.images || []),
-                category: item.categoryName || item.category || 'Supplies',
-                price: item.basePrice || item.price || 0,
-                discountPrice: item.discount ? (item.basePrice * (1 - item.discount / 100)) : (item.discountPrice || null),
-                stock: item.stock !== undefined ? item.stock : 10,
-                rating: item.rating || 4.5, // Mock rating
-                reviews: item.reviews || 0,
-                sizeOptions: item.variants ? item.variants.map(v => ({
-                    id: v.id || v.size,
-                    label: v.size,
-                    price: v.price,
-                    discountPrice: v.discountPrice,
-                    stock: v.stock,
-                    isDefault: false
-                })) : [],
-                isAvailable: item.active !== false && (item.stock > 0 || (item.variants && item.variants.some(v => v.stock > 0))),
-                features: ['High Quality', 'Professional Grade'] // Mock features
-            }));
+            console.log('📦 Extracted materials array:', materials);
 
+            // Return raw API data without transformation
+            // Component will use: imageUrl, categoryName, basePrice, discount, variants
             return {
                 success: true,
-                data: mappedMaterials,
+                data: materials,
                 message: 'Art materials fetched successfully'
             };
         } catch (error) {
@@ -73,6 +53,7 @@ class ArtMaterialsService {
             return {
                 success: false,
                 message: error.message,
+                data: [],
                 error
             };
         }

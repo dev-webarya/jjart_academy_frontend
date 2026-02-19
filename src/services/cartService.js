@@ -57,21 +57,31 @@ class CartService {
      * Add item to cart
      * POST /api/v1/art-cart/items
      * @param {string} productId - ID of the product
-     * @param {string} productType - Type: 'ART_WORK' or 'ART_MATERIAL'
+     * @param {string} productType - Type: 'ARTWORK' or 'MATERIAL'
      * @param {number} quantity - Quantity to add (default: 1)
+     * @param {string} variantId - Variant ID (required for MATERIAL type)
      */
-    async addItem(productId, productType, quantity = 1) {
+    async addItem(productId, productType, quantity = 1, variantId = null) {
         try {
+            const requestBody = {
+                itemId: productId,    // Backend expects itemId
+                itemType: productType, // Backend expects itemType (ARTWORK or MATERIAL)
+                quantity,
+            };
+
+            // Add variant ID for materials (required by backend)
+            if (variantId) {
+                requestBody.itemVariantId = variantId;
+            }
+
+            console.log('🛒 Add to cart request:', requestBody);
+
             const response = await fetch(
                 `${this.baseURL}${API_ENDPOINTS.CART.ADD_ITEM}`,
                 {
                     method: 'POST',
                     headers: this.getAuthHeaders(),
-                    body: JSON.stringify({
-                        itemId: productId,    // Backend expects itemId
-                        itemType: productType, // Backend expects itemType
-                        quantity,
-                    }),
+                    body: JSON.stringify(requestBody),
                 }
             );
 

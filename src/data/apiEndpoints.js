@@ -1,5 +1,7 @@
 // Base Configuration
-export const BASE_URL = "http://93.127.194.118:8095";
+// export const BASE_URL = "http://93.127.194.118:8095";
+export const BASE_URL = "https://api.jjartacademy.com";
+// export const BASE_URL = "http://localhost:8095";
 export const API_PREFIX = "/api/v1";
 
 /**

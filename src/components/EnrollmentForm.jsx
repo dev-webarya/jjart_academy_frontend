@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { FaTimes, FaUser, FaEnvelope, FaPhone, FaCalendar, FaChild, FaMapMarkerAlt, FaExclamationCircle } from 'react-icons/fa';
 import enrollmentService from '../services/enrollmentService';
 
@@ -97,8 +98,8 @@ const EnrollmentForm = ({ isOpen, onClose, onSuccess, selectedClassId, selectedC
 
   if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto">
+  return createPortal(
+    <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4 overflow-y-auto">
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-md w-full my-8 max-h-[85vh] flex flex-col">
         {/* Header */}
         <div className="bg-linear-to-r from-purple-600 to-pink-600 text-white p-4 rounded-t-lg flex justify-between items-center shrink-0">
@@ -328,7 +329,8 @@ const EnrollmentForm = ({ isOpen, onClose, onSuccess, selectedClassId, selectedC
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

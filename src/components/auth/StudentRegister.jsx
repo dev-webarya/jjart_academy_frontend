@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { FaTimes, FaUser, FaEnvelope, FaLock, FaPhone, FaUserGraduate } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 
@@ -130,8 +131,8 @@ const StudentRegister = ({ isOpen, onClose, onLoginClick }) => {
 
     if (!isOpen) return null;
 
-    return (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4">
+    return createPortal(
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-3 sm:p-4">
             <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-2xl w-full sm:w-96 max-w-sm sm:max-w-md overflow-hidden transform transition-all max-h-[90vh] flex flex-col">
                 {/* Header */}
                 <div className="bg-linear-to-r from-purple-600 via-pink-600 to-purple-700 text-white p-4 sm:p-6 relative shrink-0">
@@ -325,7 +326,8 @@ const StudentRegister = ({ isOpen, onClose, onLoginClick }) => {
                     )}
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 };
 

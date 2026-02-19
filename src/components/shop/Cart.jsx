@@ -156,15 +156,23 @@ const Cart = () => {
                             <h3 className="text-lg font-bold text-gray-800 dark:text-white line-clamp-2">
                               {item.name}
                             </h3>
-                            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                              {item.type === 'artwork' ? `Artist: ${item.artist}` : `Brand: ${item.brand}`}
-                            </p>
-                            {item.type === 'artwork' && (
-                              <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">Artwork</p>
+                            {item.type === 'artwork' && item.artist && (
+                              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                Artist: {item.artist}
+                              </p>
                             )}
-                            {item.type === 'material' && (
-                              <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">Art Supply</p>
+                            {item.size && (
+                              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                Variant: {item.size}
+                              </p>
                             )}
+                            <span className={`inline-block mt-2 px-2 py-0.5 text-xs font-semibold rounded-full ${
+                              item.type === 'artwork' 
+                                ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300' 
+                                : 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
+                            }`}>
+                              {item.type === 'artwork' ? '🎨 Artwork' : '🖌️ Art Material'}
+                            </span>
                           </div>
                           <button
                             onClick={() => handleRemove(item)}
@@ -176,36 +184,46 @@ const Cart = () => {
                         </div>
 
                         <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-200 dark:border-gray-700">
-                          {/* Quantity Controls */}
-                          <div className="flex items-center gap-3 bg-gray-100 dark:bg-gray-700 rounded-lg p-2">
-                            <button
-                              onClick={() => handleUpdateQuantity(item, item.quantity - 1)}
-                              disabled={item.quantity === 1}
-                              className="w-8 h-8 rounded-md bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-all"
-                              title="Decrease quantity"
-                            >
-                              <FaMinus size={12} />
-                            </button>
-                            <span className="text-lg font-bold text-gray-800 dark:text-white w-10 text-center">
-                              {item.quantity}
-                            </span>
-                            <button
-                              onClick={() => handleUpdateQuantity(item, item.quantity + 1)}
-                              className="w-8 h-8 rounded-md bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-500 flex items-center justify-center transition-all"
-                              title="Increase quantity"
-                            >
-                              <FaPlus size={12} />
-                            </button>
-                          </div>
+                          {/* Quantity Controls - Only for materials, artworks are unique (qty=1) */}
+                          {item.type === 'material' ? (
+                            <div className="flex items-center gap-3 bg-gray-100 dark:bg-gray-700 rounded-lg p-2">
+                              <button
+                                onClick={() => handleUpdateQuantity(item, item.quantity - 1)}
+                                disabled={item.quantity === 1}
+                                className="w-8 h-8 rounded-md bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-all"
+                                title="Decrease quantity"
+                              >
+                                <FaMinus size={12} />
+                              </button>
+                              <span className="text-lg font-bold text-gray-800 dark:text-white w-10 text-center">
+                                {item.quantity}
+                              </span>
+                              <button
+                                onClick={() => handleUpdateQuantity(item, item.quantity + 1)}
+                                className="w-8 h-8 rounded-md bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-500 flex items-center justify-center transition-all"
+                                title="Increase quantity"
+                              >
+                                <FaPlus size={12} />
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                              <span className="px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full font-medium">
+                                Unique Piece
+                              </span>
+                            </div>
+                          )}
 
                           {/* Price */}
                           <div className="text-right">
                             <p className="text-2xl font-bold text-purple-600">
                               ₹{(item.price * item.quantity).toLocaleString()}
                             </p>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                              ₹{item.price.toLocaleString()} × {item.quantity}
-                            </p>
+                            {item.type === 'material' && item.quantity > 1 && (
+                              <p className="text-sm text-gray-500 dark:text-gray-400">
+                                ₹{item.price.toLocaleString()} × {item.quantity}
+                              </p>
+                            )}
                           </div>
                         </div>
                       </div>

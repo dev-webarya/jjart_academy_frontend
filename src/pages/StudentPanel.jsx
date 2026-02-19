@@ -3,8 +3,8 @@ import { useNavigate, Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   FaHome, FaCalendar, FaCertificate,
-  FaSignOutAlt, FaPalette, FaBell, FaUser, FaBars, FaTimes,
-  FaClipboardList, FaCog, FaChalkboardTeacher, FaVideo, FaMoneyBillWave, FaImage
+  FaSignOutAlt, FaPalette, FaUser, FaBars, FaTimes,
+  FaClipboardList, FaCog, FaChalkboardTeacher, FaVideo, FaMoneyBillWave, FaImage, FaArrowLeft
 } from 'react-icons/fa';
 
 const StudentPanel = () => {
@@ -26,10 +26,6 @@ const StudentPanel = () => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
-
-  const handleNotificationClick = () => {
-    navigate('/student/notifications');
-  };
 
   const handleStudentProfileClick = () => {
     setShowProfileDropdown(!showProfileDropdown);
@@ -87,14 +83,7 @@ const StudentPanel = () => {
           </div>
 
           <div className="flex items-center space-x-4">
-            <button
-              onClick={handleNotificationClick}
-              className="relative p-2 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all">
-              <FaBell size={20} />
-              <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
-            </button>
-
-            <div className="flex items-center space-x-3 pl-4 border-l border-gray-200 dark:border-gray-700" ref={profileDropdownRef}>
+            <div className="flex items-center space-x-3 pl-4" ref={profileDropdownRef}>
               <button
                 onClick={handleStudentProfileClick}
                 className="flex items-center space-x-3 hover:opacity-80 transition-all"
@@ -233,8 +222,18 @@ const StudentPanel = () => {
               );
             })}
 
-            {/* Logout Button */}
-            <div className="border-t border-gray-200 dark:border-gray-700 mt-6 pt-4">
+            {/* Back to Home & Logout Group */}
+            <div className="border-t border-gray-200 dark:border-gray-700 mt-6 pt-4 space-y-2">
+              <Link
+                to="/"
+                className={`flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all font-medium ${!sidebarOpen && 'lg:justify-center'}`}
+              >
+                <FaArrowLeft size={20} className="shrink-0" />
+                {sidebarOpen && (
+                  <span>Back to Home</span>
+                )}
+              </Link>
+
               <button
                 onClick={handleLogoutClick}
                 className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all font-medium ${!sidebarOpen && 'lg:justify-center'}`}

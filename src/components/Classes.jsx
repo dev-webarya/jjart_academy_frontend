@@ -143,21 +143,21 @@ const Classes = () => {
   };
 
   return (
-    <section id="classes" className="bg-gray-50 dark:bg-gray-900 py-6 sm:py-8 md:py-8 min-h-screen">
+    <section id="classes" className="bg-slate-50 dark:bg-slate-900 py-6 sm:py-8 md:py-8 min-h-screen">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 lg:max-w-7xl">
         <div className="space-y-8 sm:space-y-10 md:space-y-12">
           {/* Section Header */}
           <div className="text-center space-y-3 sm:space-y-4">
-            <span className="inline-block bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300 px-4 sm:px-6 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-semibold">
+            <span className="inline-block bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 px-4 sm:px-6 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-semibold tracking-wide">
               Our Classes
             </span>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 dark:text-white px-4">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 dark:text-white px-4">
               Discover Your{' '}
-              <span className="bg-clip-text text-transparent bg-linear-to-r from-purple-600 to-pink-600">
+              <span className="bg-clip-text text-transparent bg-linear-to-r from-violet-600 to-pink-500">
                 Perfect Class
               </span>
             </h2>
-            <p className="text-base sm:text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto px-4">
+            <p className="text-base sm:text-lg md:text-xl text-slate-600 dark:text-slate-300 max-w-3xl mx-auto px-4">
               Choose from our diverse range of art classes designed for all skill levels
             </p>
           </div>
@@ -174,16 +174,16 @@ const Classes = () => {
 
           {/* Search and Filters */}
           <div className="max-w-7xl mx-auto">
-            <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm">
+            <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-white dark:bg-slate-800 p-4 rounded-xl shadow-lg shadow-slate-200/50 dark:shadow-slate-900/50">
               {/* Search Bar */}
               <div className="relative flex-1 w-full md:max-w-md">
-                <FaSearch className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <FaSearch className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-slate-400" />
                 <input
                   type="text"
                   placeholder="Search classes..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-lg bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white ring-1 ring-slate-200 dark:ring-slate-700 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-all outline-none"
                   disabled={loading}
                 />
               </div>
@@ -193,7 +193,7 @@ const Classes = () => {
                 <select
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 cursor-pointer text-sm font-medium whitespace-nowrap"
+                  className="px-4 py-2.5 rounded-lg bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white ring-1 ring-slate-200 dark:ring-slate-700 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 cursor-pointer text-sm font-medium whitespace-nowrap outline-none transition-all"
                   disabled={loading}
                 >
                   {categories.map((category) => (
@@ -204,7 +204,7 @@ const Classes = () => {
                 <select
                   value={selectedLevel}
                   onChange={(e) => setSelectedLevel(e.target.value)}
-                  className="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 cursor-pointer text-sm font-medium whitespace-nowrap"
+                  className="px-4 py-2.5 rounded-lg bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white ring-1 ring-slate-200 dark:ring-slate-700 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 cursor-pointer text-sm font-medium whitespace-nowrap outline-none transition-all"
                   disabled={loading}
                 >
                   {levels.map((level) => (
@@ -218,8 +218,8 @@ const Classes = () => {
           {/* Loading State */}
           {loading && (
             <div className="flex flex-col items-center justify-center py-20">
-              <FaSpinner className="text-4xl text-purple-600 animate-spin mb-4" />
-              <p className="text-lg text-gray-600 dark:text-gray-400">Loading classes...</p>
+              <FaSpinner className="text-4xl text-violet-600 animate-spin mb-4" />
+              <p className="text-lg text-slate-600 dark:text-slate-400">Loading classes...</p>
             </div>
           )}
 
@@ -227,23 +227,24 @@ const Classes = () => {
           {!loading && (
             <div id="classes-grid" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {currentItems.map((item) => (
-                <div key={item.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group border border-gray-100 dark:border-gray-700">
+                <div key={item.id} className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg shadow-slate-200/50 dark:shadow-slate-900/50 hover:shadow-xl hover:shadow-violet-200/50 dark:hover:shadow-violet-900/30 hover:-translate-y-1 transition-all duration-300 overflow-hidden group border border-slate-100 dark:border-slate-700">
                   {/* Image Header */}
-                  <div className="relative h-48 overflow-hidden">
+                  <div className="relative h-44 overflow-hidden">
                     <img
                       src={item.imageUrl || item.image || 'https://via.placeholder.com/300?text=No+Image'}
                       alt={item.name || item.title}
-                      className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300 cursor-pointer"
+                      className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500 cursor-pointer"
                       onClick={() => {
                         setPreviewImage(item.imageUrl || item.image || 'https://via.placeholder.com/300?text=No+Image');
                         setPreviewTitle(item.name || item.title);
                       }}
                     />
-                    <div className="absolute top-2 right-2 bg-white/90 dark:bg-gray-900/90 px-2 py-1 rounded-full text-xs font-semibold shadow-sm text-gray-800 dark:text-gray-200">
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <div className="absolute top-3 right-3 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-semibold shadow-md text-violet-600 dark:text-violet-400">
                       {item.categoryName || item.category || 'Uncategorized'}
                     </div>
                     {item.discountPrice && item.discountPrice < item.basePrice && (
-                      <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-bold shadow-sm">
+                      <div className="absolute top-3 left-3 bg-gradient-to-r from-pink-500 to-rose-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-md">
                         Save ₹{(item.basePrice - item.discountPrice).toFixed(0)}
                       </div>
                     )}
@@ -252,39 +253,39 @@ const Classes = () => {
                   {/* Content Body */}
                   <div className="p-5 space-y-3">
                     <div className="flex justify-between items-start">
-                      <h3 className="text-xl font-bold text-gray-800 dark:text-white line-clamp-1" title={item.name || item.title}>
+                      <h3 className="text-xl font-bold text-slate-900 dark:text-white line-clamp-1" title={item.name || item.title}>
                         {item.name || item.title}
                       </h3>
                       {/* Determine active status if available, else default to true as they are public */}
                       {/* For public view, we generally show only active, but if data has it, we can use it or just ignore */}
                     </div>
 
-                    <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 h-10">
+                    <p className="text-sm text-slate-600 dark:text-slate-400 line-clamp-2 h-10 leading-relaxed">
                       {item.description}
                     </p>
 
-                    <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+                    <div className="flex items-center gap-4 text-sm text-slate-500 dark:text-slate-400">
                       {(item.durationWeeks || item.weeks) && (
-                        <span className="flex items-center gap-1">
-                          <FaClock className="text-purple-500" /> {item.durationWeeks || item.weeks} Weeks
+                        <span className="flex items-center gap-1.5 bg-violet-50 dark:bg-violet-900/30 px-2.5 py-1 rounded-full">
+                          <FaClock className="text-violet-500" /> {item.durationWeeks || item.weeks} Weeks
                         </span>
                       )}
                       {(item.proficiency || item.level) && (
-                        <span className="flex items-center gap-1">
-                          <FaUserGraduate className="text-blue-500" /> {item.proficiency || item.level}
+                        <span className="flex items-center gap-1.5 bg-pink-50 dark:bg-pink-900/30 px-2.5 py-1 rounded-full">
+                          <FaUserGraduate className="text-pink-500" /> {item.proficiency || item.level}
                         </span>
                       )}
                     </div>
 
-                    <div className="flex items-end justify-between pt-2 border-t border-gray-100 dark:border-gray-700">
+                    <div className="flex items-end justify-between pt-3 border-t border-slate-100 dark:border-slate-700">
                       <div>
-                        <span className="text-xs text-gray-500 dark:text-gray-400">Price</span>
+                        <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Price</span>
                         <div className="flex items-baseline gap-2">
-                          <span className="text-lg font-bold text-gray-900 dark:text-white">
+                          <span className="text-xl font-bold text-slate-900 dark:text-white">
                             ₹{(Number(item.discountPrice) > 0 ? item.discountPrice : (Number(item.price) > 0 ? item.price : item.basePrice || 0)).toLocaleString()}
                           </span>
                           {(item.discountPrice || item.originalPrice) && (
-                            <span className="text-sm text-gray-400 line-through">
+                            <span className="text-sm text-slate-400 line-through">
                               ₹{item.basePrice || item.originalPrice}
                             </span>
                           )}
@@ -293,7 +294,7 @@ const Classes = () => {
 
                       <button
                         onClick={() => handleEnrollNow(item)}
-                        className="bg-linear-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-lg font-semibold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all duration-300"
+                        className="bg-violet-600 hover:bg-violet-700 text-white px-5 py-2.5 rounded-xl font-semibold text-sm shadow-lg shadow-violet-500/25 hover:shadow-xl hover:shadow-violet-500/30 hover:scale-105 transition-all duration-300"
                       >
                         Enroll Now
                       </button>
@@ -317,9 +318,15 @@ const Classes = () => {
 
           {/* No Results */}
           {!loading && filteredClasses.length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-xl text-gray-500 dark:text-gray-400">
+            <div className="text-center py-16">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-violet-50 dark:bg-violet-900/30 mb-4">
+                <FaSearch className="text-2xl text-violet-400" />
+              </div>
+              <p className="text-xl text-slate-600 dark:text-slate-400 font-medium">
                 No classes found matching your criteria.
+              </p>
+              <p className="text-sm text-slate-500 dark:text-slate-500 mt-2">
+                Try adjusting your filters or search terms
               </p>
             </div>
           )}

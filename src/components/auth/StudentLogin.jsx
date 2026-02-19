@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { FaTimes, FaEye, FaEyeSlash, FaEnvelope, FaLock, FaUserGraduate } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
@@ -73,8 +74,8 @@ const StudentLogin = ({ isOpen, onClose }) => {
 
   if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4">
+  return createPortal(
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-3 sm:p-4">
       <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-2xl w-full sm:w-96 max-w-sm sm:max-w-md overflow-hidden transform transition-all">
         {/* Enhanced Header */}
         <div className="bg-linear-to-r from-blue-600 via-purple-600 to-blue-700 text-white p-4 sm:p-6 md:p-8 rounded-b-2xl sm:rounded-b-3xl relative overflow-hidden">
@@ -190,7 +191,8 @@ const StudentLogin = ({ isOpen, onClose }) => {
           onClose={() => setShowForgotPassword(false)}
         />
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

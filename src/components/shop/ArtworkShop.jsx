@@ -74,16 +74,16 @@ const ArtworkShop = () => {
     // Apply Category Filter first if selected
     if (selectedCategory !== 'All') {
       filtered = filtered.filter(product => {
-        const cat = product.category?.name || product.category || '';
+        const cat = product.categoryName || product.category?.name || product.category || '';
         return cat === selectedCategory;
       });
     }
 
     if (searchTerm) {
       filtered = filtered.filter(product =>
-        product.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         product.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (product.artist?.name || '').toLowerCase().includes(searchTerm.toLowerCase())
+        (product.artistName || '').toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -97,7 +97,7 @@ const ArtworkShop = () => {
 
     if (category && category !== "All" && category !== "") {
       filtered = filtered.filter(product => {
-        const cat = product.category?.name || product.category || '';
+        const cat = product.categoryName || product.category?.name || product.category || '';
         return cat === category;
       });
     }
@@ -107,28 +107,23 @@ const ArtworkShop = () => {
   };
 
   const handleAddToCart = (artwork, sizeOption, quantity = 1) => {
-    // Logic to handle size/price variations if they exist
-    const selectedVariant = sizeOption || artwork.sizeOptions?.find(s => s.isDefault) || artwork.sizeOptions?.[0];
-    const price = selectedVariant?.price || artwork.price;
-    const label = selectedVariant?.label || 'Standard';
-
-    // Add to cart with specific variant ID if available
-    const itemToAddId = selectedVariant?.id || artwork.id;
+    // Use raw API fields: basePrice, discountPrice
+    const price = artwork.discountPrice || artwork.basePrice;
 
     // Add to cart with real product ID for backend sync
     addToCart({
-      id: itemToAddId, // Send Specific Variant ID
-      productId: itemToAddId, // Explicitly pass productId
-      name: artwork.title,
+      id: artwork.id,
+      productId: artwork.id,
+      name: artwork.name,
       price: price,
-      image: Array.isArray(artwork.images) ? artwork.images[0] : artwork.image,
+      image: artwork.imageUrl,
       type: 'artwork',
-      productType: 'ART_WORK', // Backend product type
-      artist: artwork.artist?.name || 'Unknown',
-      size: label,
-      quantity: quantity, // Pass quantity directly
+      productType: 'ARTWORK',  // Backend enum value (not ART_WORK)
+      artist: artwork.artistName || 'Unknown',
+      size: artwork.size || 'Standard',
+      quantity: quantity,
     });
-    success(`"${artwork.title}" added to cart!`);
+    success(`"${artwork.name}" added to cart!`);
   };
 
   const handleBuyNow = (artwork, sizeOption, quantity = 1) => {
@@ -154,7 +149,7 @@ const ArtworkShop = () => {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
 
       {/* Hero Section */}
-      <section className="relative h-96 bg-gray-900 overflow-hidden">
+      <section className="relative h-[45vh] bg-gray-900 overflow-hidden">
         <div className="absolute inset-0">
           <img
             src="https://images.unsplash.com/photo-1547891654-e66ed7ebb968?w=1600&q=80"
@@ -269,21 +264,20 @@ const ArtworkShop = () => {
 };
 
 const ArtworkCard = ({ artwork, onView, onAddToCart, onBuyNow, isStudent, navigate, setPreviewImage, setPreviewTitle }) => {
-  // Safe access to nested properties
-  const images = Array.isArray(artwork.images) ? artwork.images : [artwork.image];
-  const artistName = artwork.artist?.name || 'Unknown Artist';
-  const categoryName = artwork.category?.name || artwork.category || 'Art';
+  const artistName = artwork.artistName || 'Unknown Artist';
+  const images = artwork.imageUrl ? [artwork.imageUrl] : [];
+  const categoryName = artwork.categoryName || 'Art';
 
   // Determine image source (handle potential missing images)
-  const displayImage = images[0] || 'https://via.placeholder.com/400x300?text=No+Image';
+  const displayImage = artwork.imageUrl || 'https://via.placeholder.com/400x300?text=No+Image';
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden group border border-gray-100 dark:border-gray-700 flex flex-col h-full transform hover:-translate-y-1">
       {/* Image Container */}
-      <div className="relative h-64 overflow-hidden">
+      <div className="relative h-40 overflow-hidden">
         <img
           src={displayImage}
-          alt={artwork.title}
+          alt={artwork.name}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
         />
 
@@ -292,7 +286,7 @@ const ArtworkCard = ({ artwork, onView, onAddToCart, onBuyNow, isStudent, naviga
           <button
             onClick={() => {
               setPreviewImage(displayImage);
-              setPreviewTitle(artwork.title);
+              setPreviewTitle(artwork.name);
             }}
             className="p-3 bg-white/90 text-gray-900 rounded-full hover:bg-white transition hover:scale-110 shadow-lg"
             title="View Fullscreen"
@@ -313,31 +307,24 @@ const ArtworkCard = ({ artwork, onView, onAddToCart, onBuyNow, isStudent, naviga
       </div>
 
       {/* Content */}
-      <div className="p-5 flex flex-col flex-grow">
+      <div className="p-4 flex flex-col flex-grow">
         <div className="flex justify-between items-start mb-2">
           <div>
             <h3 className="text-xl font-bold text-gray-900 dark:text-white line-clamp-1 hover:text-blue-600 cursor-pointer" onClick={onView}>
-              {artwork.title}
+              {artwork.name}
             </h3>
             <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">by {artistName}</p>
-            {/* Debug log for developers - only visible in console */}
-            {(() => { if (Number(artwork.price) === 0) console.log('🔍 Price Debug:', { id: artwork.id, title: artwork.title, rawPrice: artwork.price, variants: artwork.sizeOptions }); return null; })()}
           </div>
-          {artwork.artist?.avatar && (
-            <img src={artwork.artist.avatar} alt={artistName} className="w-8 h-8 rounded-full border border-gray-200 dark:border-gray-600" />
-          )}
         </div>
 
         <div className="mt-auto pt-4 flex items-center justify-between border-t border-gray-100 dark:border-gray-700">
           <div className="flex flex-col">
             <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-              ₹{(Number(artwork.discountPrice) > 0 ? Number(artwork.discountPrice) :
-                (Number(artwork.price) > 0 ? Number(artwork.price) :
-                  (Number(artwork.sizeOptions?.find(s => Number(s.price) > 0)?.price) || Number(artwork.sizeOptions?.[0]?.price) || 0))).toLocaleString()}
+              ₹{(artwork.discountPrice || artwork.basePrice || 0).toLocaleString()}
             </span>
-            {Number(artwork.discountPrice) > 0 && Number(artwork.price) > Number(artwork.discountPrice) && (
+            {artwork.discountPrice > 0 && artwork.basePrice > artwork.discountPrice && (
               <span className="text-xs text-gray-400 line-through">
-                ₹{Number(artwork.price).toLocaleString()}
+                ₹{artwork.basePrice.toLocaleString()}
               </span>
             )}
           </div>
@@ -357,15 +344,15 @@ const ArtworkCard = ({ artwork, onView, onAddToCart, onBuyNow, isStudent, naviga
           <div className="flex gap-2 mt-4">
             <button
               onClick={() => onAddToCart(artwork)}
-              disabled={!artwork.isAvailable}
-              className="flex-1 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 font-semibold text-sm transition"
+              disabled={artwork.isAvailable === false}
+              className="flex-1 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 font-semibold text-sm transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Add to Cart
             </button>
             <button
               onClick={() => onBuyNow(artwork)}
-              disabled={!artwork.isAvailable}
-              className="flex-1 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold text-sm transition shadow-md shadow-blue-500/20"
+              disabled={artwork.isAvailable === false}
+              className="flex-1 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold text-sm transition shadow-md shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Buy Now
             </button>
@@ -473,8 +460,8 @@ const ArtworkDetailModal = ({ artwork, onClose, onAddToCart, onBuyNow, isStudent
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className={`text-sm font-bold ${artwork.isAvailable ? 'text-green-500' : 'text-red-500'}`}>
-                    {artwork.isAvailable ? 'In Stock' : 'Sold Out'}
+                  <p className={`text-sm font-bold ${artwork.isAvailable !== false ? 'text-green-500' : 'text-red-500'}`}>
+                    {artwork.isAvailable !== false ? 'In Stock' : 'Sold Out'}
                   </p>
                 </div>
               </div>
@@ -483,15 +470,15 @@ const ArtworkDetailModal = ({ artwork, onClose, onAddToCart, onBuyNow, isStudent
                 <div className="flex gap-4">
                   <button
                     onClick={() => onAddToCart(artwork)}
-                    disabled={!artwork.isAvailable}
-                    className="flex-1 py-3.5 bg-white dark:bg-gray-700 border-2 border-blue-600 text-blue-600 dark:text-blue-400 rounded-xl font-bold hover:bg-blue-50 dark:hover:bg-blue-900/20 transition disabled:opacity-50"
+                    disabled={artwork.isAvailable === false}
+                    className="flex-1 py-3.5 bg-white dark:bg-gray-700 border-2 border-blue-600 text-blue-600 dark:text-blue-400 rounded-xl font-bold hover:bg-blue-50 dark:hover:bg-blue-900/20 transition disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Add to Cart
                   </button>
                   <button
                     onClick={() => onBuyNow(artwork)}
-                    disabled={!artwork.isAvailable}
-                    className="flex-1 py-3.5 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-500/30 disabled:opacity-50"
+                    disabled={artwork.isAvailable === false}
+                    className="flex-1 py-3.5 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Buy Now
                   </button>

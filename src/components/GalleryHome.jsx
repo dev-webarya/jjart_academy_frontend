@@ -60,9 +60,9 @@ const GalleryHome = () => {
                             key={item.id}
                             className="group relative bg-white dark:bg-gray-800 rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 border border-gray-100 dark:border-gray-700"
                         >
-                            <div className="aspect-[4/3] overflow-hidden">
+                            <div className="aspect-[4/3] overflow-hidden bg-gray-100 dark:bg-gray-700">
                                 <img
-                                    src={item.src || item.imageUrl || item.image}
+                                    src={item.imageUrl || item.src || item.image}
                                     alt={item.name || item.title}
                                     className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
                                     onError={(e) => {
@@ -80,9 +80,14 @@ const GalleryHome = () => {
                                 <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2 line-clamp-1">
                                     {item.name || item.title}
                                 </h3>
-                                <p className="text-gray-600 dark:text-gray-400 text-sm line-clamp-2 mb-4">
+                                <p className="text-gray-600 dark:text-gray-400 text-sm line-clamp-2 mb-2">
                                     {item.description || 'A beautiful creation by our student.'}
                                 </p>
+                                {item.userName && (
+                                    <p className="text-xs text-purple-600 dark:text-purple-400 mb-3">
+                                        🎨 By: {item.userName.split('@')[0]}
+                                    </p>
+                                )}
                                 <Link
                                     to="/gallery"
                                     className="text-purple-600 dark:text-purple-400 font-bold text-sm flex items-center gap-1 hover:gap-2 transition-all"

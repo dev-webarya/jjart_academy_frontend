@@ -164,7 +164,7 @@ const ExhibitionsPage = () => {
 
       {/* Hero Section */}
       {!loading && (
-        <section className="relative h-[60vh] flex items-center justify-center overflow-hidden pt-20">
+        <section className="relative h-[45vh] flex items-center justify-center overflow-hidden pt-20">
           <div className="absolute inset-0">
             <img
               src="https://images.unsplash.com/photo-1561070791-2526d30994b5?w=1920&q=80"
@@ -222,7 +222,7 @@ const ExhibitionsPage = () => {
                 {currentItems.map((item) => (
                   <div key={item.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-shadow overflow-hidden group">
                     {/* Image Header */}
-                    <div className="relative h-48 overflow-hidden">
+                    <div className="relative h-40 overflow-hidden">
                       <img
                         src={item.imageUrl || item.image || 'https://via.placeholder.com/300?text=Exhibition'}
                         alt={item.title || item.name}
@@ -247,7 +247,7 @@ const ExhibitionsPage = () => {
                     </div>
 
                     {/* Content Body */}
-                    <div className="p-5 space-y-3">
+                    <div className="p-4 space-y-2">
                       <h3 className="text-xl font-bold text-gray-800 dark:text-white line-clamp-1" title={item.title || item.name}>
                         {item.title || item.name}
                       </h3>
@@ -283,12 +283,12 @@ const ExhibitionsPage = () => {
                         >
                           Details
                         </button>
-                        <button
+                        {/* <button
                           onClick={() => handleRegister(item)}
                           className="flex-1 px-4 py-2 bg-linear-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:shadow-lg transition-all text-sm font-semibold"
                         >
                           Register
-                        </button>
+                        </button> */}
                       </div>
                     </div>
                   </div>
@@ -360,12 +360,12 @@ const ExhibitionsPage = () => {
                 </div>
 
                 <div className="pt-4">
-                  <button
+                  {/* <button
                     onClick={() => handleRegister(selectedExhibition)}
                     className="w-full py-3 bg-linear-to-r from-purple-600 to-pink-600 text-white font-bold rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-300"
                   >
                     Register for This Exhibition
-                  </button>
+                  </button> */}
                 </div>
               </div>
             </div>
