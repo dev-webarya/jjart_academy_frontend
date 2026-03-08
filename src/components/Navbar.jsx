@@ -76,9 +76,9 @@ const Navbar = () => {
           <Link to="/" onClick={handleNavClick} className="mr-auto lg:mr-8">
             <div className="flex items-center space-x-2 sm:space-x-3 cursor-pointer group">
               <img
-                src="/logo.png"
+                src="/JJ_ART_LOGO.jpeg"
                 alt=" Logo"
-                className="h-12 sm:h-16 md:h-20 w-auto object-contain transition-transform duration-300 ease-out group-hover:scale-105"
+                className="h-12 sm:h-16 md:h-20 w-auto object-contain rounded-xl mix-blend-screen bg-transparent transition-transform duration-300 ease-out group-hover:scale-105"
               />
               <div className="flex flex-col">
                 <span

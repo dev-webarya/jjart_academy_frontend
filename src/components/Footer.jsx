@@ -75,9 +75,9 @@ const Footer = () => {
               <div className="flex items-center justify-center sm:justify-start gap-3 mb-6 group cursor-pointer">
                 <div className="p-2 bg-gradient-to-br from-violet-500 to-pink-500 rounded-xl shadow-xl group-hover:shadow-violet-500/40 transition-all duration-200 group-hover:scale-105">
                   <img
-                    src="/logo.png"
+                    src="/JJ_ART_LOGO.jpeg"
                     alt="Art Academy Logo"
-                    className="h-16 sm:h-20 w-auto object-contain"
+                    className="h-16 sm:h-20 w-auto object-contain rounded-xl mix-blend-screen bg-transparent"
                   />
                 </div>
               </div>
@@ -98,7 +98,7 @@ const Footer = () => {
               </a>
               <div className="flex items-start gap-3">
                 <FaMapMarkerAlt className="text-violet-500 mt-1 shrink-0" />
-                <span>Art Academy, City Center, Your City</span>
+                <span>Art Academy, Whitefield, Bengaluru, Karnataka</span>
               </div>
             </div>
           </div>

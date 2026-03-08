@@ -149,7 +149,7 @@ class PaymentService {
             description: paymentData.orderNumber
                 ? `Order: ${paymentData.orderNumber}`
                 : 'Art Academy Order',
-            image: '/logo.png',
+            image: '/JJ_ART_LOGO.jpeg',
             order_id: paymentData.razorpayOrderId,
             prefill: {
                 name: userInfo.name || '',
